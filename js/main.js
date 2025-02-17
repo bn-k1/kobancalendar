@@ -51,13 +51,13 @@ async function loadCSV(filePath) {
     }
 }
 
-// 3年分の祝日データの取得
+// 2年分の祝日データの取得
 async function loadHolidays() {
     try {
         const currentYear = new Date().getFullYear();
         holidays = {};
 
-        for (let year = currentYear - 3; year <= currentYear + 3; year++) {
+        for (let year = currentYear - 2; year <= currentYear + 2; year++) {
             const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
             if (!response.ok) throw new Error(`祝日データの取得に失敗しました: ${year}`);
             const yearHolidays = await response.json();
@@ -67,7 +67,7 @@ async function loadHolidays() {
         // 設定ファイルのカスタム祝日を追加
         customHolidays.forEach(date => {
             let [month, day] = date.split("/");
-            for (let year = currentYear - 3; year <= currentYear + 3; year++) {
+            for (let year = currentYear - 2; year <= currentYear + 2; year++) {
                 let formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
                 holidays[formattedDate] = "customholiday";
             }
@@ -77,6 +77,7 @@ async function loadHolidays() {
         alert("祝日データの読み込みに失敗しました");
     }
 }
+
 async function loadData() {
     await loadConfig();
     [holiday, saturday, weekday] = await Promise.all([
@@ -162,7 +163,7 @@ function updateCalendar() {
                 : `${subject}\n${startTime} - \n${endTime}`,
             start: dateStr,
             color: subject.includes("公休") || subject.includes("法休") ? "#d9534f"
-                   : subject.includes("黄") ? "gold"
+                   : subject.includes("黄") ? "ffd700"
                    : "#5bc0de",
         });
     }
