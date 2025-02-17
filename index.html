@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kobancalendar</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <h2>交番カレンダー</h2>
+  <label for="startNumber">コマ位置を選択:</label>
+  <select id="startNumber" onchange="updateURLAndGenerateSchedule()"></select>
+  <br><br>
+  <div id="calendar"></div>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
+

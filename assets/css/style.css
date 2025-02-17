@@ -1,0 +1,48 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+#calendar {
+    max-width: 100%;
+    width: 100%;
+    margin: 10px auto;
+    overflow-x: hidden; /* 横スクロールを防ぐ */
+}
+
+select {
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+.fc-daygrid-event .fc-event-title {
+    font-weight: bold;
+    color: white;
+    white-space: pre-line;
+}
+
+.event-title {
+    color: white;
+    font-weight: bold;
+    font-size: 1.0em;
+}
+
+.event-time {
+    color: black;
+    font-size: 0.9em;
+}
+
+.day-off {
+    background-color: #d9534f !important;
+    color: white;
+}
+
+.fc-day-sat {
+    background-color: #ADD8E6 !important; /* 土曜を薄い青 */
+}
+
+.fc-day-sun,
+.holiday {
+    background-color: #FFCCCC !important; /* 日曜と祝日を薄い赤 */
+}
+
