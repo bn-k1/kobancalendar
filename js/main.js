@@ -162,9 +162,9 @@ function updateCalendar() {
                 ? `${subject}`
                 : `${subject}\n${startTime} - \n${endTime}`,
             start: dateStr,
-            color: subject.includes("公休") || subject.includes("法休") ? "#d9534f"
-                   : subject.includes("黄") ? "ffd700"
-                   : "#5bc0de",
+            color: subject.includes("公休") || subject.includes("法休") ? "indianred"
+                   : subject.includes("黄") ? "gold"
+                   : "skyblue",
         });
     }
     calendar.removeAllEvents();
