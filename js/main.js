@@ -195,6 +195,63 @@ function updateURLAndGenerateSchedule() {
     updateCalendar();
 }
 
+// CSVエクスポート機能
+function exportCSV() {
+    const months = parseInt(document.getElementById("exportMonths").value);
+    const startNumber = parseInt(document.getElementById("startNumber").value) - 1;
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    endDate.setMonth(startDate.getMonth() + months);
+    
+    // CSVヘッダー
+    let csvContent = "Subject,Start Date,Start Time,End Time\n";
+    
+    // 日付ごとにデータを生成
+    for (
+        let date = new Date(startDate);
+        date < endDate;
+        date.setDate(date.getDate() + 1)
+    ) {
+        let dateStr = date.toISOString().split("T")[0];
+        let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 1;
+        let isSaturday = date.getDay() === 0;
+        
+        let diffDays = Math.floor((date - BASE_DATE) / (1000 * 60 * 60 * 24));
+        let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
+        
+        let workData;
+        if (isHoliday) {
+            workData = holiday[shiftIndex];
+        } else if (isSaturday) {
+            workData = saturday[shiftIndex];
+        } else {
+            workData = weekday[shiftIndex];
+        }
+        
+        if (!workData) continue;
+        
+        let [subject, startTime, endTime] = workData.split(",");
+        
+        // 日付をYYYY/MM/DD形式に変換
+        let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`;
+        
+        // CSVの行を追加
+        csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
+    }
+    
+    // CSVファイルのダウンロード
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const currentDate = new Date().toISOString().split("T")[0];
+    a.href = url;
+    a.download = `schedule_${currentDate}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
 // ページ読み込み時の処理
 window.onload = async function () {
     await loadData();
