@@ -151,7 +151,7 @@ function getScheduleForDate(date, startNumber) {
 function updateCalendar() {
     if (!BASE_DATE || holiday.length === 0 || saturday.length === 0 || weekday.length === 0) return;
 
-    let startNumber = parseInt(document.getElementById("startNumber").value) - 1;
+    let startNumber = parseInt(document.getElementById("startNumber").value) -1;
     let currentViewStartDate = calendar.view.activeStart;
     let currentViewEndDate = calendar.view.activeEnd;
     let events = [];
@@ -162,7 +162,6 @@ function updateCalendar() {
         date.setDate(date.getDate() + 1)
     ) {
         let schedule = getScheduleForDate(date, startNumber);
-	console.log(schedule);
         if (!schedule) continue;
 
         let { dateStr, subject, startTime, endTime, isHoliday } = schedule;
@@ -229,15 +228,15 @@ function exportCSV() {
         date < endDate;
         date.setDate(date.getDate() + 1)
     ) {
+        date.setDate(date.getDate() + 1);
         let schedule = getScheduleForDate(date, startNumber);
-	console.log(schedule);
+        date.setDate(date.getDate() - 1);
         if (!schedule) continue;
 
         let { subject, startTime, endTime } = schedule;
-        let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${(date.getDate() -1).toString().padStart(2, "0")}`;
+        let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`;
 
         csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
-        console.log(`${subject},${formattedDate},${startTime},${endTime}\n`);
     }
 
     const blob = new Blob([csvContent], { type: "text/csv" });
