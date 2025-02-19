@@ -12,8 +12,18 @@
   <select id="startNumber" onchange="updateURLAndGenerateSchedule()"></select>
   <br><br>
   <div id="calendar"></div>
+  <br><br>
+  <div>
+    <label for="exportMonths"><a href="https://support.google.com/calendar/answer/37118">Googleカレンダー</a>にインポート可能な.csvファイル</label>
+    <select id="exportMonths">
+      <option value="6">6</option>
+      <option value="12">12</option>
+      <option value="24">24</option>
+    </select>
+    <span>ヶ月分を</span>
+    <button onclick="exportCSV()">ダウンロード</button>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
-

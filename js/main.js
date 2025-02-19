@@ -8,6 +8,7 @@ const HOLIDAYS_API = "https://holidays-jp.github.io/api/v1/";
 // グローバル変数
 let BASE_DATE;
 let MAX_SCHEDULE_CYCLE;
+let HOLIDAY_YEARS_RANGE; 
 let holidays = {};
 let customHolidays = [];
 let holiday = [];
@@ -23,6 +24,7 @@ async function loadConfig() {
         if (!response.ok) throw new Error("設定ファイルの取得に失敗しました");
         const config = await response.json();
         BASE_DATE = new Date(config.base_date);
+	HOLIDAY_YEARS_RANGE = config.holiday_years_range;
         customHolidays = config.custom_holidays || [];
     } catch (error) {
         console.error(error.message);
@@ -51,13 +53,13 @@ async function loadCSV(filePath) {
     }
 }
 
-// 2年分の祝日データの取得
+// 祝日データの取得
 async function loadHolidays() {
     try {
         const currentYear = new Date().getFullYear();
         holidays = {};
 
-        for (let year = currentYear - 2; year <= currentYear + 2; year++) {
+        for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
             const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
             if (!response.ok) throw new Error(`祝日データの取得に失敗しました: ${year}`);
             const yearHolidays = await response.json();
@@ -67,8 +69,8 @@ async function loadHolidays() {
         // 設定ファイルのカスタム祝日を追加
         customHolidays.forEach(date => {
             let [month, day] = date.split("/");
-            for (let year = currentYear - 2; year <= currentYear + 2; year++) {
-                let formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+            for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
+                let formattedDate = `${year}-${month.padStart(HOLIDAY_YEARS_RANGE, "0")}-${day.padStart(HOLIDAY_YEARS_RANGE, "0")}`;
                 holidays[formattedDate] = "customholiday";
             }
         });
@@ -117,6 +119,36 @@ function initializeCalendar() {
     calendar.render();
 }
 
+function getScheduleForDate(date, startNumber) {
+    let dateStr = date.toISOString().split("T")[0];
+    let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 1;
+    let isSaturday = date.getDay() === 0;
+
+    let diffDays = Math.floor((date - BASE_DATE) / (1000 * 60 * 60 * 24));
+    let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
+
+    let workData;
+    if (isHoliday) {
+        workData = holiday[shiftIndex];
+    } else if (isSaturday) {
+        workData = saturday[shiftIndex];
+    } else {
+        workData = weekday[shiftIndex];
+    }
+
+    if (!workData) return null;
+
+    let [subject, startTime, endTime] = workData.split(",");
+
+    return {
+        dateStr,
+        subject,
+        startTime,
+        endTime,
+        isHoliday,
+    };
+}
+
 // カレンダーの更新
 function updateCalendar() {
     if (!BASE_DATE || holiday.length === 0 || saturday.length === 0 || weekday.length === 0) return;
@@ -131,9 +163,10 @@ function updateCalendar() {
         date < currentViewEndDate;
         date.setDate(date.getDate() + 1)
     ) {
-        let dateStr = date.toISOString().split("T")[0];
-        let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 1;
-        let isSaturday = date.getDay() === 0;
+        let schedule = getScheduleForDate(date, startNumber);
+        if (!schedule) continue;
+
+        let { dateStr, subject, startTime, endTime, isHoliday } = schedule;
 
         if (isHoliday) {
             let cell = document.querySelector(`[data-date='${dateStr}']`);
@@ -142,21 +175,6 @@ function updateCalendar() {
             }
         }
 
-        let diffDays = Math.floor((date - BASE_DATE) / (1000 * 60 * 60 * 24));
-        let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
-
-        let workData;
-        if (isHoliday) {
-            workData = holiday[shiftIndex];
-        } else if (isSaturday) {
-            workData = saturday[shiftIndex];
-        } else {
-            workData = weekday[shiftIndex];
-        }
-
-        if (!workData) continue;
-
-        let [subject, startTime, endTime] = workData.split(",");
         events.push({
             title: (subject.includes("公休") || subject.includes("法休") || subject.includes("空"))
                 ? `${subject}`
@@ -170,7 +188,6 @@ function updateCalendar() {
     calendar.removeAllEvents();
     calendar.addEventSource(events);
 }
-
 
 // スタート番号選択の初期化
 function initializeStartNumberSelection() {
@@ -193,6 +210,43 @@ function updateURLAndGenerateSchedule() {
     let startNumber = document.getElementById("startNumber").value;
     window.history.pushState({}, "", `?startNumber=${startNumber}`);
     updateCalendar();
+}
+
+// CSVエクスポート機能
+function exportCSV() {
+    const months = parseInt(document.getElementById("exportMonths").value);
+    const startNumber = parseInt(document.getElementById("startNumber").value) - 1;
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    endDate.setMonth(startDate.getMonth() + months);
+    
+    let csvContent = "Subject,Start Date,Start Time,End Time\n";
+    
+    for (
+        let date = new Date(startDate);
+        date < endDate;
+        date.setDate(date.getDate() + 1)
+    ) {
+        let schedule = getScheduleForDate(date, startNumber);
+        if (!schedule) continue;
+
+        let { subject, startTime, endTime } = schedule;
+
+        let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`;
+        
+        csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
+    }
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const currentDate = new Date().toISOString().split("T")[0];
+    a.href = url;
+    a.download = `schedule_${currentDate}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
 }
 
 // ページ読み込み時の処理
