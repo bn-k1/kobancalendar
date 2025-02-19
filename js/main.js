@@ -66,7 +66,6 @@ async function loadHolidays() {
             holidays = { ...holidays, ...yearHolidays };
         }
 
-        // 設定ファイルのカスタム祝日を追加
         customHolidays.forEach(date => {
             let [month, day] = date.split("/");
             for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
@@ -139,7 +138,6 @@ function getScheduleForDate(date, startNumber) {
     if (!workData) return null;
 
     let [subject, startTime, endTime] = workData.split(",");
-
     return {
         dateStr,
         subject,
@@ -164,6 +162,7 @@ function updateCalendar() {
         date.setDate(date.getDate() + 1)
     ) {
         let schedule = getScheduleForDate(date, startNumber);
+	console.log(schedule);
         if (!schedule) continue;
 
         let { dateStr, subject, startTime, endTime, isHoliday } = schedule;
@@ -216,27 +215,31 @@ function updateURLAndGenerateSchedule() {
 function exportCSV() {
     const months = parseInt(document.getElementById("exportMonths").value);
     const startNumber = parseInt(document.getElementById("startNumber").value) - 1;
+
     const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+
     const endDate = new Date(startDate);
     endDate.setMonth(startDate.getMonth() + months);
-    
+
     let csvContent = "Subject,Start Date,Start Time,End Time\n";
-    
+
     for (
         let date = new Date(startDate);
         date < endDate;
         date.setDate(date.getDate() + 1)
     ) {
         let schedule = getScheduleForDate(date, startNumber);
+	console.log(schedule);
         if (!schedule) continue;
 
         let { subject, startTime, endTime } = schedule;
+        let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${(date.getDate() -1).toString().padStart(2, "0")}`;
 
-        let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`;
-        
         csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
+        console.log(`${subject},${formattedDate},${startTime},${endTime}\n`);
     }
-    
+
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
