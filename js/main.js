@@ -36,6 +36,7 @@ async function loadConfig() {
 function updateLabel() {
     if (BASE_DATE) {
         let baseDateStr = BASE_DATE.toISOString().split("T")[0];
+	document.getElementById("startNumberSection").style.display = "block";
         document.querySelector("label[for='startNumber']").textContent = `${baseDateStr} 時点でのコマ位置:`;
     }
 }
@@ -116,6 +117,7 @@ function initializeCalendar() {
         }
     });
     calendar.render();
+    document.getElementById("exportSection").style.display = "block";
 }
 
 function getScheduleForDate(date, startNumber) {

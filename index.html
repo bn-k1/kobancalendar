@@ -8,12 +8,14 @@
 </head>
 <body>
   <h2>交番カレンダー</h2>
-  <label for="startNumber">コマ位置を選択:</label>
-  <select id="startNumber" onchange="updateURLAndGenerateSchedule()"></select>
+  <div id="startNumberSection" style="display: none;">
+    <label for="startNumber"></label>
+    <select id="startNumber" onchange="updateURLAndGenerateSchedule()"></select>
+  </div>
   <br><br>
   <div id="calendar"></div>
   <br><br>
-  <div>
+  <div id="exportSection" style="display: none;">
     <label for="exportMonths"><a href="https://support.google.com/calendar/answer/37118">Googleカレンダー</a>にインポート可能な.csvファイル</label>
     <select id="exportMonths">
       <option value="6">6</option>
@@ -27,3 +29,4 @@
   <script src="js/main.js"></script>
 </body>
 </html>
+
