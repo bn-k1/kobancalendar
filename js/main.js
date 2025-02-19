@@ -121,9 +121,9 @@ function initializeCalendar() {
 }
 
 function getScheduleForDate(date, startNumber) {
-    let dateStr = date.toISOString().split("T")[0];
-    let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 1;
-    let isSaturday = date.getDay() === 0;
+    let dateStr = date.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "-");
+    let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 0;
+    let isSaturday = date.getDay() === 6;
 
     let diffDays = Math.floor((date - BASE_DATE) / (1000 * 60 * 60 * 24));
     let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
@@ -136,7 +136,7 @@ function getScheduleForDate(date, startNumber) {
     } else {
         workData = weekday[shiftIndex];
     }
-
+	
     if (!workData) return null;
 
     let [subject, startTime, endTime] = workData.split(",");
@@ -153,7 +153,7 @@ function getScheduleForDate(date, startNumber) {
 function updateCalendar() {
     if (!BASE_DATE || holiday.length === 0 || saturday.length === 0 || weekday.length === 0) return;
 
-    let startNumber = parseInt(document.getElementById("startNumber").value) -1;
+    let startNumber = parseInt(document.getElementById("startNumber").value);
     let currentViewStartDate = calendar.view.activeStart;
     let currentViewEndDate = calendar.view.activeEnd;
     let events = [];
@@ -215,7 +215,7 @@ function updateURLAndGenerateSchedule() {
 // CSVエクスポート機能
 function exportCSV() {
     const months = parseInt(document.getElementById("exportMonths").value);
-    const startNumber = parseInt(document.getElementById("startNumber").value) - 1;
+    const startNumber = parseInt(document.getElementById("startNumber").value);
 
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
@@ -230,15 +230,14 @@ function exportCSV() {
         date < endDate;
         date.setDate(date.getDate() + 1)
     ) {
-        date.setDate(date.getDate() + 1);
         let schedule = getScheduleForDate(date, startNumber);
-        date.setDate(date.getDate() - 1);
         if (!schedule) continue;
 
         let { subject, startTime, endTime } = schedule;
         let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`;
 
         csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
+        console.log(`${subject},${formattedDate},${startTime},${endTime}`);
     }
 
     const blob = new Blob([csvContent], { type: "text/csv" });
