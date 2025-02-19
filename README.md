@@ -53,11 +53,13 @@
    ```json
    {
      "BASE_DATE": "YYYY-MM-DD",
+     "holiday_years_range": 2,
      "custom_holidays": ["08/15", "12/30"]
    }
    ```
 
    - `BASE_DATE`: シフト計算の基準日（YYYY-MM-DD形式）
+   - `holiday_years_range`: 祝日データ取得年数
    - `custom_holidays`: 独自に設定する休日の配列
 
 4. `data/`のCSVファイル（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。フォーマットは以下のとおりです。

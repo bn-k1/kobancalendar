@@ -8,6 +8,7 @@ const HOLIDAYS_API = "https://holidays-jp.github.io/api/v1/";
 // グローバル変数
 let BASE_DATE;
 let MAX_SCHEDULE_CYCLE;
+let HOLIDAY_YEARS_RANGE; 
 let holidays = {};
 let customHolidays = [];
 let holiday = [];
@@ -23,6 +24,7 @@ async function loadConfig() {
         if (!response.ok) throw new Error("設定ファイルの取得に失敗しました");
         const config = await response.json();
         BASE_DATE = new Date(config.base_date);
+	HOLIDAY_YEARS_RANGE = config.holiday_years_range;
         customHolidays = config.custom_holidays || [];
     } catch (error) {
         console.error(error.message);
@@ -51,13 +53,13 @@ async function loadCSV(filePath) {
     }
 }
 
-// 2年分の祝日データの取得
+// 祝日データの取得
 async function loadHolidays() {
     try {
         const currentYear = new Date().getFullYear();
         holidays = {};
 
-        for (let year = currentYear - 2; year <= currentYear + 2; year++) {
+        for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
             const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
             if (!response.ok) throw new Error(`祝日データの取得に失敗しました: ${year}`);
             const yearHolidays = await response.json();
@@ -67,8 +69,8 @@ async function loadHolidays() {
         // 設定ファイルのカスタム祝日を追加
         customHolidays.forEach(date => {
             let [month, day] = date.split("/");
-            for (let year = currentYear - 2; year <= currentYear + 2; year++) {
-                let formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+            for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
+                let formattedDate = `${year}-${month.padStart(HOLIDAY_YEARS_RANGE, "0")}-${day.padStart(HOLIDAY_YEARS_RANGE, "0")}`;
                 holidays[formattedDate] = "customholiday";
             }
         });
