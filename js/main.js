@@ -117,6 +117,36 @@ function initializeCalendar() {
     calendar.render();
 }
 
+function getScheduleForDate(date, startNumber) {
+    let dateStr = date.toISOString().split("T")[0];
+    let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 1;
+    let isSaturday = date.getDay() === 0;
+
+    let diffDays = Math.floor((date - BASE_DATE) / (1000 * 60 * 60 * 24));
+    let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
+
+    let workData;
+    if (isHoliday) {
+        workData = holiday[shiftIndex];
+    } else if (isSaturday) {
+        workData = saturday[shiftIndex];
+    } else {
+        workData = weekday[shiftIndex];
+    }
+
+    if (!workData) return null;
+
+    let [subject, startTime, endTime] = workData.split(",");
+
+    return {
+        dateStr,
+        subject,
+        startTime,
+        endTime,
+        isHoliday,
+    };
+}
+
 // カレンダーの更新
 function updateCalendar() {
     if (!BASE_DATE || holiday.length === 0 || saturday.length === 0 || weekday.length === 0) return;
@@ -131,9 +161,10 @@ function updateCalendar() {
         date < currentViewEndDate;
         date.setDate(date.getDate() + 1)
     ) {
-        let dateStr = date.toISOString().split("T")[0];
-        let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 1;
-        let isSaturday = date.getDay() === 0;
+        let schedule = getScheduleForDate(date, startNumber);
+        if (!schedule) continue;
+
+        let { dateStr, subject, startTime, endTime, isHoliday } = schedule;
 
         if (isHoliday) {
             let cell = document.querySelector(`[data-date='${dateStr}']`);
@@ -142,21 +173,6 @@ function updateCalendar() {
             }
         }
 
-        let diffDays = Math.floor((date - BASE_DATE) / (1000 * 60 * 60 * 24));
-        let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
-
-        let workData;
-        if (isHoliday) {
-            workData = holiday[shiftIndex];
-        } else if (isSaturday) {
-            workData = saturday[shiftIndex];
-        } else {
-            workData = weekday[shiftIndex];
-        }
-
-        if (!workData) continue;
-
-        let [subject, startTime, endTime] = workData.split(",");
         events.push({
             title: (subject.includes("公休") || subject.includes("法休") || subject.includes("空"))
                 ? `${subject}`
@@ -170,7 +186,6 @@ function updateCalendar() {
     calendar.removeAllEvents();
     calendar.addEventSource(events);
 }
-
 
 // スタート番号選択の初期化
 function initializeStartNumberSelection() {
@@ -203,43 +218,23 @@ function exportCSV() {
     const endDate = new Date(startDate);
     endDate.setMonth(startDate.getMonth() + months);
     
-    // CSVヘッダー
     let csvContent = "Subject,Start Date,Start Time,End Time\n";
     
-    // 日付ごとにデータを生成
     for (
         let date = new Date(startDate);
         date < endDate;
         date.setDate(date.getDate() + 1)
     ) {
-        let dateStr = date.toISOString().split("T")[0];
-        let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 1;
-        let isSaturday = date.getDay() === 0;
-        
-        let diffDays = Math.floor((date - BASE_DATE) / (1000 * 60 * 60 * 24));
-        let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
-        
-        let workData;
-        if (isHoliday) {
-            workData = holiday[shiftIndex];
-        } else if (isSaturday) {
-            workData = saturday[shiftIndex];
-        } else {
-            workData = weekday[shiftIndex];
-        }
-        
-        if (!workData) continue;
-        
-        let [subject, startTime, endTime] = workData.split(",");
-        
-        // 日付をYYYY/MM/DD形式に変換
+        let schedule = getScheduleForDate(date, startNumber);
+        if (!schedule) continue;
+
+        let { subject, startTime, endTime } = schedule;
+
         let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`;
         
-        // CSVの行を追加
         csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
     }
     
-    // CSVファイルのダウンロード
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
