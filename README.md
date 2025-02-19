@@ -60,7 +60,7 @@
    - `BASE_DATE`: シフト計算の基準日（YYYY-MM-DD形式）
    - `custom_holidays`: 独自に設定する休日の配列
 
-4. 交番表のCSVファイル（例: `data/shift_schedule.csv`）を用意します。フォーマットは以下のとおりです。
+4. `data/`のCSVファイル（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。フォーマットは以下のとおりです。
 
    ```csv
    早番,08:00,16:00
