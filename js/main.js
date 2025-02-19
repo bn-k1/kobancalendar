@@ -70,7 +70,7 @@ async function loadHolidays() {
         customHolidays.forEach(date => {
             let [month, day] = date.split("/");
             for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
-                let formattedDate = `${year}-${month.padStart(HOLIDAY_YEARS_RANGE, "0")}-${day.padStart(HOLIDAY_YEARS_RANGE, "0")}`;
+                let formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
                 holidays[formattedDate] = "customholiday";
             }
         });
