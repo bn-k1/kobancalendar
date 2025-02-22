@@ -14,9 +14,9 @@
   </div>
   <br><br>
   <div id="calendar"></div>
-  <br><br>
+  <br>
   <div id="exportSection" style="display: none;">
-    <label for="exportMonths"><a href="https://support.google.com/calendar/answer/37118">Googleカレンダー</a>にインポート可能な.csvファイル</label>
+    <label for="exportMonths">.csvファイル</label>
     <select id="exportMonths">
       <option value="6">6</option>
       <option value="12">12</option>
@@ -24,6 +24,8 @@
     </select>
     <span>ヶ月分を</span>
     <button onclick="exportCSV()">ダウンロード</button>
+    <br>
+    <a href="https://support.google.com/calendar/answer/37118">Googleカレンダーにインポートする方法</a>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="js/main.js"></script>

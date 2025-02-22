@@ -1,4 +1,4 @@
-// 定数定
+// 定数定義
 const CONFIG_PATH = "./config.json";
 const HOLIDAY_PATH = "./data/holiday.csv";
 const SATURDAY_PATH = "./data/saturday.csv";
@@ -24,7 +24,7 @@ async function loadConfig() {
         if (!response.ok) throw new Error("設定ファイルの取得に失敗しました");
         const config = await response.json();
         BASE_DATE = new Date(config.base_date);
-	HOLIDAY_YEARS_RANGE = config.holiday_years_range;
+        HOLIDAY_YEARS_RANGE = config.holiday_years_range;
         customHolidays = config.custom_holidays || [];
     } catch (error) {
         console.error(error.message);
@@ -36,7 +36,7 @@ async function loadConfig() {
 function updateLabel() {
     if (BASE_DATE) {
         let baseDateStr = BASE_DATE.toISOString().split("T")[0];
-	document.getElementById("startNumberSection").style.display = "block";
+        document.getElementById("startNumberSection").style.display = "block";
         document.querySelector("label[for='startNumber']").textContent = `${baseDateStr} 時点でのコマ位置:`;
     }
 }
@@ -136,7 +136,7 @@ function getScheduleForDate(date, startNumber) {
     } else {
         workData = weekday[shiftIndex];
     }
-	
+    
     if (!workData) return null;
 
     let [subject, startTime, endTime] = workData.split(",");
@@ -146,6 +146,7 @@ function getScheduleForDate(date, startNumber) {
         startTime,
         endTime,
         isHoliday,
+        isSaturday
     };
 }
 
@@ -158,6 +159,10 @@ function updateCalendar() {
     let currentViewEndDate = calendar.view.activeEnd;
     let events = [];
 
+    // 今日の日付を取得し、年月日のみを比較するために時刻をリセット
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     for (
         let date = new Date(currentViewStartDate);
         date < currentViewEndDate;
@@ -166,12 +171,29 @@ function updateCalendar() {
         let schedule = getScheduleForDate(date, startNumber);
         if (!schedule) continue;
 
-        let { dateStr, subject, startTime, endTime, isHoliday } = schedule;
+        let { dateStr, subject, startTime, endTime, isHoliday, isSaturday } = schedule;
 
-        if (isHoliday) {
-            let cell = document.querySelector(`[data-date='${dateStr}']`);
-            if (cell) {
-                cell.classList.add("holiday");
+        // 日付の比較用に時刻をリセット
+        const currentDate = new Date(date);
+        currentDate.setHours(0, 0, 0, 0);
+
+        // 今日の日付でない場合のみ、休日・土曜日のスタイルを適用
+        let cell = document.querySelector(`[data-date='${dateStr}']`);
+        if (cell) {
+            // 一旦クラスを削除
+            cell.classList.remove("holiday", "fc-day-sat", "fc-day-sun");
+            
+            // 今日でない場合のみ、該当するクラスを追加
+            if (currentDate.getTime() !== today.getTime()) {
+                if (isHoliday) {
+                    cell.classList.add("holiday");
+                }
+                if (isSaturday) {
+                    cell.classList.add("fc-day-sat");
+                }
+                if (date.getDay() === 0) {
+                    cell.classList.add("fc-day-sun");
+                }
             }
         }
 
@@ -255,8 +277,8 @@ function exportCSV() {
 // ページ読み込み時の処理
 window.onload = async function () {
     await loadData();
-    updateLabel(); // ここでラベルを更新
+    updateLabel();
     initializeStartNumberSelection();
     initializeCalendar();
-};
+}
 
