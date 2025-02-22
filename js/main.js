@@ -1,5 +1,6 @@
 // 定数定義
 const CONFIG_PATH = "./config.json";
+const EVENT_CONFIG_PATH = "./config/event.json";
 const HOLIDAY_PATH = "./data/holiday.csv";
 const SATURDAY_PATH = "./data/saturday.csv";
 const WEEKDAY_PATH = "./data/weekday.csv";
@@ -15,7 +16,29 @@ let holiday = [];
 let saturday = [];
 let weekday = [];
 let calendar;
+let eventConfig;
 
+// イベント設定ファイルの読み込み
+async function loadEventConfig() {
+    try {
+        const response = await fetch(EVENT_CONFIG_PATH);
+        if (!response.ok) throw new Error("イベント設定ファイルの取得に失敗しました");
+        eventConfig = await response.json();
+    } catch (error) {
+        console.error(error.message);
+        alert("イベント設定ファイルの読み込みに失敗しました");
+    }
+}
+
+// イベントの種類を判定
+function getEventType(subject) {
+    for (const [type, config] of Object.entries(eventConfig.specialEvents)) {
+        if (config.keywords.some(keyword => subject.includes(keyword))) {
+            return { type, config };
+        }
+    }
+    return { type: 'default', config: eventConfig.defaultEvent };
+}
 
 // 設定ファイルの読み込み
 async function loadConfig() {
@@ -152,14 +175,13 @@ function getScheduleForDate(date, startNumber) {
 
 // カレンダーの更新
 function updateCalendar() {
-    if (!BASE_DATE || holiday.length === 0 || saturday.length === 0 || weekday.length === 0) return;
+    if (!BASE_DATE || !eventConfig || holiday.length === 0 || saturday.length === 0 || weekday.length === 0) return;
 
     let startNumber = parseInt(document.getElementById("startNumber").value);
     let currentViewStartDate = calendar.view.activeStart;
     let currentViewEndDate = calendar.view.activeEnd;
     let events = [];
 
-    // 今日の日付を取得し、年月日のみを比較するために時刻をリセット
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -173,17 +195,13 @@ function updateCalendar() {
 
         let { dateStr, subject, startTime, endTime, isHoliday, isSaturday } = schedule;
 
-        // 日付の比較用に時刻をリセット
         const currentDate = new Date(date);
         currentDate.setHours(0, 0, 0, 0);
 
-        // 今日の日付でない場合のみ、休日・土曜日のスタイルを適用
         let cell = document.querySelector(`[data-date='${dateStr}']`);
         if (cell) {
-            // 一旦クラスを削除
             cell.classList.remove("holiday", "fc-day-sat", "fc-day-sun");
             
-            // 今日でない場合のみ、該当するクラスを追加
             if (currentDate.getTime() !== today.getTime()) {
                 if (isHoliday) {
                     cell.classList.add("holiday");
@@ -197,14 +215,13 @@ function updateCalendar() {
             }
         }
 
+        const { config } = getEventType(subject);
         events.push({
-            title: (subject.includes("公休") || subject.includes("法休") || subject.includes("空"))
-                ? `${subject}`
-                : `${subject}\n${startTime} - \n${endTime}`,
+            title: config.showTime 
+                ? `${subject}\n${startTime} - \n${endTime}`
+                : subject,
             start: dateStr,
-            color: subject.includes("公休") || subject.includes("法休") ? "indianred"
-                   : subject.includes("黄") ? "gold"
-                   : "skyblue",
+            color: config.color
         });
     }
     calendar.removeAllEvents();
@@ -276,9 +293,11 @@ function exportCSV() {
 
 // ページ読み込み時の処理
 window.onload = async function () {
-    await loadData();
+    await Promise.all([
+        loadData(),
+        loadEventConfig()
+    ]);
     updateLabel();
     initializeStartNumberSelection();
     initializeCalendar();
-}
-
+};

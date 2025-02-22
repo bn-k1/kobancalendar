@@ -1,0 +1,24 @@
+{
+    "specialEvents": {
+        "restDay": {
+            "keywords": ["公休", "法休"],
+            "color": "indianred",
+            "showTime": false
+        },
+        "empty": {
+            "keywords": ["空"],
+            "color": "skyblue",
+            "showTime": false
+        },
+        "yellow": {
+            "keywords": ["黄"],
+            "color": "gold",
+            "showTime": true
+        }
+    },
+    "defaultEvent": {
+        "color": "skyblue",
+        "showTime": true
+    }
+}
+
