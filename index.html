@@ -8,6 +8,10 @@
 </head>
 <body>
   <h2>交番カレンダー</h2>
+  <div id="baseDateSection" style="display: none;">
+    <label for="baseDate"></label>
+    <select id="baseDate" onchange="handleBaseDateChange()"></select>
+  </div>
   <div id="startNumberSection" style="display: none;">
     <label for="startNumber"></label>
     <select id="startNumber" onchange="updateURLAndGenerateSchedule()"></select>
@@ -31,4 +35,3 @@
   <script src="js/main.js"></script>
 </body>
 </html>
-

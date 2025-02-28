@@ -7,7 +7,8 @@ const WEEKDAY_PATH = "./data/weekday.csv";
 const HOLIDAYS_API = "https://holidays-jp.github.io/api/v1/";
 
 // グローバル変数
-let BASE_DATE;
+let BASE_DATES = [];
+let CURRENT_BASE_DATE;
 let MAX_SCHEDULE_CYCLE;
 let HOLIDAY_YEARS_RANGE; 
 let holidays = {};
@@ -46,7 +47,30 @@ async function loadConfig() {
         const response = await fetch(CONFIG_PATH);
         if (!response.ok) throw new Error("設定ファイルの取得に失敗しました");
         const config = await response.json();
-        BASE_DATE = new Date(config.base_date);
+        
+        // 複数の基準日を処理
+        if (config.base_dates) {
+            BASE_DATES = config.base_dates.map(dateStr => new Date(dateStr));
+        } else if (config.base_date) {
+            // 後方互換性のため
+            BASE_DATES = [new Date(config.base_date)];
+        } else {
+            throw new Error("基準日が設定されていません");
+        }
+        
+        // URLパラメータから基準日を取得またはデフォルト設定
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("baseDate")) {
+            CURRENT_BASE_DATE = new Date(params.get("baseDate"));
+            // 有効な基準日か確認
+            if (isNaN(CURRENT_BASE_DATE.getTime())) {
+                CURRENT_BASE_DATE = BASE_DATES[0]; // デフォルトに戻す
+            }
+        } else {
+            // デフォルトは最も古い基準日
+            CURRENT_BASE_DATE = new Date(Math.min(...BASE_DATES.map(d => d.getTime())));
+        }
+        
         HOLIDAY_YEARS_RANGE = config.holiday_years_range;
         customHolidays = config.custom_holidays || [];
     } catch (error) {
@@ -55,12 +79,35 @@ async function loadConfig() {
     }
 }
 
+// 基準日選択セクションを更新
+function updateBaseDateSection() {
+    const baseDateSelect = document.getElementById("baseDate");
+    
+    // 選択肢をクリア
+    baseDateSelect.innerHTML = "";
+    
+    // 基準日の選択肢を追加
+    BASE_DATES.forEach(date => {
+        const option = document.createElement("option");
+        const dateStr = date.toISOString().split("T")[0];
+        option.value = dateStr;
+        option.text = dateStr;
+        baseDateSelect.appendChild(option);
+    });
+    
+    // 現在選択されている基準日を設定
+    const currentBaseDateStr = CURRENT_BASE_DATE.toISOString().split("T")[0];
+    baseDateSelect.value = currentBaseDateStr;
+}
+
 // ラベルを更新
 function updateLabel() {
-    if (BASE_DATE) {
-        let baseDateStr = BASE_DATE.toISOString().split("T")[0];
+    if (CURRENT_BASE_DATE) {
+        document.getElementById("baseDateSection").style.display = "block";
         document.getElementById("startNumberSection").style.display = "block";
-        document.querySelector("label[for='startNumber']").textContent = `${baseDateStr} 時点でのコマ位置:`;
+        document.querySelector("label[for='baseDate']").textContent = "基準日:";
+        document.querySelector("label[for='startNumber']").textContent = "コマ位置:";
+        document.getElementById("exportSection").style.display = "block";
     }
 }
 
@@ -140,7 +187,6 @@ function initializeCalendar() {
         }
     });
     calendar.render();
-    document.getElementById("exportSection").style.display = "block";
 }
 
 function getScheduleForDate(date, startNumber) {
@@ -148,7 +194,7 @@ function getScheduleForDate(date, startNumber) {
     let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 0;
     let isSaturday = date.getDay() === 6;
 
-    let diffDays = Math.floor((date - BASE_DATE) / (1000 * 60 * 60 * 24));
+    let diffDays = Math.floor((date - CURRENT_BASE_DATE) / (1000 * 60 * 60 * 24));
     let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
 
     let workData;
@@ -175,7 +221,7 @@ function getScheduleForDate(date, startNumber) {
 
 // カレンダーの更新
 function updateCalendar() {
-    if (!BASE_DATE || !eventConfig || holiday.length === 0 || saturday.length === 0 || weekday.length === 0) return;
+    if (!CURRENT_BASE_DATE || !eventConfig || holiday.length === 0 || saturday.length === 0 || weekday.length === 0) return;
 
     let startNumber = parseInt(document.getElementById("startNumber").value);
     let currentViewStartDate = calendar.view.activeStart;
@@ -231,6 +277,8 @@ function updateCalendar() {
 // スタート番号選択の初期化
 function initializeStartNumberSelection() {
     let select = document.getElementById("startNumber");
+    select.innerHTML = ""; // 選択肢をクリア
+    
     for (let i = 1; i <= MAX_SCHEDULE_CYCLE; i++) {
         let option = document.createElement("option");
         option.value = i;
@@ -244,10 +292,18 @@ function initializeStartNumberSelection() {
     }
 }
 
+// 基準日の変更時の処理
+function handleBaseDateChange() {
+    const baseDateSelect = document.getElementById("baseDate");
+    CURRENT_BASE_DATE = new Date(baseDateSelect.value);
+    updateURLAndGenerateSchedule();
+}
+
 // URLの更新
 function updateURLAndGenerateSchedule() {
     let startNumber = document.getElementById("startNumber").value;
-    window.history.pushState({}, "", `?startNumber=${startNumber}`);
+    let baseDateStr = CURRENT_BASE_DATE.toISOString().split("T")[0];
+    window.history.pushState({}, "", `?baseDate=${baseDateStr}&startNumber=${startNumber}`);
     updateCalendar();
 }
 
@@ -276,7 +332,6 @@ function exportCSV() {
         let formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`;
 
         csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
-        console.log(`${subject},${formattedDate},${startTime},${endTime}`);
     }
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -297,6 +352,7 @@ window.onload = async function () {
         loadData(),
         loadEventConfig()
     ]);
+    updateBaseDateSection();
     updateLabel();
     initializeStartNumberSelection();
     initializeCalendar();
