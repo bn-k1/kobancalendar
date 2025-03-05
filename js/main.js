@@ -128,13 +128,19 @@ async function loadCSV(filePath) {
 async function loadHolidays() {
     try {
         const currentYear = new Date().getFullYear();
-        holidays = {};
-
-        for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
-            const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
-            if (!response.ok) throw new Error(`祝日データの取得に失敗しました: ${year}`);
-            const yearHolidays = await response.json();
-            holidays = { ...holidays, ...yearHolidays };
+        const cacheKey = `holidays_${currentYear}`;
+        
+        if (localStorage.getItem(cacheKey)) {
+            holidays = JSON.parse(localStorage.getItem(cacheKey));
+        } else {
+            holidays = {};
+            for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
+                const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
+                if (!response.ok) throw new Error(`祝日データの取得に失敗: ${year}`);
+                const yearHolidays = await response.json();
+                holidays = { ...holidays, ...yearHolidays };
+            }
+            localStorage.setItem(cacheKey, JSON.stringify(holidays));
         }
 
         customHolidays.forEach(date => {
