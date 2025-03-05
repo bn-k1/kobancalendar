@@ -17,7 +17,7 @@
 
 ## 機能
 
-- **基準日を設定し、.csvの行数周期でシフトを計算**
+- **基準日を設定し、X日(.csvファイルの行数)周期でシフトを計算**
 - **インタラクティブなカレンダー表示**
 - **土曜・日曜・祝日・特定の勤務パターンを考慮**
 - **日ごとの勤務情報をカラー分類**
@@ -53,13 +53,13 @@
 
    ```json
    {
-     "base_date": "YYYY-MM-DD",
+     "base_dates": ["YYYY-MM-DD", "YYYY-MM-DD"],
      "holiday_years_range": 2,
      "custom_holidays": ["08/15", "12/30"]
    }
    ```
 
-   - `base_date`: シフト計算の基準日（YYYY-MM-DD形式）
+   - `base_dates`: シフト計算の基準日（YYYY-MM-DD形式）。人員入れ替えの際などの場合に複数登録可能。
    - `holiday_years_range`: 祝日データ取得年数
    - `custom_holidays`: 独自に設定する休日の配列
 
@@ -78,6 +78,11 @@
    ```
 
    ブラウザで`http://localhost:3000`にアクセスすると、カレンダーが表示されます。
+
+
+## デモ
+
+- [https://bn-k1.github.io/kobancalendar/](https://bn-k1.github.io/kobancalendar/)（バージョン14以上）
 
 
 ## 注意点
