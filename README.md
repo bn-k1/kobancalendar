@@ -59,7 +59,7 @@
    }
    ```
 
-   - `base_dates`: シフト計算の基準日（YYYY-MM-DD形式）。人員入れ替えの際などの場合に複数登録可能。
+   - `base_dates`: シフト計算の基準日（YYYY-MM-DD形式）。人員入れ替えなどの場合に複数登録可能。
    - `holiday_years_range`: 祝日データ取得年数
    - `custom_holidays`: 独自に設定する休日の配列
 
@@ -82,7 +82,7 @@
 
 ## デモ
 
-- [https://bn-k1.github.io/kobancalendar/](https://bn-k1.github.io/kobancalendar/)（バージョン14以上）
+- [https://bn-k1.github.io/kobancalendar/](https://bn-k1.github.io/kobancalendar/)
 
 
 ## 注意点
