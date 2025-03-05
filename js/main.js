@@ -9,6 +9,7 @@ const HOLIDAYS_API = "https://holidays-jp.github.io/api/v1/";
 // グローバル変数
 let BASE_DATES = [];
 let CURRENT_BASE_DATE;
+let LAST_BASE_DATE;
 let MAX_SCHEDULE_CYCLE;
 let HOLIDAY_YEARS_RANGE; 
 let holidays = {};
@@ -47,17 +48,17 @@ async function loadConfig() {
         const response = await fetch(CONFIG_PATH);
         if (!response.ok) throw new Error("設定ファイルの取得に失敗しました");
         const config = await response.json();
-        
+
         // 複数の基準日を処理
         if (config.base_dates) {
-            BASE_DATES = config.base_dates.map(dateStr => new Date(dateStr));
+            BASE_DATES = config.base_dates.map(dateStr => new Date(dateStr)).sort((a, b) => a - b);
         } else if (config.base_date) {
             // 後方互換性のため
             BASE_DATES = [new Date(config.base_date)];
         } else {
             throw new Error("基準日が設定されていません");
         }
-        
+
         // URLパラメータから基準日を取得またはデフォルト設定
         const params = new URLSearchParams(window.location.search);
         if (params.has("baseDate")) {
@@ -68,9 +69,11 @@ async function loadConfig() {
             }
         } else {
             // デフォルトは最も古い基準日
-            CURRENT_BASE_DATE = new Date(Math.min(...BASE_DATES.map(d => d.getTime())));
+            CURRENT_BASE_DATE = BASE_DATES[0];
         }
-        
+
+        LAST_BASE_DATE = BASE_DATES[BASE_DATES.length - 1];
+
         HOLIDAY_YEARS_RANGE = config.holiday_years_range;
         customHolidays = config.custom_holidays || [];
     } catch (error) {
@@ -200,6 +203,13 @@ function getScheduleForDate(date, startNumber) {
     let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 0;
     let isSaturday = date.getDay() === 6;
 
+	const formattedLastBaseDate = LAST_BASE_DATE.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "-");
+	const formattedCurrentBaseDate = CURRENT_BASE_DATE.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "-");
+
+	if ((CURRENT_BASE_DATE.getTime() !== LAST_BASE_DATE.getTime() && dateStr >= formattedLastBaseDate) || dateStr < formattedCurrentBaseDate) {
+		return { dateStr, subject: "-", startTime: "", endTime: "", isHoliday, isSaturday };
+	}
+
     let diffDays = Math.floor((date - CURRENT_BASE_DATE) / (1000 * 60 * 60 * 24));
     let shiftIndex = ((startNumber + diffDays) % MAX_SCHEDULE_CYCLE + MAX_SCHEDULE_CYCLE) % MAX_SCHEDULE_CYCLE;
 
@@ -211,7 +221,7 @@ function getScheduleForDate(date, startNumber) {
     } else {
         workData = weekday[shiftIndex];
     }
-    
+
     if (!workData) return null;
 
     let [subject, startTime, endTime] = workData.split(",");

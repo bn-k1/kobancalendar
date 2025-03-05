@@ -14,7 +14,12 @@
             "keywords": ["黄"],
             "color": "gold",
             "showTime": true
-        }
+        },
+	"null": {
+	    "keywords": ["-"],
+	    "color": "gray",
+	    "showTime": false
+	}
     },
     "defaultEvent": {
         "color": "skyblue",
