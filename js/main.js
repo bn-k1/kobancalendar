@@ -1,5 +1,5 @@
 // 定数定義
-const CONFIG_PATH = "./config.json";
+const CONFIG_PATH = "./config/config.json";
 const EVENT_CONFIG_PATH = "./config/event.json";
 const HOLIDAY_PATH = "./data/holiday.csv";
 const SATURDAY_PATH = "./data/saturday.csv";
@@ -19,28 +19,6 @@ let saturday = [];
 let weekday = [];
 let calendar;
 let eventConfig;
-
-// イベント設定ファイルの読み込み
-async function loadEventConfig() {
-    try {
-        const response = await fetch(EVENT_CONFIG_PATH);
-        if (!response.ok) throw new Error("イベント設定ファイルの取得に失敗しました");
-        eventConfig = await response.json();
-    } catch (error) {
-        console.error(error.message);
-        alert("イベント設定ファイルの読み込みに失敗しました");
-    }
-}
-
-// イベントの種類を判定
-function getEventType(subject) {
-    for (const [type, config] of Object.entries(eventConfig.specialEvents)) {
-        if (config.keywords.some(keyword => subject.includes(keyword))) {
-            return { type, config };
-        }
-    }
-    return { type: 'default', config: eventConfig.defaultEvent };
-}
 
 // 設定ファイルの読み込み
 async function loadConfig() {
@@ -80,6 +58,28 @@ async function loadConfig() {
         console.error(error.message);
         alert("設定ファイルの読み込みに失敗しました");
     }
+}
+
+// イベント設定ファイルの読み込み
+async function loadEventConfig() {
+    try {
+        const response = await fetch(EVENT_CONFIG_PATH);
+        if (!response.ok) throw new Error("イベント設定ファイルの取得に失敗しました");
+        eventConfig = await response.json();
+    } catch (error) {
+        console.error(error.message);
+        alert("イベント設定ファイルの読み込みに失敗しました");
+    }
+}
+
+// イベントの種類を判定
+function getEventType(subject) {
+    for (const [type, config] of Object.entries(eventConfig.specialEvents)) {
+        if (config.keywords.some(keyword => subject.includes(keyword))) {
+            return { type, config };
+        }
+    }
+    return { type: 'default', config: eventConfig.defaultEvent };
 }
 
 // 基準日選択セクションを更新
@@ -131,21 +131,28 @@ async function loadCSV(filePath) {
 async function loadHolidays() {
     try {
         const currentYear = new Date().getFullYear();
-        const cacheKey = `holidays_${currentYear}`;
-        
-        if (localStorage.getItem(cacheKey)) {
-            holidays = JSON.parse(localStorage.getItem(cacheKey));
-        } else {
-            holidays = {};
-            for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
+        let holidays = {};
+
+        for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
+            const cacheKey = `holidays_${year}`;
+
+            if (localStorage.getItem(cacheKey)) {
+                // キャッシュからデータを取得
+                const yearHolidays = JSON.parse(localStorage.getItem(cacheKey));
+                holidays = { ...holidays, ...yearHolidays };
+            } else {
+                // API からデータを取得
                 const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
                 if (!response.ok) throw new Error(`祝日データの取得に失敗: ${year}`);
                 const yearHolidays = await response.json();
                 holidays = { ...holidays, ...yearHolidays };
+
+                // キャッシュに保存
+                localStorage.setItem(cacheKey, JSON.stringify(yearHolidays));
             }
-            localStorage.setItem(cacheKey, JSON.stringify(holidays));
         }
 
+        // カスタム祝日を追加
         customHolidays.forEach(date => {
             let [month, day] = date.split("/");
             for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
@@ -153,6 +160,7 @@ async function loadHolidays() {
                 holidays[formattedDate] = "customholiday";
             }
         });
+
     } catch (error) {
         console.error(error.message);
         alert("祝日データの読み込みに失敗しました");
