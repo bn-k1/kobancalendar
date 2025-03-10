@@ -56,7 +56,6 @@ async function loadConfig() {
         customHolidays = config.custom_holidays || [];
     } catch (error) {
         console.error(error.message);
-        alert("設定ファイルの読み込みに失敗しました");
     }
 }
 
@@ -68,7 +67,6 @@ async function loadEventConfig() {
         eventConfig = await response.json();
     } catch (error) {
         console.error(error.message);
-        alert("イベント設定ファイルの読み込みに失敗しました");
     }
 }
 
@@ -122,7 +120,6 @@ async function loadCSV(filePath) {
         return (await response.text()).trim().split("\n");
     } catch (error) {
         console.error(error.message);
-        alert(`${filePath} の読み込みに失敗しました`);
         return [];
     }
 }
@@ -163,7 +160,6 @@ async function loadHolidays() {
 
     } catch (error) {
         console.error(error.message);
-        alert("祝日データの読み込みに失敗しました");
     }
 }
 
@@ -177,7 +173,6 @@ async function loadData() {
     
     const holidayLength = holiday.length;
     if (holidayLength !== saturday.length || holidayLength !== weekday.length) {
-        alert("エラー: CSVファイルの行数が一致しません");
         throw new Error("CSVファイルの行数が一致しません");
     }
     

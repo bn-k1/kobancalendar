@@ -15,7 +15,7 @@
             "color": "gold",
             "showTime": true
         },
-	"null": {
+        "null": {
 	    "keywords": ["-"],
 	    "color": "gray",
 	    "showTime": false
