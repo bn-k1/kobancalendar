@@ -7,7 +7,7 @@ body {
     max-width: 100%;
     width: 100%;
     margin: 10px auto;
-    overflow-x: hidden; /* 横スクロールを防ぐ */
+    overflow-x: hidden;
 }
 
 select {
@@ -33,16 +33,16 @@ select {
 }
 
 .day-off {
-    background-color: #d9534f !important;
+    background-color: #d9534f
     color: white;
 }
 
 .fc-day-sat {
-    background-color: #ADD8E6 !important; /* 土曜を薄い青 */
+    background-color: #ADD8E6
 }
 
 .fc-day-sun,
 .holiday {
-    background-color: #FFCCCC !important; /* 日曜と祝日を薄い赤 */
+    background-color: #FFCCCC
 }
 

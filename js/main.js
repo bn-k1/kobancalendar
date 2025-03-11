@@ -48,26 +48,21 @@ async function loadConfig() {
         if (!response.ok) throw new Error("設定ファイルの取得に失敗しました");
         const config = await response.json();
 
-        // 複数の基準日を処理
         if (config.base_dates) {
             BASE_DATES = config.base_dates.map(dateStr => new Date(dateStr)).sort((a, b) => a - b);
         } else if (config.base_date) {
-            // 後方互換性のため
             BASE_DATES = [new Date(config.base_date)];
         } else {
             throw new Error("基準日が設定されていません");
         }
 
-        // URLパラメータから基準日を取得またはデフォルト設定
         const params = new URLSearchParams(window.location.search);
         if (params.has("baseDate")) {
             CURRENT_BASE_DATE = new Date(params.get("baseDate"));
-            // 有効な基準日か確認
             if (isNaN(CURRENT_BASE_DATE.getTime())) {
-                CURRENT_BASE_DATE = BASE_DATES[0]; // デフォルトに戻す
+                CURRENT_BASE_DATE = BASE_DATES[0];
             }
         } else {
-            // デフォルトは最も古い基準日
             CURRENT_BASE_DATE = BASE_DATES[0];
         }
 
@@ -84,10 +79,8 @@ async function loadConfig() {
 function updateBaseDateSection() {
     const baseDateSelect = document.getElementById("baseDate");
     
-    // 選択肢をクリア
     baseDateSelect.innerHTML = "";
     
-    // 基準日の選択肢を追加
     BASE_DATES.forEach(date => {
         const option = document.createElement("option");
         const dateStr = date.toISOString().split("T")[0];
@@ -96,7 +89,6 @@ function updateBaseDateSection() {
         baseDateSelect.appendChild(option);
     });
     
-    // 現在選択されている基準日を設定
     const currentBaseDateStr = CURRENT_BASE_DATE.toISOString().split("T")[0];
     baseDateSelect.value = currentBaseDateStr;
 }
@@ -130,33 +122,28 @@ async function loadHolidays() {
         const currentYear = new Date().getFullYear();
         holidays = {};
         
-        // ローカルストレージからキャッシュを確認
         for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
             const cacheKey = `hldys_${year}`;
             const cachedData = localStorage.getItem(cacheKey);
             
             if (cachedData) {
-                // キャッシュがある場合はそれを使用
                 const yearHolidays = JSON.parse(cachedData);
                 holidays = { ...holidays, ...yearHolidays };
             } else {
-                // キャッシュがない場合はAPIから取得してキャッシュに保存
                 const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
                 if (!response.ok) throw new Error(`祝日データの取得に失敗: ${year}`);
                 const yearHolidays = await response.json();
                 
-                // データをキャッシュに保存
                 localStorage.setItem(cacheKey, JSON.stringify(yearHolidays));
                 
                 holidays = { ...holidays, ...yearHolidays };
             }
         }
         
-        // カスタム祝日の追加
         customHolidays.forEach(date => {
             let [month, day] = date.split("/");
             for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
-                let formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+                let formattedDate = `${year}-${month}-${day}`;
                 holidays[formattedDate] = "customholiday";
             }
         });
@@ -168,6 +155,7 @@ async function loadHolidays() {
     }
 }
 
+// CSVファイルの読み込み
 async function loadData() {
     await loadConfig();
     [holiday, saturday, weekday] = await Promise.all([
@@ -206,6 +194,7 @@ function initializeCalendar() {
     calendar.render();
 }
 
+// 任意の日付とコマ位置から勤務内容を返す
 function getScheduleForDate(date, startNumber) {
     let dateStr = date.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "-");
     let isHoliday = holidays[dateStr] !== undefined || date.getDay() === 0;
@@ -381,3 +370,4 @@ window.onload = async function () {
     initializeStartNumberSelection();
     initializeCalendar();
 };
+
