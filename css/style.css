@@ -33,16 +33,16 @@ select {
 }
 
 .day-off {
-    background-color: #d9534f
+    background-color: #d9534f;
     color: white;
 }
 
 .fc-day-sat {
-    background-color: #ADD8E6
+    background-color: #ADD8E6;
 }
 
 .fc-day-sun,
 .holiday {
-    background-color: #FFCCCC
+    background-color: #FFCCCC;
 }
 
