@@ -1,5 +1,5 @@
 // 定数定義
-const CONFIG_PATH = "./config.json";
+const CONFIG_PATH = "./config/config.json";
 const EVENT_CONFIG_PATH = "./config/event.json";
 const HOLIDAY_PATH = "./data/holiday.csv";
 const SATURDAY_PATH = "./data/saturday.csv";
@@ -28,7 +28,6 @@ async function loadEventConfig() {
         eventConfig = await response.json();
     } catch (error) {
         console.error(error.message);
-        alert("イベント設定ファイルの読み込みに失敗しました");
     }
 }
 
@@ -78,7 +77,6 @@ async function loadConfig() {
         customHolidays = config.custom_holidays || [];
     } catch (error) {
         console.error(error.message);
-        alert("設定ファイルの読み込みに失敗しました");
     }
 }
 
@@ -122,7 +120,6 @@ async function loadCSV(filePath) {
         return (await response.text()).trim().split("\n");
     } catch (error) {
         console.error(error.message);
-        alert(`${filePath} の読み込みに失敗しました`);
         return [];
     }
 }
@@ -131,21 +128,31 @@ async function loadCSV(filePath) {
 async function loadHolidays() {
     try {
         const currentYear = new Date().getFullYear();
-        const cacheKey = `holidays_${currentYear}`;
+        holidays = {};
         
-        if (localStorage.getItem(cacheKey)) {
-            holidays = JSON.parse(localStorage.getItem(cacheKey));
-        } else {
-            holidays = {};
-            for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
+        // ローカルストレージからキャッシュを確認
+        for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
+            const cacheKey = `hldys_${year}`;
+            const cachedData = localStorage.getItem(cacheKey);
+            
+            if (cachedData) {
+                // キャッシュがある場合はそれを使用
+                const yearHolidays = JSON.parse(cachedData);
+                holidays = { ...holidays, ...yearHolidays };
+            } else {
+                // キャッシュがない場合はAPIから取得してキャッシュに保存
                 const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
                 if (!response.ok) throw new Error(`祝日データの取得に失敗: ${year}`);
                 const yearHolidays = await response.json();
+                
+                // データをキャッシュに保存
+                localStorage.setItem(cacheKey, JSON.stringify(yearHolidays));
+                
                 holidays = { ...holidays, ...yearHolidays };
             }
-            localStorage.setItem(cacheKey, JSON.stringify(holidays));
         }
-
+        
+        // カスタム祝日の追加
         customHolidays.forEach(date => {
             let [month, day] = date.split("/");
             for (let year = currentYear - HOLIDAY_YEARS_RANGE; year <= currentYear + HOLIDAY_YEARS_RANGE; year++) {
@@ -153,9 +160,11 @@ async function loadHolidays() {
                 holidays[formattedDate] = "customholiday";
             }
         });
+        
+        return holidays;
     } catch (error) {
         console.error(error.message);
-        alert("祝日データの読み込みに失敗しました");
+        return {};
     }
 }
 
@@ -169,7 +178,6 @@ async function loadData() {
     
     const holidayLength = holiday.length;
     if (holidayLength !== saturday.length || holidayLength !== weekday.length) {
-        alert("エラー: CSVファイルの行数が一致しません");
         throw new Error("CSVファイルの行数が一致しません");
     }
     
