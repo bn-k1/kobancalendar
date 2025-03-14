@@ -65,28 +65,27 @@ function setupEventListeners() {
     document.getElementById("exportButton").addEventListener("click", handleExportCSV);
 }
 
-// アプリケーションの初期化
 async function initializeApp() {
-   try {
-        // 設定の読み込み
-        configData = await loadConfig();
-        const eventConfig = await loadEventConfig();
-        
+    try {
+        // 設定とイベントのロード（まとめて処理）
+        const [configData, eventConfig] = await Promise.all([
+            loadConfig(),
+            loadEventConfig()
+        ]);
+
         // スケジュールデータの読み込み
-        scheduleData = await loadScheduleData();
+        const scheduleData = await loadScheduleData();
         setScheduleData(scheduleData);
-        
-        // 祝日データの読み込み
+
+        // 祝日データのロード
         await loadHolidays(configData.HOLIDAY_YEARS_RANGE, configData.customHolidays);
-        
+
         // UIの初期化
         updateBaseDateSection(BASE_DATES, CURRENT_BASE_DATE);
         updateLabel(CURRENT_BASE_DATE);
         initializeStartNumberSelection(scheduleData.MAX_SCHEDULE_CYCLE);
-        
-        // カレンダーの初期化
         initializeCalendar(handleCalendarUpdate);
-        
+
         // イベントリスナーの設定
         setupEventListeners();
 
@@ -94,6 +93,7 @@ async function initializeApp() {
         console.error("アプリケーションの初期化に失敗しました:", error);
     }
 }
+
 
 // ページ読み込み時の処理
 window.onload = initializeApp;

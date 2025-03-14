@@ -155,7 +155,9 @@ function exportCSV(months, startNumber, currentBaseDate, lastBaseDate) {
         csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
     }
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const BOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const blob = new Blob([BOM, csvContent], { type: "text/csv;charset=utf-8" });
+    
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     const currentDate = new Date().toISOString().split("T")[0];
