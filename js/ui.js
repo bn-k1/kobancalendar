@@ -23,8 +23,6 @@ function updateLabel(currentBaseDate) {
     if (currentBaseDate) {
         document.getElementById("baseDateSection").style.display = "block";
         document.getElementById("startNumberSection").style.display = "block";
-        document.querySelector("label[for='baseDate']").textContent = "基準日:";
-        document.querySelector("label[for='startNumber']").textContent = "コマ位置:";
         document.getElementById("exportSection").style.display = "block";
     }
 }

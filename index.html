@@ -5,21 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KobanCalendar</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
+  <script src="lib/fullcalendar/index.global.min.js"></script>
 </head>
 <body>
   <h2>交番カレンダー</h2>
-  <div id="baseDateSection" style="display: none;">
-    <label for="baseDate"></label>
-    <select id="baseDate" onchange="handleBaseDateChange()"></select>
+  
+  <div id="baseDateSection" class="hidden">
+    <label for="baseDate">基準日:</label>
+    <select id="baseDate"></select>
   </div>
-  <div id="startNumberSection" style="display: none;">
-    <label for="startNumber"></label>
-    <select id="startNumber" onchange="updateURLAndGenerateSchedule()"></select>
+  
+  <div id="startNumberSection" class="hidden">
+    <label for="startNumber">コマ位置:</label>
+    <select id="startNumber"></select>
   </div>
+  
   <br><br>
   <div id="calendar"></div>
   <br>
-  <div id="exportSection" style="display: none;">
+  
+  <div id="exportSection" class="hidden">
     <label for="exportMonths">.csvファイル</label>
     <select id="exportMonths">
       <option value="1">1</option>
@@ -32,11 +42,11 @@
       <option value="24">24</option>
     </select>
     <span>ヶ月分を</span>
-    <button onclick="exportCSV()">ダウンロード</button>
+    <button id="exportButton">ダウンロード</button>
     <br>
-    <a href="https://support.google.com/calendar/answer/37118">Googleカレンダーにインポートする方法</a>
+    <a href="https://support.google.com/calendar/answer/37118" target="_blank" rel="noopener noreferrer">Googleカレンダーにインポートする方法</a>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
