@@ -27,11 +27,35 @@ function initializeCalendar(updateCallback) {
         aspectRatio: 1.35,
         height: "auto",
         eventDidMount: ({ event, el }) => {
+            // XSSリスクを回避するため、innerHTML の代わりに DOM 操作を使用
             let [title, startTime = "", endTime = ""] = event.title.split("\n");
-            el.innerHTML = `
-                <div class="event-title">${title}</div>
-                ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
-                ${endTime ? `<div class="event-time">${endTime}</div>` : ""}`;
+            
+            // 既存コンテンツをクリア
+            while (el.firstChild) {
+                el.removeChild(el.firstChild);
+            }
+            
+            // イベントタイトル要素の作成
+            const titleElement = document.createElement("div");
+            titleElement.className = "event-title";
+            titleElement.textContent = title;
+            el.appendChild(titleElement);
+            
+            // 開始時間の表示（存在する場合）
+            if (startTime) {
+                const startTimeElement = document.createElement("div");
+                startTimeElement.className = "event-time";
+                startTimeElement.textContent = startTime;
+                el.appendChild(startTimeElement);
+            }
+            
+            // 終了時間の表示（存在する場合）
+            if (endTime) {
+                const endTimeElement = document.createElement("div");
+                endTimeElement.className = "event-time";
+                endTimeElement.textContent = endTime;
+                el.appendChild(endTimeElement);
+            }
         }
     });
     calendar.render();
