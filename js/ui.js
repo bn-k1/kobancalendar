@@ -18,8 +18,8 @@ function updateBaseDateSection(baseDates, currentBaseDate) {
     baseDateSelect.value = currentBaseDateStr;
 }
 
-// ラベルを更新
-function updateLabel(currentBaseDate) {
+// コントロールセクションを表示する
+function showControlSections(currentBaseDate) {
     if (currentBaseDate) {
         document.getElementById("baseDateSection").style.display = "block";
         document.getElementById("startNumberSection").style.display = "block";
@@ -28,26 +28,26 @@ function updateLabel(currentBaseDate) {
 }
 
 // スタート番号選択の初期化
-function initializeStartNumberSelection(maxScheduleCycle) {
-    let select = document.getElementById("startNumber");
-    select.innerHTML = ""; // 選択肢をクリア
+function initializeStartNumberSelection(rotationCycleLength) {
+    let startPositionSelect = document.getElementById("startNumber");
+    startPositionSelect.innerHTML = ""; // 選択肢をクリア
     
-    for (let i = 1; i <= maxScheduleCycle; i++) {
+    for (let i = 1; i <= rotationCycleLength; i++) {
         let option = document.createElement("option");
         option.value = i;
         option.text = i;
-        select.appendChild(option);
+        startPositionSelect.appendChild(option);
     }
 
-    let params = new URLSearchParams(window.location.search);
-    if (params.has("startNumber")) {
-        select.value = params.get("startNumber");
+    let urlParameters = new URLSearchParams(window.location.search);
+    if (urlParameters.has("startNumber")) {
+        startPositionSelect.value = urlParameters.get("startNumber");
     }
 }
 
 // エクスポート
 export {
     updateBaseDateSection,
-    updateLabel,
+    showControlSections,
     initializeStartNumberSelection
 };

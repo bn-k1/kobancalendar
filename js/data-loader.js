@@ -6,7 +6,7 @@ const SATURDAY_PATH = "./data/saturday.csv";
 const WEEKDAY_PATH = "./data/weekday.csv";
 const HOLIDAYS_API = "https://holidays-jp.github.io/api/v1/";
 
-let holidays = {};
+let allHolidays = {};
 
 // CSVデータの読み込み
 async function loadCSV(filePath) {
@@ -21,10 +21,10 @@ async function loadCSV(filePath) {
 }
 
 // 祝日データの取得
-async function loadHolidays(holidayYearsRange, customHolidays) {
+async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
     try {
         const currentYear = new Date().getFullYear();
-        holidays = {};
+        allHolidays = {};
         
         for (let year = currentYear - holidayYearsRange; year <= currentYear + holidayYearsRange; year++) {
             const cacheKey = `hldys_${year}`;
@@ -32,7 +32,7 @@ async function loadHolidays(holidayYearsRange, customHolidays) {
             
             if (cachedData) {
                 const yearHolidays = JSON.parse(cachedData);
-                holidays = { ...holidays, ...yearHolidays };
+                allHolidays = { ...allHolidays, ...yearHolidays };
             } else {
                 const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
                 if (!response.ok) throw new Error(`祝日データの取得に失敗: ${year}`);
@@ -40,19 +40,19 @@ async function loadHolidays(holidayYearsRange, customHolidays) {
                 
                 localStorage.setItem(cacheKey, JSON.stringify(yearHolidays));
                 
-                holidays = { ...holidays, ...yearHolidays };
+                allHolidays = { ...allHolidays, ...yearHolidays };
             }
         }
         
-        customHolidays.forEach(date => {
+        userDefinedHolidays.forEach(date => {
             let [month, day] = date.split("/");
             for (let year = currentYear - holidayYearsRange; year <= currentYear + holidayYearsRange; year++) {
                 let formattedDate = `${year}-${month}-${day}`;
-                holidays[formattedDate] = "customholiday";
+                allHolidays[formattedDate] = "customholiday";
             }
         });
         
-        return holidays;
+        return allHolidays;
     } catch (error) {
         console.error(error.message);
         return {};
@@ -62,24 +62,24 @@ async function loadHolidays(holidayYearsRange, customHolidays) {
 // スケジュールデータの読み込み
 async function loadScheduleData() {
     try {
-        const [holiday, saturday, weekday] = await Promise.all([
+        const [holidayData, saturdayData, weekdayData] = await Promise.all([
             loadCSV(HOLIDAY_PATH),
             loadCSV(SATURDAY_PATH),
             loadCSV(WEEKDAY_PATH)
         ]);
         
-        const holidayLength = holiday.length;
-        if (holidayLength !== saturday.length || holidayLength !== weekday.length) {
+        const holidayLength = holidayData.length;
+        if (holidayLength !== saturdayData.length || holidayLength !== weekdayData.length) {
             throw new Error("CSVファイルの行数が一致しません");
         }
         
-        const MAX_SCHEDULE_CYCLE = holidayLength;
+        const rotationCycleLength = holidayLength;
         
         return {
-            holiday,
-            saturday,
-            weekday,
-            MAX_SCHEDULE_CYCLE
+            holiday: holidayData,
+            saturday: saturdayData,
+            weekday: weekdayData,
+            rotationCycleLength
         };
     } catch (error) {
         console.error(error.message);
@@ -90,7 +90,7 @@ async function loadScheduleData() {
 // 特定の日が祝日かどうか判定
 function isHoliday(date) {
     const dateStr = date.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "-");
-    return holidays[dateStr] !== undefined || date.getDay() === 0;
+    return allHolidays[dateStr] !== undefined || date.getDay() === 0;
 }
 
 // エクスポート
@@ -98,5 +98,5 @@ export {
     loadScheduleData,
     loadHolidays,
     isHoliday,
-    holidays
+    allHolidays
 };

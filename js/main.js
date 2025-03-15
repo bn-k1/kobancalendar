@@ -5,9 +5,9 @@ import {
     loadEventConfig, 
     updateCurrentBaseDate, 
     updateURLParams, 
-    BASE_DATES, 
-    CURRENT_BASE_DATE, 
-    LAST_BASE_DATE 
+    baseDates, 
+    currentBaseDate, 
+    lastBaseDate 
 } from './config.js';
 
 import { 
@@ -24,17 +24,17 @@ import {
 
 import { 
     updateBaseDateSection, 
-    updateLabel, 
+    showControlSections, 
     initializeStartNumberSelection 
 } from './ui.js';
 
 // グローバル設定変数
-let configData;
-let scheduleData;
+let appConfig;
+let shiftData;
 
 // カレンダー更新用のコールバック関数
 function handleCalendarUpdate() {
-    updateCalendar(CURRENT_BASE_DATE, LAST_BASE_DATE);
+    updateCalendar(currentBaseDate, lastBaseDate);
 }
 
 // 基準日の変更時の処理
@@ -44,10 +44,10 @@ function handleBaseDateChange() {
     updateURLAndGenerateSchedule();
 }
 
-// URLの更新
+// URLの更新とスケジュール生成
 function updateURLAndGenerateSchedule() {
     const startNumber = document.getElementById("startNumber").value;
-    updateURLParams(CURRENT_BASE_DATE, startNumber);
+    updateURLParams(currentBaseDate, startNumber);
     handleCalendarUpdate();
 }
 
@@ -55,7 +55,7 @@ function updateURLAndGenerateSchedule() {
 function handleExportCSV() {
     const months = parseInt(document.getElementById("exportMonths").value);
     const startNumber = parseInt(document.getElementById("startNumber").value);
-    exportCSV(months, startNumber, CURRENT_BASE_DATE, LAST_BASE_DATE);
+    exportCSV(months, startNumber, currentBaseDate, lastBaseDate);
 }
 
 // イベントリスナーの設定
@@ -68,22 +68,24 @@ function setupEventListeners() {
 async function initializeApp() {
     try {
         // 設定とイベントのロード（まとめて処理）
-        const [configData, eventConfig] = await Promise.all([
+        const [configResult, eventConfig] = await Promise.all([
             loadConfig(),
             loadEventConfig()
         ]);
+        
+        appConfig = configResult;
 
         // スケジュールデータの読み込み
-        const scheduleData = await loadScheduleData();
-        setScheduleData(scheduleData);
+        shiftData = await loadScheduleData();
+        setScheduleData(shiftData);
 
         // 祝日データのロード
-        await loadHolidays(configData.HOLIDAY_YEARS_RANGE, configData.customHolidays);
+        await loadHolidays(appConfig.holidayYearsRange, appConfig.userDefinedHolidays);
 
         // UIの初期化
-        updateBaseDateSection(BASE_DATES, CURRENT_BASE_DATE);
-        updateLabel(CURRENT_BASE_DATE);
-        initializeStartNumberSelection(scheduleData.MAX_SCHEDULE_CYCLE);
+        updateBaseDateSection(baseDates, currentBaseDate);
+        showControlSections(currentBaseDate);
+        initializeStartNumberSelection(shiftData.rotationCycleLength);
         initializeCalendar(handleCalendarUpdate);
 
         // イベントリスナーの設定
