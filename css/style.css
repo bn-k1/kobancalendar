@@ -190,22 +190,29 @@ footer {
 
 /* レスポンシブ対応 */
 @media screen and (max-width: 768px) {
-  .fc-toolbar {
-    flex-direction: column;
-    gap: var(--spacing-small);
+  /* ツールバー全体のレイアウト調整 */
+  .fc .fc-toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
   }
   
-  .fc-toolbar-chunk {
-    margin: var(--spacing-small) 0;
-    width: 100%;
-    justify-content: center;
+  /* タイトル（年月）を左詰めに */
+  .fc .fc-toolbar-title {
+    text-align: left;
+    margin-right: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
-  /* 順序の入れ替え - タイトルを最初に */
-  .fc-toolbar-chunk:nth-child(2) {
-    order: -1;
+  /* ボタングループ（today、左右矢印）を右詰めに */
+  .fc .fc-toolbar-chunk:last-child {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
   }
-}
 
   .controls {
     flex-direction: column;
