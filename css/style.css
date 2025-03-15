@@ -1,18 +1,18 @@
 :root {
-  --primary-color: #3f51b5; /* インディゴ - メインカラー */
-  --primary-light: #757de8; /* 明るいインディゴ */
-  --primary-dark: #002984; /* 暗いインディゴ */
-  --accent-color: #ff6e40; /* ディープオレンジ - アクセントカラー */
-  --error-color: #f44336; /* レッド - エラー/アラートカラー */
-  --success-color: #4caf50; /* グリーン - 成功カラー */
-  --warning-color: #ffab40; /* オレンジ - 警告カラー */
-  --gray-color: #78909c; /* ブルーグレー - 中立色 */
-  --gray-light: #b0bec5; /* 明るいブルーグレー */
-  --text-color: #263238; /* 深いブルーグレー - 主要テキスト */
-  --text-light: #ffffff; /* 白 - 明るい背景上のテキスト */
-  --background-light: #ffffff; /* 白 - 明るい背景 */
-  --saturday-color: #bbdefb; /* 明るいブルー - 土曜日背景 */
-  --holiday-color: #ffcdd2; /* 明るいレッド - 休日背景 */
+  --primary-color: #3f51b5;
+  --primary-light: #757de8;
+  --primary-dark: #002984;
+  --accent-color: #ff6e40;
+  --error-color: #f44336;
+  --success-color: #4caf50;
+  --warning-color: #ffab40;
+  --gray-color: #78909c;
+  --gray-light: #b0bec5;
+  --text-color: #263238;
+  --text-light: #ffffff;
+  --background-light: #ffffff;
+  --saturday-color: #bbdefb;
+  --holiday-color: #ffcdd2;
   --border-radius: 4px;
   --spacing-small: 5px;
   --spacing-medium: 10px;
