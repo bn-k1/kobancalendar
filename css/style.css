@@ -189,7 +189,7 @@ footer {
 }
 
 /* レスポンシブ対応 */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 480px) {
   /* ツールバー全体のレイアウト調整 */
   .fc .fc-toolbar {
     display: flex;
