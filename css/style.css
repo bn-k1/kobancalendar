@@ -1,52 +1,197 @@
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
+:root {
+  --primary-color: #3f51b5; /* インディゴ - メインカラー */
+  --primary-light: #757de8; /* 明るいインディゴ */
+  --primary-dark: #002984; /* 暗いインディゴ */
+  --accent-color: #ff6e40; /* ディープオレンジ - アクセントカラー */
+  --error-color: #f44336; /* レッド - エラー/アラートカラー */
+  --success-color: #4caf50; /* グリーン - 成功カラー */
+  --warning-color: #ffab40; /* オレンジ - 警告カラー */
+  --gray-color: #78909c; /* ブルーグレー - 中立色 */
+  --gray-light: #b0bec5; /* 明るいブルーグレー */
+  --text-color: #263238; /* 深いブルーグレー - 主要テキスト */
+  --text-light: #ffffff; /* 白 - 明るい背景上のテキスト */
+  --background-light: #ffffff; /* 白 - 明るい背景 */
+  --saturday-color: #bbdefb; /* 明るいブルー - 土曜日背景 */
+  --holiday-color: #ffcdd2; /* 明るいレッド - 休日背景 */
+  --border-radius: 4px;
+  --spacing-small: 5px;
+  --spacing-medium: 10px;
+  --spacing-large: 20px;
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#calendar {
-    max-width: 100%;
-    width: 100%;
-    margin: 10px auto;
-    overflow-x: hidden;
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  color: var(--text-color);
+  background-color: var(--background-light);
+}
+
+header {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: var(--spacing-medium);
+  margin-bottom: var(--spacing-large);
+  box-shadow: var(--box-shadow);
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-medium);
+}
+
+/* コントロールスタイル */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-medium);
+  margin-bottom: var(--spacing-large);
+}
+
+.control-group {
+  border: 1px solid var(--gray-light);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-medium);
+  min-width: 200px;
+  background-color: #fafafa;
+  box-shadow: var(--box-shadow);
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-small);
+}
+
+legend {
+  color: var(--primary-color);
+  font-weight: bold;
+  padding: 0 var(--spacing-small);
 }
 
 select {
-    padding: 5px;
-    margin-bottom: 10px;
+  padding: var(--spacing-small);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--border-radius);
+  background-color: var(--background-light);
+  color: var(--text-color);
+}
+
+button {
+  padding: var(--spacing-small) var(--spacing-medium);
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: var(--box-shadow);
+}
+
+button:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:focus {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
 }
 
 .hidden {
-display: none;
+  display: none;
 }
- 
+
+/* カレンダースタイル */
+#calendar {
+  max-width: 100%;
+  width: 100%;
+  margin: var(--spacing-medium) auto;
+  overflow-x: hidden;
+  background-color: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
 .fc-daygrid-event .fc-event-title {
-    font-weight: bold;
-    color: white;
-    white-space: pre-line;
+  font-weight: bold;
+  color: white;
+  white-space: pre-line;
 }
 
 .event-title {
-    color: white;
-    font-weight: bold;
-    font-size: 1.0em;
+  color: white;
+  font-weight: bold;
+  font-size: 1em;
 }
 
 .event-time {
-    color: black;
-    font-size: 1.0em;
-}
-
-.day-off {
-    background-color: #d9534f;
-    color: white;
+  color: var(--text-color);
+  font-size: 0.9em;
 }
 
 .fc-day-sat {
-    background-color: #ADD8E6;
+  background-color: var(--saturday-color);
 }
 
 .fc-day-sun,
 .holiday {
-    background-color: #FFCCCC;
+  background-color: var(--holiday-color);
 }
 
+.help-text {
+  margin-top: var(--spacing-medium);
+  font-size: 0.9em;
+  color: var(--gray-color);
+  text-align: left;
+}
+
+.help-text a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.help-text a:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+footer {
+  margin-top: var(--spacing-large);
+  padding: var(--spacing-medium);
+  background-color: var(--primary-dark);
+  color: var(--text-light);
+}
+
+/* レスポンシブ対応 */
+@media screen and (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .control-group {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .form-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  select, button {
+    width: 100%;
+    margin-top: var(--spacing-small);
+  }
+}

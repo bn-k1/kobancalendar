@@ -3,46 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KobanCalendar</title>
+  <meta name="description" content="交番表に基づいた勤務スケジュールを自動生成・管理するためのツール">
+  <title>KobanCalendar - 交番カレンダー</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <script src="lib/fullcalendar/index.global.min.js"></script>
 </head>
 <body>
-  <h1>交番カレンダー</h1>
+  <header>
+    <h1>交番カレンダー</h1>
+  </header>
   
-  <div id="baseDateSection" class="hidden">
-    <label for="baseDate">基準日:</label>
-    <select id="baseDate"></select>
-  </div>
+  <main>
+    <div class="controls">
+      <fieldset id="baseDateSection" class="control-group hidden">
+        <legend>基準日</legend>
+        <div class="form-group">
+          <select id="baseDate" aria-label="基準日を選択"></select>
+        </div>
+      </fieldset>
+      
+      <fieldset id="startNumberSection" class="control-group hidden">
+        <legend>コマ位置</legend>
+        <div class="form-group">
+          <select id="startNumber" aria-label="コマ位置を選択"></select>
+        </div>
+      </fieldset>
+    </div>
+    
+    <div id="calendar" aria-label="勤務スケジュールカレンダー"></div>
+    
+    <fieldset id="exportSection" class="control-group hidden">
+      <legend>エクスポート</legend>
+      <div class="form-group">
+        <select id="exportMonths" aria-label="エクスポート期間を選択">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="12">12</option>
+          <option value="24">24</option>
+        </select>
+	<span>
+	  ヶ月分を
+	</span>
+        <button id="exportButton" aria-label="CSVをダウンロード">ダウンロード</button>
+      </div>
+      <div class="help-text">
+        <a href="https://support.google.com/calendar/answer/37118" target="_blank" rel="noopener noreferrer" aria-label="Googleカレンダーのインポート方法を外部サイトで確認">Googleカレンダーにインポートする方法</a>
+      </div>
+    </fieldset>
+  </main>
   
-  <div id="startNumberSection" class="hidden">
-    <label for="startNumber">コマ位置:</label>
-    <select id="startNumber"></select>
-  </div>
-  
-  <br><br>
-  <div id="calendar"></div>
-  <br>
-  
-  <div id="exportSection" class="hidden">
-    <label for="exportMonths">.csvファイル</label>
-    <select id="exportMonths">
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="6">6</option>
-      <option value="12">12</option>
-      <option value="24">24</option>
-    </select>
-    <span>ヶ月分を</span>
-    <button id="exportButton">ダウンロード</button>
-    <br>
-    <a href="https://support.google.com/calendar/answer/37118" target="_blank" rel="noopener noreferrer">Googleカレンダーにインポートする方法</a>
-  </div>
+  <footer>
+    <p>KobanCalendar © 2025</p>
+  </footer>
   
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
-
