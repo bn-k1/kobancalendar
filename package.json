@@ -7,10 +7,10 @@
     "lib": "lib"
   },
   "scripts": {
-  "start": "webpack serve --open",
-  "build": "webpack --mode=production",
-  "dev": "webpack --mode=development --watch",
-  "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack serve --open",
+    "build": "webpack --mode=production",
+    "dev": "webpack --mode=development --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,7 @@
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/daygrid": "^6.1.15",
-    "@fullcalendar/interaction": "^6.1.15"
+    "@fullcalendar/interaction": "^6.1.15",
+    "japanese-holidays": "^1.0.10"
   }
 }
