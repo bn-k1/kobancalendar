@@ -8,22 +8,22 @@ function updateBaseDateSection(baseDates, currentBaseDate) {
 
   baseDates.forEach((date) => {
     const option = document.createElement("option");
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = date.format("YYYY-MM-DD");
     option.value = dateStr;
     option.text = dateStr;
     baseDateSelect.appendChild(option);
   });
 
-  const currentBaseDateStr = currentBaseDate.toISOString().split("T")[0];
+  const currentBaseDateStr = currentBaseDate.format("YYYY-MM-DD");
   baseDateSelect.value = currentBaseDateStr;
 }
 
 // コントロールセクションを表示する
 function showControlSections(currentBaseDate) {
   if (currentBaseDate) {
-    document.getElementById("baseDateSection").style.display = "block";
-    document.getElementById("startNumberSection").style.display = "block";
-    document.getElementById("exportSection").style.display = "block";
+    document.getElementById("baseDateSection").classList.remove("hidden");
+    document.getElementById("startNumberSection").classList.remove("hidden");
+    document.getElementById("exportSection").classList.remove("hidden");
   }
 }
 

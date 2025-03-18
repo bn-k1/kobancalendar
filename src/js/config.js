@@ -1,5 +1,15 @@
 // config.js - 設定関連の機能を提供するモジュール
 
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+
+// Day.jsプラグインの設定
+dayjs.extend(customParseFormat);
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
+
 // 定数定義
 const CONFIG_PATH = "./config/config.json";
 const EVENT_CONFIG_PATH = "./config/event.json";
@@ -21,18 +31,18 @@ async function loadConfig() {
 
     if (config.base_dates) {
       baseDates = config.base_dates
-        .map((dateStr) => new Date(dateStr))
-        .sort((a, b) => a - b);
+        .map((dateStr) => dayjs(dateStr))
+        .sort((a, b) => a.unix() - b.unix());
     } else if (config.base_date) {
-      baseDates = [new Date(config.base_date)];
+      baseDates = [dayjs(config.base_date)];
     } else {
       throw new Error("基準日が設定されていません");
     }
 
     const urlParameters = new URLSearchParams(window.location.search);
     if (urlParameters.has("baseDate")) {
-      currentBaseDate = new Date(urlParameters.get("baseDate"));
-      if (isNaN(currentBaseDate.getTime())) {
+      currentBaseDate = dayjs(urlParameters.get("baseDate"));
+      if (!currentBaseDate.isValid()) {
         currentBaseDate = baseDates[0];
       }
     } else {
@@ -89,7 +99,7 @@ function updateCurrentBaseDate(newBaseDate) {
 
 // URLのクエリパラメータを更新
 function updateURLParams(baseDate, startNumber) {
-  const baseDateStr = baseDate.toISOString().split("T")[0];
+  const baseDateStr = baseDate.format("YYYY-MM-DD");
   window.history.pushState(
     {},
     "",

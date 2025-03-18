@@ -1,13 +1,12 @@
 // schedule.js - スケジュール計算とカレンダー表示に関連する機能を提供
 
-import { Calendar } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import { Calendar } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import dayjs from "dayjs";
 
 import { getEventType } from "./config.js";
 import { isHoliday, allHolidays } from "./data-loader.js";
-
-const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
 
 let calendar;
 let scheduleData = {
@@ -68,17 +67,6 @@ function initializeCalendar(updateCallback) {
   return calendar;
 }
 
-// 日付を統一形式で文字列に変換する共通関数
-function formatDateToString(date) {
-  return date
-    .toLocaleDateString("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    })
-    .replace(/\//g, "-");
-}
-
 // 任意の日付とコマ位置から勤務内容を返す
 function getScheduleForDate(
   targetDate,
@@ -86,15 +74,15 @@ function getScheduleForDate(
   currentBaseDate,
   lastBaseDate,
 ) {
-  const dateStr = formatDateToString(targetDate);
+  const dateStr = targetDate.format("YYYY-MM-DD");
   const isHolidayFlag = isHoliday(targetDate);
-  const isSaturday = targetDate.getDay() === 6;
-  const formattedCurrentBaseDate = formatDateToString(currentBaseDate);
-  const formattedLastBaseDate = formatDateToString(lastBaseDate);
+  const isSaturday = targetDate.day() === 6; // day()は0が日曜、6が土曜
+  const formattedCurrentBaseDate = currentBaseDate.format("YYYY-MM-DD");
+  const formattedLastBaseDate = lastBaseDate.format("YYYY-MM-DD");
 
   // 日付が基準範囲外の場合
   if (
-    (currentBaseDate.getTime() !== lastBaseDate.getTime() &&
+    (currentBaseDate.unix() !== lastBaseDate.unix() &&
       dateStr >= formattedLastBaseDate) ||
     dateStr < formattedCurrentBaseDate
   ) {
@@ -109,11 +97,11 @@ function getScheduleForDate(
   }
 
   // 日付差分から勤務位置を計算
-  const daysDifference = Math.floor(
-    (targetDate - currentBaseDate) / MILLISECONDS_PER_DAY,
-  );
+  const daysDifference = targetDate.diff(currentBaseDate, "day");
+  const adjustedStartPosition = startPosition - 1; //これしかない
   const shiftIndex =
-    (((startPosition + daysDifference) % scheduleData.rotationCycleLength) +
+    (((adjustedStartPosition + daysDifference) %
+      scheduleData.rotationCycleLength) +
       scheduleData.rotationCycleLength) %
     scheduleData.rotationCycleLength;
 
@@ -151,26 +139,25 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
     return;
 
   const startPosition = parseInt(document.getElementById("startNumber").value);
-  const viewStartDate = calendar.view.activeStart;
-  const viewEndDate = calendar.view.activeEnd;
+  const viewStartDate = dayjs(calendar.view.activeStart);
+  const viewEndDate = dayjs(calendar.view.activeEnd);
   const calendarEvents = [];
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = dayjs().startOf("day");
 
   // 表示範囲の日付を順に処理
-  for (
-    let currentDate = new Date(viewStartDate);
-    currentDate < viewEndDate;
-    currentDate.setDate(currentDate.getDate() + 1)
-  ) {
+  let currentDate = viewStartDate;
+  while (currentDate.isBefore(viewEndDate)) {
     const scheduleInfo = getScheduleForDate(
       currentDate,
       startPosition,
       currentBaseDate,
       lastBaseDate,
     );
-    if (!scheduleInfo) continue;
+    if (!scheduleInfo) {
+      currentDate = currentDate.add(1, "day");
+      continue;
+    }
 
     const {
       dateStr,
@@ -181,22 +168,19 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
       isSaturday,
     } = scheduleInfo;
 
-    const dateWithZeroTime = new Date(currentDate);
-    dateWithZeroTime.setHours(0, 0, 0, 0);
-
     // カレンダーセルのスタイル設定
     const calendarCell = document.querySelector(`[data-date='${dateStr}']`);
     if (calendarCell) {
       calendarCell.classList.remove("holiday", "fc-day-sat", "fc-day-sun");
 
-      if (dateWithZeroTime.getTime() !== today.getTime()) {
+      if (!currentDate.isSame(today, "day")) {
         if (isHolidayFlag) {
           calendarCell.classList.add("holiday");
         }
         if (isSaturday) {
           calendarCell.classList.add("fc-day-sat");
         }
-        if (currentDate.getDay() === 0) {
+        if (currentDate.day() === 0) {
           calendarCell.classList.add("fc-day-sun");
         }
       }
@@ -211,6 +195,8 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
       start: dateStr,
       color: config.color,
     });
+
+    currentDate = currentDate.add(1, "day");
   }
   calendar.removeAllEvents();
   calendar.addEventSource(calendarEvents);
@@ -218,32 +204,31 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
 
 // CSVエクスポート機能
 function exportCSV(months, startPosition, currentBaseDate, lastBaseDate) {
-  const startDate = new Date();
-  startDate.setHours(0, 0, 0, 0);
-
-  const endDate = new Date(startDate);
-  endDate.setMonth(startDate.getMonth() + months);
+  const startDate = dayjs().startOf("day");
+  const endDate = startDate.add(months, "month");
 
   let csvContent = "Subject,Start Date,Start Time,End Time\n";
 
   // 日付範囲を順に処理
-  for (
-    let currentDate = new Date(startDate);
-    currentDate < endDate;
-    currentDate.setDate(currentDate.getDate() + 1)
-  ) {
+  let currentDate = startDate;
+  while (currentDate.isBefore(endDate)) {
     const scheduleInfo = getScheduleForDate(
       currentDate,
       startPosition,
       currentBaseDate,
       lastBaseDate,
     );
-    if (!scheduleInfo) continue;
+    if (!scheduleInfo) {
+      currentDate = currentDate.add(1, "day");
+      continue;
+    }
 
     const { subject, startTime, endTime } = scheduleInfo;
-    const formattedDate = `${currentDate.getFullYear()}/${(currentDate.getMonth() + 1).toString().padStart(2, "0")}/${currentDate.getDate().toString().padStart(2, "0")}`;
+    const formattedDate = currentDate.format("YYYY/MM/DD");
 
     csvContent += `${subject},${formattedDate},${startTime},${endTime}\n`;
+
+    currentDate = currentDate.add(1, "day");
   }
 
   // CSVファイルのダウンロード
@@ -252,7 +237,7 @@ function exportCSV(months, startPosition, currentBaseDate, lastBaseDate) {
 
   const url = window.URL.createObjectURL(blob);
   const downloadLink = document.createElement("a");
-  const currentDateStr = new Date().toISOString().split("T")[0];
+  const currentDateStr = dayjs().format("YYYY-MM-DD");
   downloadLink.href = url;
   downloadLink.download = `schedule_${currentDateStr}.csv`;
   document.body.appendChild(downloadLink);

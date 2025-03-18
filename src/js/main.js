@@ -1,6 +1,7 @@
 // main.js - アプリケーションのエントリーポイント
 
-import '../css/style.css';
+import "../css/style.css";
+import dayjs from "dayjs";
 
 import {
   loadConfig,
@@ -39,7 +40,7 @@ function handleCalendarUpdate() {
 // 基準日の変更時の処理
 function handleBaseDateChange() {
   const baseDateSelect = document.getElementById("baseDate");
-  updateCurrentBaseDate(new Date(baseDateSelect.value));
+  updateCurrentBaseDate(dayjs(baseDateSelect.value));
   updateURLAndGenerateSchedule();
 }
 
