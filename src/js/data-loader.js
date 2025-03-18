@@ -1,10 +1,11 @@
 // data-loader.js - データの読み込みを担当するモジュール
 
+import JapaneseHolidays from 'japanese-holidays';
+
 // 定数定義
 const HOLIDAY_PATH = "./data/holiday.csv";
 const SATURDAY_PATH = "./data/saturday.csv";
 const WEEKDAY_PATH = "./data/weekday.csv";
-const HOLIDAYS_API = "https://holidays-jp.github.io/api/v1/";
 
 let allHolidays = {};
 
@@ -20,34 +21,33 @@ async function loadCSV(filePath) {
   }
 }
 
-// 祝日データの取得
+// 祝日データの取得（japanese-holidaysを使用）
 async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
   try {
     const currentYear = new Date().getFullYear();
     allHolidays = {};
 
+    // 指定された年範囲の祝日を取得
     for (
       let year = currentYear - holidayYearsRange;
       year <= currentYear + holidayYearsRange;
       year++
     ) {
-      const cacheKey = `hldys_${year}`;
-      const cachedData = localStorage.getItem(cacheKey);
-
-      if (cachedData) {
-        const yearHolidays = JSON.parse(cachedData);
-        allHolidays = { ...allHolidays, ...yearHolidays };
-      } else {
-        const response = await fetch(`${HOLIDAYS_API}${year}/date.json`);
-        if (!response.ok) throw new Error(`祝日データの取得に失敗: ${year}`);
-        const yearHolidays = await response.json();
-
-        localStorage.setItem(cacheKey, JSON.stringify(yearHolidays));
-
-        allHolidays = { ...allHolidays, ...yearHolidays };
+      // その年の1月1日から12月31日まで
+      const startDate = new Date(year, 0, 1);
+      const endDate = new Date(year, 11, 31);
+      
+      // 日付を1日ずつ進めながら祝日かチェック
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const holidayName = JapaneseHolidays.isHoliday(d);
+        if (holidayName) {
+	  const dateStr = d.toISOString().split('T')[0];
+          allHolidays[dateStr] = holidayName;
+        }
       }
     }
 
+    // ユーザー定義の祝日を追加
     userDefinedHolidays.forEach((date) => {
       let [month, day] = date.split("/");
       for (
@@ -55,14 +55,14 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
         year <= currentYear + holidayYearsRange;
         year++
       ) {
-        let formattedDate = `${year}-${month}-${day}`;
+        let formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         allHolidays[formattedDate] = "customholiday";
       }
     });
 
     return allHolidays;
   } catch (error) {
-    console.error(error.message);
+    console.error("祝日データの取得に失敗しました:", error);
     return {};
   }
 }
@@ -100,15 +100,10 @@ async function loadScheduleData() {
 
 // 特定の日が祝日かどうか判定
 function isHoliday(date) {
-  const dateStr = date
-    .toLocaleDateString("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    })
-    .replace(/\//g, "-");
+  const dateStr = date.toISOString().split('T')[0];
   return allHolidays[dateStr] !== undefined || date.getDay() === 0;
 }
 
 // エクスポート
 export { loadScheduleData, loadHolidays, isHoliday, allHolidays };
+
