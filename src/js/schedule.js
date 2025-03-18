@@ -1,5 +1,9 @@
 // schedule.js - スケジュール計算とカレンダー表示に関連する機能を提供
 
+import { Calendar } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+
 import { getEventType } from "./config.js";
 import { isHoliday, allHolidays } from "./data-loader.js";
 
@@ -21,7 +25,8 @@ function setScheduleData(shiftData) {
 // カレンダーの初期化
 function initializeCalendar(updateCallback) {
   let calendarElement = document.getElementById("calendar");
-  calendar = new FullCalendar.Calendar(calendarElement, {
+  calendar = new Calendar(calendarElement, {
+    plugins: [dayGridPlugin, interactionPlugin],
     initialView: "dayGridMonth",
     locale: "ja",
     events: [],

@@ -1,5 +1,7 @@
 // main.js - アプリケーションのエントリーポイント
 
+import '../css/style.css';
+
 import {
   loadConfig,
   loadEventConfig,
