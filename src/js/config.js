@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import { memoize } from "lodash";
 
 // Day.jsプラグインの設定
 dayjs.extend(customParseFormat);
@@ -81,8 +82,8 @@ async function loadEventConfig() {
   }
 }
 
-// イベントの種類を判定
-function getEventType(subject) {
+// イベントの種類を判定 - 元の実装
+function _getEventType(subject) {
   for (const [type, config] of Object.entries(eventSettings.specialEvents)) {
     if (config.keywords.some((keyword) => subject.includes(keyword))) {
       return { type, config };
@@ -90,6 +91,9 @@ function getEventType(subject) {
   }
   return { type: "default", config: eventSettings.defaultEvent };
 }
+
+// memoizeを使用してパフォーマンスを向上
+const getEventType = memoize(_getEventType);
 
 // 基準日を更新する
 function updateCurrentBaseDate(newBaseDate) {

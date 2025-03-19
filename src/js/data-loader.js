@@ -2,6 +2,7 @@
 
 import dayjs from "dayjs";
 import JapaneseHolidays from "japanese-holidays";
+import { memoize } from "lodash";
 
 // 定数定義
 const HOLIDAY_PATH = "./data/holiday.csv";
@@ -102,11 +103,18 @@ async function loadScheduleData() {
   }
 }
 
-// 特定の日が祝日かどうか判定
-function isHoliday(date) {
+// 特定の日が祝日かどうか判定 - 元の実装
+function _isHoliday(date) {
   const dateStr = date.format("YYYY-MM-DD");
   return allHolidays[dateStr] !== undefined || date.day() === 0; // day()は0が日曜
 }
+
+// memoizeを使用してパフォーマンスを向上
+// dayjs オブジェクトをキーとして扱えるよう、日付文字列に変換してからmemoize
+const isHoliday = memoize(
+  (date) => _isHoliday(date),
+  (date) => date.format("YYYY-MM-DD"),
+);
 
 // エクスポート
 export { loadScheduleData, loadHolidays, isHoliday, allHolidays };

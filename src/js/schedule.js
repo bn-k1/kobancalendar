@@ -4,6 +4,7 @@ import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import dayjs from "dayjs";
+import { memoize } from "lodash";
 
 import { getEventType } from "./config.js";
 import { isHoliday, allHolidays } from "./data-loader.js";
@@ -19,6 +20,8 @@ let scheduleData = {
 // スケジュールデータの設定
 function setScheduleData(shiftData) {
   scheduleData = shiftData;
+  // データが変更されたのでメモ化関数のキャッシュをクリア
+  getScheduleForDate.cache.clear();
 }
 
 // カレンダーの初期化
@@ -67,8 +70,8 @@ function initializeCalendar(updateCallback) {
   return calendar;
 }
 
-// 任意の日付とコマ位置から勤務内容を返す
-function getScheduleForDate(
+// 任意の日付とコマ位置から勤務内容を返す - 元の実装
+function _getScheduleForDate(
   targetDate,
   startPosition,
   currentBaseDate,
@@ -127,6 +130,17 @@ function getScheduleForDate(
     isSaturday,
   };
 }
+
+// memoizeを使用してパフォーマンスを向上
+// カスタムリゾルバを使用して複数のパラメータから一意のキーを生成
+const getScheduleForDate = memoize(
+  _getScheduleForDate,
+  (targetDate, startPosition, currentBaseDate, lastBaseDate) => {
+    return `${targetDate.format("YYYY-MM-DD")}_${startPosition}_${currentBaseDate.format(
+      "YYYY-MM-DD",
+    )}_${lastBaseDate.format("YYYY-MM-DD")}`;
+  },
+);
 
 // カレンダーの更新
 function updateCalendar(currentBaseDate, lastBaseDate) {
