@@ -72,7 +72,9 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
         year++
       ) {
         let formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-        allHolidays[formattedDate] = "customholiday";
+	if (allHolidays[formattedDate] === undefined) {
+          allHolidays[formattedDate] = "customholiday";
+	}
       }
     });
 
