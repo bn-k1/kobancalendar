@@ -3,24 +3,35 @@
 import dayjs from "dayjs";
 import JapaneseHolidays from "japanese-holidays";
 import { memoize } from "lodash";
-
-// 定数定義
-const HOLIDAY_PATH = "./data/holiday.csv";
-const SATURDAY_PATH = "./data/saturday.csv";
-const WEEKDAY_PATH = "./data/weekday.csv";
+import holidayData from "@data/holiday.csv";
+import saturdayData from "@data/saturday.csv";
+import weekdayData from "@data/weekday.csv";
 
 let allHolidays = {};
 
-// CSVデータの読み込み
-async function loadCSV(filePath) {
-  try {
-    const response = await fetch(filePath);
-    if (!response.ok) throw new Error(`${filePath} の取得に失敗しました`);
-    return (await response.text()).trim().split("\n");
-  } catch (error) {
-    console.error(error.message);
-    return [];
+// CSV形式のデータを処理する
+function processCSVData(csvData) {
+  // csv-loaderによって配列形式で提供されるため、
+  // それをテキスト行の配列に変換する
+  if (Array.isArray(csvData)) {
+    return csvData.map((row) => {
+      // 配列の場合、各行を文字列に結合（元の形式と同じになるよう）
+      if (Array.isArray(row)) {
+        return row.join(",");
+      }
+      // オブジェクトの場合、値を取り出して結合
+      else if (typeof row === "object" && row !== null) {
+        return Object.values(row).join(",");
+      }
+      return String(row);
+    });
   }
+  // 既に文字列形式の場合は、行に分割
+  else if (typeof csvData === "string") {
+    return csvData.trim().split("\n");
+  }
+
+  return [];
 }
 
 // 祝日データの取得（japanese-holidaysを使用）
@@ -75,16 +86,15 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
 // スケジュールデータの読み込み
 async function loadScheduleData() {
   try {
-    const [holidayData, saturdayData, weekdayData] = await Promise.all([
-      loadCSV(HOLIDAY_PATH),
-      loadCSV(SATURDAY_PATH),
-      loadCSV(WEEKDAY_PATH),
-    ]);
+    // インポートしたCSVデータを処理
+    const processedHolidayData = processCSVData(holidayData);
+    const processedSaturdayData = processCSVData(saturdayData);
+    const processedWeekdayData = processCSVData(weekdayData);
 
-    const holidayLength = holidayData.length;
+    const holidayLength = processedHolidayData.length;
     if (
-      holidayLength !== saturdayData.length ||
-      holidayLength !== weekdayData.length
+      holidayLength !== processedSaturdayData.length ||
+      holidayLength !== processedWeekdayData.length
     ) {
       throw new Error("CSVファイルの行数が一致しません");
     }
@@ -92,9 +102,9 @@ async function loadScheduleData() {
     const rotationCycleLength = holidayLength;
 
     return {
-      holiday: holidayData,
-      saturday: saturdayData,
-      weekday: weekdayData,
+      holiday: processedHolidayData,
+      saturday: processedSaturdayData,
+      weekday: processedWeekdayData,
       rotationCycleLength,
     };
   } catch (error) {

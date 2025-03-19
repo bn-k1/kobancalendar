@@ -30,7 +30,26 @@ module.exports = {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
+      {
+        test: /\.csv$/,
+        use: [
+          {
+            loader: "csv-loader",
+            options: {
+              dynamicTyping: true,
+              header: false,
+              skipEmptyLines: true,
+            },
+          },
+        ],
+      },
     ],
+  },
+  resolve: {
+    alias: {
+      "@config": path.resolve(__dirname, "src/config"),
+      "@data": path.resolve(__dirname, "src/data"),
+    },
   },
   plugins: [
     new HtmlWebpackPlugin({

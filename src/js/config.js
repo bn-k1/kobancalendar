@@ -5,15 +5,13 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { memoize } from "lodash";
+import config from "@config/config.json";
+import eventConfig from "@config/event.json";
 
 // Day.jsプラグインの設定
 dayjs.extend(customParseFormat);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
-
-// 定数定義
-const CONFIG_PATH = "./config/config.json";
-const EVENT_CONFIG_PATH = "./config/event.json";
 
 // 設定情報を保持する変数
 let baseDates = [];
@@ -21,14 +19,13 @@ let currentBaseDate;
 let lastBaseDate;
 let holidayYearsRange;
 let userDefinedHolidays = [];
-let eventSettings;
 
 // 設定ファイルの読み込み
 async function loadConfig() {
   try {
-    const response = await fetch(CONFIG_PATH);
-    if (!response.ok) throw new Error("設定ファイルの取得に失敗しました");
-    const config = await response.json();
+    if (!config) {
+      throw new Error("設定ファイルの取得に失敗しました");
+    }
 
     if (config.base_dates) {
       baseDates = config.base_dates
@@ -71,11 +68,10 @@ async function loadConfig() {
 // イベント設定ファイルの読み込み
 async function loadEventConfig() {
   try {
-    const response = await fetch(EVENT_CONFIG_PATH);
-    if (!response.ok)
+    if (!eventConfig) {
       throw new Error("イベント設定ファイルの取得に失敗しました");
-    eventSettings = await response.json();
-    return eventSettings;
+    }
+    return eventConfig;
   } catch (error) {
     console.error(error.message);
     throw error;
@@ -84,12 +80,12 @@ async function loadEventConfig() {
 
 // イベントの種類を判定 - 元の実装
 function _getEventType(subject) {
-  for (const [type, config] of Object.entries(eventSettings.specialEvents)) {
+  for (const [type, config] of Object.entries(eventConfig.specialEvents)) {
     if (config.keywords.some((keyword) => subject.includes(keyword))) {
       return { type, config };
     }
   }
-  return { type: "default", config: eventSettings.defaultEvent };
+  return { type: "default", config: eventConfig.defaultEvent };
 }
 
 // memoizeを使用してパフォーマンスを向上
