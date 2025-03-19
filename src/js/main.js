@@ -74,10 +74,7 @@ function setupEventListeners() {
 async function initializeApp() {
   try {
     // 設定とイベントのロード（まとめて処理）
-    const [configResult, eventConfig] = await Promise.all([
-      loadConfig(),
-      loadEventConfig(),
-    ]);
+    const [configResult] = await Promise.all([loadConfig(), loadEventConfig()]);
 
     appConfig = configResult;
 

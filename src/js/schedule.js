@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import { memoize } from "lodash";
 
 import { getEventType } from "./config.js";
-import { isHoliday, allHolidays } from "./data-loader.js";
+import { isHoliday } from "./data-loader.js";
 
 let calendar;
 let scheduleData = {
