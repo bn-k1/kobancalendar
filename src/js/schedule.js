@@ -187,16 +187,17 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
     if (calendarCell) {
       calendarCell.classList.remove("holiday", "fc-day-sat", "fc-day-sun");
 
-      if (!currentDate.isSame(today, "day")) {
-        if (isHolidayFlag) {
-          calendarCell.classList.add("holiday");
-        }
-        if (isSaturday) {
-          calendarCell.classList.add("fc-day-sat");
-        }
-        if (currentDate.day() === 0) {
-          calendarCell.classList.add("fc-day-sun");
-        }
+      if (isHolidayFlag) {
+        calendarCell.classList.add("holiday");
+      }
+      if (isSaturday) {
+        calendarCell.classList.add("fc-day-sat");
+      }
+      if (currentDate.day() === 0) {
+        calendarCell.classList.add("fc-day-sun");
+      }
+      if (currentDate.isSame(today, "day")) {
+        calendarCell.classList.add("today-highlight");
       }
     }
 
