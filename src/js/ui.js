@@ -1,5 +1,7 @@
 // ui.js - ユーザーインターフェース関連の機能を提供
 
+import dayjs from "dayjs";
+
 // 基準日選択セクションを更新
 function updateBaseDateSection(baseDates, currentBaseDate) {
   const baseDateSelect = document.getElementById("baseDate");
@@ -16,6 +18,28 @@ function updateBaseDateSection(baseDates, currentBaseDate) {
 
   const currentBaseDateStr = currentBaseDate.format("YYYY-MM-DD");
   baseDateSelect.value = currentBaseDateStr;
+}
+
+function updateExportSectionLabel(currentBaseDate) {
+  const today = dayjs().startOf("day");
+  const exportLabelPostBaseDate = document.getElementById(
+    "exportLabelPostBaseDate",
+  );
+  const exportLabelPreBaseDate = document.getElementById(
+    "exportLabelPreBaseDate",
+  );
+
+  if (exportLabelPostBaseDate && exportLabelPreBaseDate) {
+    if (currentBaseDate.isAfter(today) || currentBaseDate.isSame(today)) {
+      // 基準日が今日以降の場合
+      exportLabelPostBaseDate.classList.add("hidden");
+      exportLabelPreBaseDate.classList.remove("hidden");
+    } else {
+      // 基準日が今日より前の場合
+      exportLabelPostBaseDate.classList.remove("hidden");
+      exportLabelPreBaseDate.classList.add("hidden");
+    }
+  }
 }
 
 // コントロールセクションを表示する
@@ -48,6 +72,7 @@ function initializeStartNumberSelection(rotationCycleLength) {
 // エクスポート
 export {
   updateBaseDateSection,
+  updateExportSectionLabel,
   showControlSections,
   initializeStartNumberSelection,
 };

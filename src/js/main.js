@@ -26,6 +26,7 @@ import {
   updateBaseDateSection,
   showControlSections,
   initializeStartNumberSelection,
+  updateExportSectionLabel,
 } from "./ui.js";
 
 // グローバル設定変数
@@ -37,10 +38,12 @@ function handleCalendarUpdate() {
   updateCalendar(currentBaseDate, lastBaseDate);
 }
 
-// 基準日の変更時の処理
+// 基準日の変更時の処理を更新
 function handleBaseDateChange() {
   const baseDateSelect = document.getElementById("baseDate");
-  updateCurrentBaseDate(dayjs(baseDateSelect.value));
+  const newBaseDate = dayjs(baseDateSelect.value);
+  updateCurrentBaseDate(newBaseDate);
+  updateExportSectionLabel(newBaseDate);
   updateURLAndGenerateSchedule();
 }
 

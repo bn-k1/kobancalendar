@@ -37,6 +37,8 @@
       <fieldset id="exportSection" class="control-group hidden">
         <legend>エクスポート</legend>
         <div class="form-group">
+          <span id="exportLabelPostBaseDate">今日から</span>
+          <span id="exportLabelPreBaseDate">基準日から</span>
           <select id="exportMonths" aria-label="エクスポート期間を選択">
             <option value="1">1</option>
             <option value="2">2</option>
@@ -47,7 +49,7 @@
             <option value="12">12</option>
             <option value="24">24</option>
           </select>
-          <span> ヶ月分を </span>
+          <span> ヶ月分のデータを</span>
           <button id="exportButton" aria-label="CSVをダウンロード">
             ダウンロード
           </button>

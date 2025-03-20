@@ -219,7 +219,13 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
 
 // CSVエクスポート機能
 function exportCSV(months, startPosition, currentBaseDate, lastBaseDate) {
-  const startDate = dayjs().startOf("day");
+  const today = dayjs().startOf("day");
+
+  const startDate =
+    currentBaseDate.isAfter(today) || currentBaseDate.isSame(today)
+      ? currentBaseDate.startOf("day")
+      : today;
+
   const endDate = startDate.add(months, "month");
 
   let csvContent = "Subject,Start Date,Start Time,End Time\n";
