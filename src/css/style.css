@@ -168,7 +168,7 @@ button:focus {
 }
 
 .today-highlight {
-  box-shadow: inset 0 0 0 3px var(--accent-color) !important;
+  box-shadow: inset 0 0 0 2px var(--accent-color) !important;
   position: relative;
   z-index: 1;
 }
