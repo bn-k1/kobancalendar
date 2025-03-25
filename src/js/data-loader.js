@@ -11,27 +11,7 @@ let allHolidays = {};
 
 // CSV形式のデータを処理する
 function processCSVData(csvData) {
-  // csv-loaderによって配列形式で提供されるため、
-  // それをテキスト行の配列に変換する
-  if (Array.isArray(csvData)) {
-    return csvData.map((row) => {
-      // 配列の場合、各行を文字列に結合（元の形式と同じになるよう）
-      if (Array.isArray(row)) {
-        return row.join(",");
-      }
-      // オブジェクトの場合、値を取り出して結合
-      else if (typeof row === "object" && row !== null) {
-        return Object.values(row).join(",");
-      }
-      return String(row);
-    });
-  }
-  // 既に文字列形式の場合は、行に分割
-  else if (typeof csvData === "string") {
-    return csvData.trim().split("\n");
-  }
-
-  return [];
+  return csvData.map((row) => row.join(","));
 }
 
 // 祝日データの取得（japanese-holidaysを使用）
@@ -46,21 +26,13 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
       year <= currentYear + holidayYearsRange;
       year++
     ) {
-      // その年の1月1日から12月31日まで
-      const startDate = dayjs(`${year}-01-01`);
-      const endDate = dayjs(`${year}-12-31`);
+      const holidays = JapaneseHolidays.getHolidaysOf(year);
 
-      // 日付を1日ずつ進めながら祝日かチェック
-      let currentDay = startDate;
-      while (currentDay.isSameOrBefore(endDate)) {
-        const jsDate = currentDay.toDate(); // japanese-holidaysはJavaScriptのDateオブジェクトを要求
-        const holidayName = JapaneseHolidays.isHoliday(jsDate);
-        if (holidayName) {
-          const dateStr = currentDay.format("YYYY-MM-DD");
-          allHolidays[dateStr] = holidayName;
-        }
-        currentDay = currentDay.add(1, "day");
-      }
+      holidays.forEach((holiday) => {
+        const dateObj = dayjs(holiday.date);
+        const dateStr = dateObj.format("YYYY-MM-DD");
+        allHolidays[dateStr] = holiday.name;
+      });
     }
 
     // ユーザー定義の祝日を追加
@@ -115,7 +87,7 @@ async function loadScheduleData() {
   }
 }
 
-// 特定の日が祝日かどうか判定 - 元の実装
+// 特定の日が祝日かどうか判定
 function _isHoliday(date) {
   const dateStr = date.format("YYYY-MM-DD");
   return allHolidays[dateStr] !== undefined || date.day() === 0; // day()は0が日曜

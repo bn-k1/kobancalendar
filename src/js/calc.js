@@ -11,14 +11,22 @@ let scheduleData = {
   rotationCycleLength: 0,
 };
 
+// メモリリーク防止のためのキャッシュサイズ上限
+const MAX_CACHE_SIZE = 1000;
+
 // スケジュールデータの設定
 function setScheduleData(shiftData) {
   scheduleData = shiftData;
   // データが変更されたのでメモ化関数のキャッシュをクリア
-  getScheduleForDate.cache.clear();
+  clearScheduleCache();
 }
 
-// 任意の日付とコマ位置から勤務内容を返す - 元の実装
+// キャッシュをクリアする関数
+function clearScheduleCache() {
+  scheduleCache.clear();
+}
+
+// 任意の日付とコマ位置から勤務内容を返す
 function _getScheduleForDate(
   targetDate,
   startPosition,
@@ -49,7 +57,7 @@ function _getScheduleForDate(
 
   // 日付差分から勤務位置を計算
   const daysDifference = targetDate.diff(currentBaseDate, "day");
-  const adjustedStartPosition = startPosition - 1; //これしかない
+  const adjustedStartPosition = startPosition - 1;
   const shiftIndex =
     (((adjustedStartPosition + daysDifference) %
       scheduleData.rotationCycleLength) +
@@ -79,16 +87,70 @@ function _getScheduleForDate(
   };
 }
 
-// memoizeを使用してパフォーマンスを向上
-// カスタムリゾルバを使用して複数のパラメータから一意のキーを生成
-const getScheduleForDate = memoize(
-  _getScheduleForDate,
-  (targetDate, startPosition, currentBaseDate, lastBaseDate) => {
-    return `${targetDate.format("YYYY-MM-DD")}_${startPosition}_${currentBaseDate.format(
-      "YYYY-MM-DD",
-    )}_${lastBaseDate.format("YYYY-MM-DD")}`;
-  },
-);
+// LRUキャッシュの実装
+class LRUCache {
+  constructor(maxSize = MAX_CACHE_SIZE) {
+    this.cache = new Map();
+    this.maxSize = maxSize;
+  }
+
+  get(key) {
+    if (!this.cache.has(key)) return undefined;
+
+    // アクセスしたエントリを最新として扱うために削除して再追加
+    const value = this.cache.get(key);
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
+  }
+
+  set(key, value) {
+    // すでにキーが存在する場合は更新
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+    // キャッシュサイズが上限に達している場合、最も古いエントリを削除
+    else if (this.cache.size >= this.maxSize) {
+      const oldestKey = this.cache.keys().next().value;
+      this.cache.delete(oldestKey);
+    }
+    this.cache.set(key, value);
+  }
+
+  clear() {
+    this.cache.clear();
+  }
+
+  has(key) {
+    return this.cache.has(key);
+  }
+}
+
+// カスタムメモ化関数の実装
+const scheduleCache = new LRUCache();
+
+function getScheduleForDate(
+  targetDate,
+  startPosition,
+  currentBaseDate,
+  lastBaseDate,
+) {
+  const key = `${targetDate.format("YYYY-MM-DD")}_${startPosition}_${currentBaseDate.format(
+    "YYYY-MM-DD",
+  )}_${lastBaseDate.format("YYYY-MM-DD")}`;
+
+  if (!scheduleCache.has(key)) {
+    const result = _getScheduleForDate(
+      targetDate,
+      startPosition,
+      currentBaseDate,
+      lastBaseDate,
+    );
+    scheduleCache.set(key, result);
+  }
+
+  return scheduleCache.get(key);
+}
 
 // 日付範囲のスケジュールデータを計算して返す
 function calculateScheduleRange(
@@ -125,4 +187,10 @@ function calculateScheduleRange(
 }
 
 // エクスポート
-export { setScheduleData, getScheduleForDate, calculateScheduleRange };
+export {
+  setScheduleData,
+  getScheduleForDate,
+  calculateScheduleRange,
+  clearScheduleCache,
+  MAX_CACHE_SIZE,
+};
