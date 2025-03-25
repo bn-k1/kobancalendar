@@ -65,7 +65,21 @@ function initializeStartNumberSelection(rotationCycleLength) {
 
   let urlParameters = new URLSearchParams(window.location.search);
   if (urlParameters.has("startNumber")) {
-    startPositionSelect.value = urlParameters.get("startNumber");
+    const startNumber = urlParameters.get("startNumber");
+    const startNumberInt = parseInt(startNumber);
+
+    if (
+      isNaN(startNumberInt) ||
+      startNumberInt < 1 ||
+      startNumberInt > rotationCycleLength
+    ) {
+      alert("無効なコマ位置です");
+      startPositionSelect.value = "1";
+    } else {
+      startPositionSelect.value = startNumberInt;
+    }
+  } else {
+    startPositionSelect.value = "1";
   }
 }
 

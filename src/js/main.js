@@ -8,6 +8,7 @@ import {
   loadEventConfig,
   updateCurrentBaseDate,
   updateURLParams,
+  isConfigLoaded,
   baseDates,
   currentBaseDate,
   lastBaseDate,
@@ -31,6 +32,12 @@ let shiftData;
 
 // カレンダー更新用のコールバック関数
 function handleCalendarUpdate() {
+  if (!isConfigLoaded()) {
+    console.warn(
+      "設定がまだ完全に読み込まれていません。カレンダー更新をスキップします。",
+    );
+    return;
+  }
   updateCalendar(currentBaseDate, lastBaseDate);
 }
 
@@ -72,8 +79,10 @@ function setupEventListeners() {
 
 async function initializeApp() {
   try {
-    // 設定とイベントのロード（まとめて処理）
-    const [configResult] = await Promise.all([loadConfig(), loadEventConfig()]);
+    const [configResult, eventConfigResult] = await Promise.all([
+      loadConfig(),
+      loadEventConfig(),
+    ]);
 
     appConfig = configResult;
 
@@ -92,12 +101,18 @@ async function initializeApp() {
     updateExportSectionLabel(currentBaseDate);
     showControlSections(currentBaseDate);
     initializeStartNumberSelection(shiftData.rotationCycleLength);
+
+    // カレンダーを初期化
     initializeCalendar(handleCalendarUpdate);
 
     // イベントリスナーの設定
     setupEventListeners();
+
+    // 初期表示のためにカレンダーを更新
+    handleCalendarUpdate();
   } catch (error) {
     console.error("アプリケーションの初期化に失敗しました:", error);
+    alert(`アプリケーションの初期化に失敗しました: ${error.message}`);
   }
 }
 

@@ -5,7 +5,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import dayjs from "dayjs";
 
-import { getEventType } from "./config.js";
+import { getEventType, isConfigLoaded } from "./config.js";
 import { getScheduleForDate } from "./calc.js";
 
 let calendar;
@@ -41,6 +41,14 @@ function initializeCalendar(updateCallback) {
 // カレンダーの更新
 function updateCalendar(currentBaseDate, lastBaseDate) {
   if (!currentBaseDate || !calendar) return;
+
+  // 設定が読み込まれていることを確認
+  if (!isConfigLoaded()) {
+    console.warn(
+      "設定が完全に読み込まれていません。カレンダー更新をスキップします。",
+    );
+    return;
+  }
 
   const startPosition = parseInt(document.getElementById("startNumber").value);
   const viewStartDate = dayjs(calendar.view.activeStart);
@@ -91,18 +99,28 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
       }
     }
 
-    // イベントの追加
-    const { config } = getEventType(subject);
-    calendarEvents.push({
-      title: config.showTime
-        ? `${subject}\n${startTime} - \n${endTime}`
-        : subject,
-      start: dateStr,
-      color: config.color,
-    });
+    try {
+      // イベントの追加 - ここでエラーが発生する可能性がある
+      const { config } = getEventType(subject);
+      calendarEvents.push({
+        title: config.showTime
+          ? `${subject}\n${startTime} - \n${endTime}`
+          : subject,
+        start: dateStr,
+        color: config.color,
+      });
+    } catch (error) {
+      console.error(
+        `日付 ${dateStr} のイベント処理中にエラーが発生しました:`,
+        error,
+      );
+      // エラーが発生しても処理を続行
+    }
 
     currentDate = currentDate.add(1, "day");
   }
+
+  // イベントの更新
   calendar.removeAllEvents();
   calendar.addEventSource(calendarEvents);
 }

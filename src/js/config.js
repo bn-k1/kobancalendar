@@ -19,6 +19,7 @@ let currentBaseDate;
 let lastBaseDate;
 let holidayYearsRange;
 let userDefinedHolidays = [];
+let loadedEventConfig = null;
 
 // 設定ファイルの読み込み
 async function loadConfig() {
@@ -39,9 +40,21 @@ async function loadConfig() {
 
     const urlParameters = new URLSearchParams(window.location.search);
     if (urlParameters.has("baseDate")) {
-      currentBaseDate = dayjs(urlParameters.get("baseDate"));
+      const requestedBaseDateStr = urlParameters.get("baseDate");
+      currentBaseDate = dayjs(requestedBaseDateStr);
+
       if (!currentBaseDate.isValid()) {
         currentBaseDate = baseDates[0];
+      } else {
+        const dateExists = baseDates.some(
+          (date) =>
+            date.format("YYYY-MM-DD") === currentBaseDate.format("YYYY-MM-DD"),
+        );
+
+        if (!dateExists) {
+          alert("無効な基準日です");
+          currentBaseDate = baseDates[0];
+        }
       }
     } else {
       currentBaseDate = baseDates[0];
@@ -60,7 +73,7 @@ async function loadConfig() {
       userDefinedHolidays,
     };
   } catch (error) {
-    console.error(error.message);
+    console.error("設定ファイルの読み込みに失敗しました:", error.message);
     throw error;
   }
 }
@@ -71,21 +84,32 @@ async function loadEventConfig() {
     if (!eventConfig) {
       throw new Error("イベント設定ファイルの取得に失敗しました");
     }
-    return eventConfig;
+    loadedEventConfig = eventConfig;
+    return loadedEventConfig;
   } catch (error) {
-    console.error(error.message);
+    console.error(
+      "イベント設定ファイルの読み込みに失敗しました:",
+      error.message,
+    );
     throw error;
   }
 }
 
-// イベントの種類を判定 - 元の実装
+// イベントの種類を判定 - getEventType は必ずイベント設定が読み込まれた後に使用する
 function _getEventType(subject) {
-  for (const [type, config] of Object.entries(eventConfig.specialEvents)) {
+  if (!loadedEventConfig) {
+    console.error("イベント設定が読み込まれていません");
+    return { type: "default", config: { color: "#42a5f5", showTime: true } };
+  }
+
+  for (const [type, config] of Object.entries(
+    loadedEventConfig.specialEvents,
+  )) {
     if (config.keywords.some((keyword) => subject.includes(keyword))) {
       return { type, config };
     }
   }
-  return { type: "default", config: eventConfig.defaultEvent };
+  return { type: "default", config: loadedEventConfig.defaultEvent };
 }
 
 // memoizeを使用してパフォーマンスを向上
@@ -107,6 +131,11 @@ function updateURLParams(baseDate, startNumber) {
   );
 }
 
+// 設定が完全に読み込まれたかチェックする
+function isConfigLoaded() {
+  return loadedEventConfig !== null;
+}
+
 // エクスポート
 export {
   loadConfig,
@@ -114,6 +143,7 @@ export {
   getEventType,
   updateCurrentBaseDate,
   updateURLParams,
+  isConfigLoaded,
   baseDates,
   currentBaseDate,
   lastBaseDate,
