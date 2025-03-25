@@ -69,10 +69,6 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
       endDateTime = schedule.date.add(1, "day").format("YYYYMMDD");
     }
 
-    // イベントの説明（Descriptionフィールド）の設定
-    const description =
-      startTime && endTime ? `勤務時間: ${startTime} - ${endTime}` : "";
-
     // VEVENT の作成
     icsContent += "BEGIN:VEVENT\r\n";
     icsContent += `SUMMARY:${escapeIcsText(subject)}\r\n`;
@@ -117,7 +113,7 @@ function escapeIcsText(text) {
 function generateUID(date, subject) {
   const timestamp = date.unix();
   const random = Math.floor(Math.random() * 1000000);
-  return `${timestamp}-${random}-koban@calendar.example.com`;
+  return `${timestamp}-${random}-export@kobancalendar.jp`;
 }
 
 // ICSファイルをダウンロードするヘルパー関数

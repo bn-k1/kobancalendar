@@ -186,24 +186,6 @@ button:focus {
   background-color: var(--holiday-color) !important;
 }
 
-.help-text {
-  margin-top: var(--spacing-medium);
-  font-size: 0.9em;
-  color: var(--gray-color);
-  text-align: left;
-}
-
-.help-text a {
-  color: var(--primary-color);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.help-text a:hover {
-  color: var(--accent-color);
-  text-decoration: underline;
-}
-
 footer {
   margin-top: var(--spacing-large);
   padding: var(--spacing-medium);
