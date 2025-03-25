@@ -27,9 +27,10 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
       year++
     ) {
       const holidays = JapaneseHolidays.getHolidaysOf(year);
-
       holidays.forEach((holiday) => {
-        const dateObj = dayjs(holiday.date);
+        const dateObj = dayjs(
+          `${year}-${String(holiday.month).padStart(2, "0")}-${String(holiday.date).padStart(2, "0")}`,
+        );
         const dateStr = dateObj.format("YYYY-MM-DD");
         allHolidays[dateStr] = holiday.name;
       });
@@ -37,13 +38,13 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
 
     // ユーザー定義の祝日を追加
     userDefinedHolidays.forEach((date) => {
-      let [month, day] = date.split("/");
+      let [month, day] = date.split("-");
       for (
         let year = currentYear - holidayYearsRange;
         year <= currentYear + holidayYearsRange;
         year++
       ) {
-        let formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+        let formattedDate = `${year}-${month}-${day}`;
         if (allHolidays[formattedDate] === undefined) {
           allHolidays[formattedDate] = "customholiday";
         }

@@ -34,7 +34,7 @@
    {
      "base_dates": ["YYYY-MM-DD", "YYYY-MM-DD"],
      "holiday_years_range": 2,
-     "custom_holidays": ["08/15", "12/30"]
+     "custom_holidays": ["MM-DD", "MM-DD"]
    }
    ```
 
