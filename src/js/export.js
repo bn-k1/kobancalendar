@@ -82,13 +82,9 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
     }
 
     // UUID風の一意のIDを生成
-    const uid = generateUID(schedule.date, subject);
+    const uid = generateUID(schedule.date);
     icsContent += `UID:${uid}\r\n`;
     icsContent += `DTSTAMP:${dayjs().format("YYYYMMDDTHHmmss")}Z\r\n`;
-
-    if (description) {
-      icsContent += `DESCRIPTION:${escapeIcsText(description)}\r\n`;
-    }
 
     icsContent += "END:VEVENT\r\n";
   });
@@ -110,7 +106,7 @@ function escapeIcsText(text) {
 }
 
 // UID生成関数
-function generateUID(date, subject) {
+function generateUID(date) {
   const timestamp = date.unix();
   const random = Math.floor(Math.random() * 1000000);
   return `${timestamp}-${random}-export@kobancalendar.jp`;

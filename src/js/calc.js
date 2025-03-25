@@ -1,7 +1,6 @@
 // calc.js - スケジュール計算・データ処理に関連する機能を提供
 
 import dayjs from "dayjs";
-import { memoize } from "lodash";
 import { isHoliday } from "./data-loader.js";
 
 let scheduleData = {
