@@ -1,9 +1,9 @@
-// export.js - CSVエクスポート機能を提供
+// export.js - ICSエクスポート機能を提供
 import dayjs from "dayjs";
 import { calculateScheduleRange } from "./calc.js";
 
-// CSVエクスポート機能
-function exportCSV(months, startPosition, currentBaseDate, lastBaseDate) {
+// ICSエクスポート機能
+function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
   const today = dayjs().startOf("day");
   const startDate =
     currentBaseDate.isAfter(today) || currentBaseDate.isSame(today)
@@ -20,40 +20,118 @@ function exportCSV(months, startPosition, currentBaseDate, lastBaseDate) {
     lastBaseDate,
   );
 
-  // CSVヘッダーの作成
-  let csvContent = "Subject,Start Date,Start Time,End Time\n";
+  // ICS フォーマットの生成
+  let icsContent =
+    [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//KobanCalendar//JP",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+    ].join("\r\n") + "\r\n";
 
-  // 各勤務スケジュールをCSV行に変換
+  // タイムゾーン定義
+  icsContent +=
+    [
+      "BEGIN:VTIMEZONE",
+      "TZID:Asia/Tokyo",
+      "BEGIN:STANDARD",
+      "TZOFFSETFROM:+0900",
+      "TZOFFSETTO:+0900",
+      "TZNAME:JST",
+      "DTSTART:19700101T000000",
+      "END:STANDARD",
+      "END:VTIMEZONE",
+    ].join("\r\n") + "\r\n";
+
+  // 各勤務スケジュールをICS形式のイベントに変換
   scheduleRange.forEach((schedule) => {
     const { subject, startTime, endTime } = schedule;
-    const formattedDate = schedule.date.format("YYYY/MM/DD");
+    const dateStr = schedule.date.format("YYYYMMDD");
 
-    // 各フィールドを引用符で囲む（カンマを含む場合の対策）
-    const escapedSubject = `"${subject.replace(/"/g, '""')}"`;
-    csvContent += `${escapedSubject},${formattedDate},${startTime},${endTime}\n`;
+    // スタート時間とエンド時間の処理
+    let startDateTime = dateStr;
+    let endDateTime = dateStr;
+    let isAllDay = false;
+
+    // 時間がある場合は時刻を設定、ない場合は終日イベントとして扱う
+    if (startTime && endTime) {
+      const startHour = startTime.split(":")[0].padStart(2, "0");
+      const startMinute = startTime.split(":")[1] || "00";
+      const endHour = endTime.split(":")[0].padStart(2, "0");
+      const endMinute = endTime.split(":")[1] || "00";
+
+      startDateTime += `T${startHour}${startMinute}00`;
+      endDateTime += `T${endHour}${endMinute}00`;
+    } else {
+      isAllDay = true;
+      // 終日イベントの場合、終了日は翌日を指定
+      endDateTime = schedule.date.add(1, "day").format("YYYYMMDD");
+    }
+
+    // イベントの説明（Descriptionフィールド）の設定
+    const description =
+      startTime && endTime ? `勤務時間: ${startTime} - ${endTime}` : "";
+
+    // VEVENT の作成
+    icsContent += "BEGIN:VEVENT\r\n";
+    icsContent += `SUMMARY:${escapeIcsText(subject)}\r\n`;
+
+    if (isAllDay) {
+      icsContent += `DTSTART;VALUE=DATE:${startDateTime}\r\n`;
+      icsContent += `DTEND;VALUE=DATE:${endDateTime}\r\n`;
+    } else {
+      icsContent += `DTSTART;TZID=Asia/Tokyo:${startDateTime}\r\n`;
+      icsContent += `DTEND;TZID=Asia/Tokyo:${endDateTime}\r\n`;
+    }
+
+    // UUID風の一意のIDを生成
+    const uid = generateUID(schedule.date, subject);
+    icsContent += `UID:${uid}\r\n`;
+    icsContent += `DTSTAMP:${dayjs().format("YYYYMMDDTHHmmss")}Z\r\n`;
+
+    if (description) {
+      icsContent += `DESCRIPTION:${escapeIcsText(description)}\r\n`;
+    }
+
+    icsContent += "END:VEVENT\r\n";
   });
 
-  // CSVファイルのダウンロード
-  downloadCSV(csvContent);
+  // カレンダーの終了を示す
+  icsContent += "END:VCALENDAR";
+
+  // ICSファイルのダウンロード
+  downloadICS(icsContent, startDate, endDate);
 }
 
-// CSVファイルをダウンロードするヘルパー関数
-function downloadCSV(csvContent) {
-  // UTF-8のBOMを付加
-  const BOM = new Uint8Array([0xef, 0xbb, 0xbf]);
+// ICS テキストエスケープ関数
+function escapeIcsText(text) {
+  return text
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\n/g, "\\n");
+}
 
-  // Blobを生成（BOMを先頭に付加）
-  const blob = new Blob([BOM, csvContent], { type: "text/csv;charset=utf-8" });
+// UID生成関数
+function generateUID(date, subject) {
+  const timestamp = date.unix();
+  const random = Math.floor(Math.random() * 1000000);
+  return `${timestamp}-${random}-koban@calendar.example.com`;
+}
 
-  // IE11対応のためにWindowsコードページ932（Shift-JIS）を使用しない
-  // 代わりにUTF-8 with BOMを使用する
-
+// ICSファイルをダウンロードするヘルパー関数
+function downloadICS(icsContent, startDate, endDate) {
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const downloadLink = document.createElement("a");
-  const currentDateStr = dayjs().format("YYYY-MM-DD");
+
+  // ファイル名に日付範囲を含める
+  const startDateStr = startDate.format("YYYYMMDD");
+  const endDateStr = endDate.add(-1, "day").format("YYYYMMDD"); // 終了日は範囲の最後の日
 
   downloadLink.href = url;
-  downloadLink.download = `schedule_${currentDateStr}.csv`;
+  downloadLink.download = `schedule_${startDateStr}-${endDateStr}.ics`;
 
   // ダウンロードリンクを非表示で追加してクリック
   downloadLink.style.display = "none";
@@ -68,4 +146,4 @@ function downloadCSV(csvContent) {
 }
 
 // エクスポート
-export { exportCSV };
+export { exportICS };

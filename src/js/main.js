@@ -16,7 +16,7 @@ import {
 import { loadScheduleData, loadHolidays } from "./data-loader.js";
 import { setScheduleData } from "./calc.js";
 import { initializeCalendar, updateCalendar } from "./calendar.js";
-import { exportCSV } from "./export.js";
+import { exportICS } from "./export.js";
 
 import {
   updateBaseDateSection,
@@ -50,11 +50,11 @@ function updateURLAndGenerateSchedule() {
   handleCalendarUpdate();
 }
 
-// CSVエクスポート処理のハンドラー
-function handleExportCSV() {
+// ICSエクスポート処理のハンドラー
+function handleExportICS() {
   const months = parseInt(document.getElementById("exportMonths").value);
   const startNumber = parseInt(document.getElementById("startNumber").value);
-  exportCSV(months, startNumber, currentBaseDate, lastBaseDate);
+  exportICS(months, startNumber, currentBaseDate, lastBaseDate);
 }
 
 // イベントリスナーの設定
@@ -67,7 +67,7 @@ function setupEventListeners() {
     .addEventListener("change", updateURLAndGenerateSchedule);
   document
     .getElementById("exportButton")
-    .addEventListener("click", handleExportCSV);
+    .addEventListener("click", handleExportICS);
 }
 
 async function initializeApp() {
