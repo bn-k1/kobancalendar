@@ -14,13 +14,9 @@ import {
 } from "./config.js";
 
 import { loadScheduleData, loadHolidays } from "./data-loader.js";
-
-import {
-  setScheduleData,
-  initializeCalendar,
-  updateCalendar,
-  exportCSV,
-} from "./schedule.js";
+import { setScheduleData } from "./calc.js";
+import { initializeCalendar, updateCalendar } from "./calendar.js";
+import { exportCSV } from "./export.js";
 
 import {
   updateBaseDateSection,
@@ -93,6 +89,7 @@ async function initializeApp() {
 
     // UIの初期化
     updateBaseDateSection(baseDates, currentBaseDate);
+    updateExportSectionLabel(currentBaseDate);
     showControlSections(currentBaseDate);
     initializeStartNumberSelection(shiftData.rotationCycleLength);
     initializeCalendar(handleCalendarUpdate);
