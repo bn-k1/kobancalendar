@@ -10,13 +10,11 @@ let scheduleData = {
   rotationCycleLength: 0,
 };
 
-// メモリリーク防止のためのキャッシュサイズ上限
 const MAX_CACHE_SIZE = 1000;
 
 // スケジュールデータの設定
 function setScheduleData(shiftData) {
   scheduleData = shiftData;
-  // データが変更されたのでメモ化関数のキャッシュをクリア
   clearScheduleCache();
 }
 
@@ -96,7 +94,6 @@ class LRUCache {
   get(key) {
     if (!this.cache.has(key)) return undefined;
 
-    // アクセスしたエントリを最新として扱うために削除して再追加
     const value = this.cache.get(key);
     this.cache.delete(key);
     this.cache.set(key, value);
@@ -104,12 +101,9 @@ class LRUCache {
   }
 
   set(key, value) {
-    // すでにキーが存在する場合は更新
     if (this.cache.has(key)) {
       this.cache.delete(key);
-    }
-    // キャッシュサイズが上限に達している場合、最も古いエントリを削除
-    else if (this.cache.size >= this.maxSize) {
+    } else if (this.cache.size >= this.maxSize) {
       const oldestKey = this.cache.keys().next().value;
       this.cache.delete(oldestKey);
     }
