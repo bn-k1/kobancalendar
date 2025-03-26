@@ -193,6 +193,11 @@ footer {
   color: var(--text-light);
 }
 
+footer a:link,
+footer a:visited {
+  color: var(--text-light);
+}
+
 /* レスポンシブ対応 */
 @media screen and (max-width: 480px) {
   .fc .fc-toolbar {

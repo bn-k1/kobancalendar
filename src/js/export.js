@@ -1,5 +1,6 @@
-// export.js - ICSエクスポート機能を提供
+// export.js - ICSエクスポート機能を提供（ical-generatorを使用）
 import dayjs from "dayjs";
+import ical from "ical-generator";
 import { calculateScheduleRange } from "./calc.js";
 
 // ICSエクスポート機能
@@ -20,96 +21,68 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
     lastBaseDate,
   );
 
-  // ICS フォーマットの生成
-  let icsContent =
-    [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//KobanCalendar//JP",
-      "CALSCALE:GREGORIAN",
-      "METHOD:PUBLISH",
-    ].join("\r\n") + "\r\n";
+  // ical-generatorを使用してカレンダーを作成
+  const calendar = ical({
+    name: "KobanCalendar",
+    timezone: "Asia/Tokyo",
+    prodId: { company: "bn-k1", product: "kobancalendar", language: "JP" },
+  });
 
-  // タイムゾーン定義
-  icsContent +=
-    [
-      "BEGIN:VTIMEZONE",
-      "TZID:Asia/Tokyo",
-      "BEGIN:STANDARD",
-      "TZOFFSETFROM:+0900",
-      "TZOFFSETTO:+0900",
-      "TZNAME:JST",
-      "DTSTART:19700101T000000",
-      "END:STANDARD",
-      "END:VTIMEZONE",
-    ].join("\r\n") + "\r\n";
-
-  // 各勤務スケジュールをICS形式のイベントに変換
+  // 各勤務スケジュールをカレンダーイベントに変換
   scheduleRange.forEach((schedule) => {
-    const { subject, startTime, endTime } = schedule;
-    const dateStr = schedule.date.format("YYYYMMDD");
-
-    // スタート時間とエンド時間の処理
-    let startDateTime = dateStr;
-    let endDateTime = dateStr;
-    let isAllDay = false;
+    const { subject, startTime, endTime, date } = schedule;
+    const eventDate = date.toDate();
+    const event = calendar.createEvent({
+      summary: subject,
+      uid: generateUID(date, subject, startTime, endTime),
+    });
 
     // 時間がある場合は時刻を設定、ない場合は終日イベントとして扱う
     if (startTime && endTime) {
-      const startHour = startTime.split(":")[0].padStart(2, "0");
-      const startMinute = startTime.split(":")[1] || "00";
-      const endHour = endTime.split(":")[0].padStart(2, "0");
-      const endMinute = endTime.split(":")[1] || "00";
+      const [startHour, startMinute = "00"] = startTime.split(":");
+      const [endHour, endMinute = "00"] = endTime.split(":");
 
-      startDateTime += `T${startHour}${startMinute}00`;
-      endDateTime += `T${endHour}${endMinute}00`;
+      // 開始時間と終了時間を設定
+      const start = new Date(eventDate);
+      start.setHours(parseInt(startHour, 10), parseInt(startMinute, 10), 0);
+
+      const end = new Date(eventDate);
+      end.setHours(parseInt(endHour, 10), parseInt(endMinute, 10), 0);
+
+      event.start(start);
+      event.end(end);
     } else {
-      isAllDay = true;
-      // 終日イベントの場合、終了日は翌日を指定
-      endDateTime = schedule.date.add(1, "day").format("YYYYMMDD");
+      // 終日イベントの設定
+      event.allDay(true);
+      event.start(eventDate);
     }
-
-    // VEVENT の作成
-    icsContent += "BEGIN:VEVENT\r\n";
-    icsContent += `SUMMARY:${escapeIcsText(subject)}\r\n`;
-
-    if (isAllDay) {
-      icsContent += `DTSTART;VALUE=DATE:${startDateTime}\r\n`;
-      icsContent += `DTEND;VALUE=DATE:${endDateTime}\r\n`;
-    } else {
-      icsContent += `DTSTART;TZID=Asia/Tokyo:${startDateTime}\r\n`;
-      icsContent += `DTEND;TZID=Asia/Tokyo:${endDateTime}\r\n`;
-    }
-
-    // UUID風の一意のIDを生成
-    const uid = generateUID(schedule.date);
-    icsContent += `UID:${uid}\r\n`;
-    icsContent += `DTSTAMP:${dayjs().format("YYYYMMDDTHHmmss")}Z\r\n`;
-
-    icsContent += "END:VEVENT\r\n";
   });
 
-  // カレンダーの終了を示す
-  icsContent += "END:VCALENDAR";
-
-  // ICSファイルのダウンロード
-  downloadICS(icsContent, startDate, endDate);
+  // ICSファイルをダウンロード
+  downloadICS(calendar.toString(), startDate, endDate);
 }
 
-// ICS テキストエスケープ関数
-function escapeIcsText(text) {
-  return text
-    .replace(/\\/g, "\\\\")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,")
-    .replace(/\n/g, "\\n");
+// UID生成関数 - 同一スケジュールには常に同じUIDを返すように改善
+function generateUID(date, subject = "", startTime = "", endTime = "") {
+  const dateStr = date.format("YYYYMMDD");
+
+  const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);
+
+  return `${dateStr}-${contentHash}@kobancalendar.jp`;
 }
 
-// UID生成関数
-function generateUID(date) {
-  const timestamp = date.unix();
-  const random = Math.floor(Math.random() * 1000000);
-  return `${timestamp}-${random}-export@kobancalendar.jp`;
+// シンプルなハッシュ関数 - 文字列から数値ハッシュを生成
+function simpleHash(str) {
+  let hash = 0;
+  if (str.length === 0) return hash;
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+
+  return Math.abs(hash).toString(16);
 }
 
 // ICSファイルをダウンロードするヘルパー関数
