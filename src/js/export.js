@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import ical from "ical-generator";
 import { calculateScheduleRange } from "./calc.js";
+import { getICSExportConfig } from "./config.js";
 
 // ICSエクスポート機能
 function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
@@ -21,11 +22,18 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
     lastBaseDate,
   );
 
+  // 設定から値を取得
+  const icsConfig = getICSExportConfig();
+
   // ical-generatorを使用してカレンダーを作成
   const calendar = ical({
-    name: "KobanCalendar",
-    timezone: "Asia/Tokyo",
-    prodId: { company: "bn-k1", product: "kobancalendar", language: "JP" },
+    name: icsConfig.calendar_name,
+    timezone: icsConfig.timezone,
+    prodId: {
+      company: icsConfig.company,
+      product: icsConfig.product,
+      language: icsConfig.language,
+    },
   });
 
   // 各勤務スケジュールをカレンダーイベントに変換
@@ -34,7 +42,7 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
     const eventDate = date.toDate();
     const event = calendar.createEvent({
       summary: subject,
-      uid: generateUID(date, subject, startTime, endTime),
+      uid: generateUID(date, subject, startTime, endTime, icsConfig.uid_domain),
     });
 
     // 時間がある場合は時刻を設定、ない場合は終日イベントとして扱う
@@ -63,12 +71,16 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
 }
 
 // UID生成関数 - 同一スケジュールには常に同じUIDを返すように改善
-function generateUID(date, subject = "", startTime = "", endTime = "") {
+function generateUID(
+  date,
+  subject = "",
+  startTime = "",
+  endTime = "",
+  domain = "kobancalendar.jp",
+) {
   const dateStr = date.format("YYYYMMDD");
-
   const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);
-
-  return `${dateStr}-${contentHash}@kobancalendar.jp`;
+  return `${dateStr}-${contentHash}@${domain}`;
 }
 
 // シンプルなハッシュ関数 - 文字列から数値ハッシュを生成

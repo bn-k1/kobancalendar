@@ -20,6 +20,7 @@ let lastBaseDate;
 let holidayYearsRange;
 let userDefinedHolidays = [];
 let loadedEventConfig = null;
+let icsExportConfig = null;
 
 // 設定ファイルの読み込み
 async function loadConfig() {
@@ -65,12 +66,23 @@ async function loadConfig() {
     holidayYearsRange = config.holiday_years_range;
     userDefinedHolidays = config.custom_holidays || [];
 
+    // ICSエクスポート設定を読み込む
+    icsExportConfig = config.info || {
+      calendar_name: "KobanCalendar",
+      timezone: "Asia/Tokyo",
+      company: "bn-k1",
+      product: "kobancalendar",
+      language: "JP",
+      uid_domain: "kobancalendar.jp",
+    };
+
     return {
       baseDates,
       currentBaseDate,
       lastBaseDate,
       holidayYearsRange,
       userDefinedHolidays,
+      icsExportConfig,
     };
   } catch (error) {
     console.error("設定ファイルの読み込みに失敗しました:", error.message);
@@ -136,6 +148,11 @@ function isConfigLoaded() {
   return loadedEventConfig !== null;
 }
 
+// ICSエクスポート設定を取得
+function getICSExportConfig() {
+  return icsExportConfig;
+}
+
 // エクスポート
 export {
   loadConfig,
@@ -144,6 +161,7 @@ export {
   updateCurrentBaseDate,
   updateURLParams,
   isConfigLoaded,
+  getICSExportConfig,
   baseDates,
   currentBaseDate,
   lastBaseDate,
