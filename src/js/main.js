@@ -79,10 +79,7 @@ function setupEventListeners() {
 
 async function initializeApp() {
   try {
-    const [configResult, eventConfigResult] = await Promise.all([
-      loadConfig(),
-      loadEventConfig(),
-    ]);
+    const [configResult] = await Promise.all([loadConfig(), loadEventConfig()]);
 
     appConfig = configResult;
 

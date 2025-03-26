@@ -1,6 +1,6 @@
 {
   "base_dates": ["2025-01-16", "2025-05-16"],
-  "holiday_years_range": 2,
+  "holiday_years_range": 5,
   "custom_holidays": [
     "08-13",
     "08-14",
