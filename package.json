@@ -38,6 +38,7 @@
     "@fullcalendar/interaction": "^6.1.15",
     "dayjs": "^1.11.13",
     "japanese-holidays": "^1.0.10",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "lru-cache": "^11.1.0"
   }
 }

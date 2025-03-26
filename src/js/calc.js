@@ -1,6 +1,7 @@
 // calc.js - スケジュール計算・データ処理に関連する機能を提供
 
 import dayjs from "dayjs";
+import { LRUCache } from "lru-cache";
 import { isHoliday } from "./data-loader.js";
 
 let scheduleData = {
@@ -11,6 +12,11 @@ let scheduleData = {
 };
 
 const MAX_CACHE_SIZE = 1000;
+
+// LRUキャッシュの設定
+const scheduleCache = new LRUCache({
+  max: MAX_CACHE_SIZE,
+});
 
 // スケジュールデータの設定
 function setScheduleData(shiftData) {
@@ -83,44 +89,6 @@ function _getScheduleForDate(
     isSaturday,
   };
 }
-
-// LRUキャッシュの実装
-class LRUCache {
-  constructor(maxSize = MAX_CACHE_SIZE) {
-    this.cache = new Map();
-    this.maxSize = maxSize;
-  }
-
-  get(key) {
-    if (!this.cache.has(key)) return undefined;
-
-    const value = this.cache.get(key);
-    this.cache.delete(key);
-    this.cache.set(key, value);
-    return value;
-  }
-
-  set(key, value) {
-    if (this.cache.has(key)) {
-      this.cache.delete(key);
-    } else if (this.cache.size >= this.maxSize) {
-      const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
-    }
-    this.cache.set(key, value);
-  }
-
-  clear() {
-    this.cache.clear();
-  }
-
-  has(key) {
-    return this.cache.has(key);
-  }
-}
-
-// カスタムメモ化関数の実装
-const scheduleCache = new LRUCache();
 
 function getScheduleForDate(
   targetDate,
