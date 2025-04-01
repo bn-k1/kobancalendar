@@ -4,14 +4,12 @@ import {
   setState,
   updateCurrentBaseDate,
   isConfigLoaded,
-} from "./state.js";
-import { setHolidays, isHoliday, getHolidayName } from "./holidays.js";
-import { getEventType } from "./events.js";
-import {
   setScheduleData,
   clearScheduleCache,
   initializeCache,
-} from "./cache.js";
+} from "./state.js";
+import { setHolidays, isHoliday, getHolidayName } from "./holidays.js";
+import { getEventType } from "./events.js";
 import {
   calculateShiftIndex,
   getScheduleForDate,
@@ -25,6 +23,9 @@ export {
   setState,
   updateCurrentBaseDate,
   isConfigLoaded,
+  setScheduleData,
+  clearScheduleCache,
+  initializeCache,
 
   // holidays.js
   setHolidays,
@@ -33,11 +34,6 @@ export {
 
   // events.js
   getEventType,
-
-  // cache.js
-  setScheduleData,
-  clearScheduleCache,
-  initializeCache,
 
   // schedule.js
   calculateShiftIndex,

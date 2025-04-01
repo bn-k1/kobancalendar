@@ -83,12 +83,31 @@ function isConfigLoaded() {
   return _state.eventConfig !== null && _state.scheduleCache !== null;
 }
 
-// キャッシュ初期化関数 - cache.jsへ移動予定だが、状態管理に密接に関連しているので
-// ここに置いておく（実際の実装ではimportする）
+// キャッシュ初期化関数
 function initializeCache() {
   _state.scheduleCache = new LRUCache({
     max: _state.maxCacheSize,
   });
+}
+
+/**
+ * スケジュールキャッシュのクリア
+ */
+function clearScheduleCache() {
+  if (!getState("scheduleCache")) {
+    initializeCache();
+  } else {
+    getState("scheduleCache").clear();
+  }
+}
+
+/**
+ * スケジュールデータの設定
+ * @param {Object} data - スケジュールデータオブジェクト
+ */
+function setScheduleData(data) {
+  setState("scheduleData", data);
+  clearScheduleCache();
 }
 
 export {
@@ -97,5 +116,7 @@ export {
   updateCurrentBaseDate,
   isConfigLoaded,
   initializeCache,
+  clearScheduleCache,
+  setScheduleData,
   _state, // モジュール間で状態を共有するために内部的にエクスポート
 };
