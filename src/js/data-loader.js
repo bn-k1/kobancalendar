@@ -5,7 +5,7 @@ import JapaneseHolidays from "japanese-holidays";
 import holidayData from "@data/holiday.csv";
 import saturdayData from "@data/saturday.csv";
 import weekdayData from "@data/weekday.csv";
-import { setHolidays, isHoliday } from "./store.js";
+import { setHolidays, isHoliday, getState } from "./store.js";
 
 // CSV形式のデータを処理する
 function processCSVData(csvData) {
@@ -13,8 +13,12 @@ function processCSVData(csvData) {
 }
 
 // 祝日データの取得（japanese-holidaysを使用）
-async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
+async function loadHolidays() {
   try {
+    // storeから必要な値を取得
+    const holidayYearsRange = getState("holidayYearsRange");
+    const userDefinedHolidays = getState("userDefinedHolidays");
+
     const currentYear = dayjs().year();
     const allHolidays = {};
 
@@ -35,19 +39,21 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
     }
 
     // ユーザー定義の祝日を追加
-    userDefinedHolidays.forEach((date) => {
-      let [month, day] = date.split("-");
-      for (
-        let year = currentYear - holidayYearsRange;
-        year <= currentYear + holidayYearsRange;
-        year++
-      ) {
-        let formattedDate = `${year}-${month}-${day}`;
-        if (allHolidays[formattedDate] === undefined) {
-          allHolidays[formattedDate] = "設定祝日";
+    if (userDefinedHolidays && userDefinedHolidays.length > 0) {
+      userDefinedHolidays.forEach((date) => {
+        let [month, day] = date.split("-");
+        for (
+          let year = currentYear - holidayYearsRange;
+          year <= currentYear + holidayYearsRange;
+          year++
+        ) {
+          let formattedDate = `${year}-${month}-${day}`;
+          if (allHolidays[formattedDate] === undefined) {
+            allHolidays[formattedDate] = "設定祝日";
+          }
         }
-      }
-    });
+      });
+    }
 
     // ストアに祝日データを設定
     setHolidays(allHolidays);

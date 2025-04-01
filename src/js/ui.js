@@ -1,6 +1,7 @@
 // ui.js - ユーザーインターフェース関連の機能を提供
 
 import dayjs from "dayjs";
+import { getState } from "./store.js";
 
 // 基準日選択セクションを更新
 function updateBaseDateSection(baseDates, currentBaseDate) {
@@ -52,7 +53,9 @@ function showControlSections(currentBaseDate) {
 }
 
 // スタート番号選択の初期化
-function initializeStartNumberSelection(rotationCycleLength) {
+function initializeStartNumberSelection() {
+  const rotationCycleLength = getState("scheduleData").rotationCycleLength;
+
   let startPositionSelect = document.getElementById("startNumber");
   startPositionSelect.innerHTML = ""; // 選択肢をクリア
 

@@ -2,15 +2,13 @@
 
 import { initializeCalendar } from "./initialization.js";
 import { updateCalendar } from "./eventHandler.js";
-import { applyDayCellStyles } from "./cellStyle.js";
+import { getState } from "../store.js";
 
 // カレンダービューの更新（再レンダリングなしでビューを更新）
 function refreshCalendarView() {
   const calendar = getCalendar();
   if (calendar) {
     calendar.render();
-    // 日付セルのスタイルを適用
-    setTimeout(applyDayCellStyles, 0);
   }
 }
 
@@ -19,5 +17,17 @@ function getCalendar() {
   return window.calendarInstance;
 }
 
+function handleCalendarUpdate() {
+  // カレンダー更新時にリフレッシュも実行
+  updateCalendar(getState("currentBaseDate"), getState("lastBaseDate"));
+  refreshCalendarView();
+}
+
 // エクスポート
-export { initializeCalendar, updateCalendar, refreshCalendarView, getCalendar };
+export {
+  initializeCalendar,
+  updateCalendar,
+  refreshCalendarView,
+  getCalendar,
+  handleCalendarUpdate,
+};
