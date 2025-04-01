@@ -5,7 +5,7 @@ import JapaneseHolidays from "japanese-holidays";
 import holidayData from "@data/holiday.csv";
 import saturdayData from "@data/saturday.csv";
 import weekdayData from "@data/weekday.csv";
-import { setHolidays, isHoliday, getState } from "./store.js";
+import { setHolidays, isHoliday, getState } from "./store/index.js";
 
 // CSV形式のデータを処理する
 function processCSVData(csvData) {

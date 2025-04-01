@@ -1,7 +1,7 @@
 // export.js - ICSエクスポート機能を提供（ical-generatorを使用）
 import dayjs from "dayjs";
 import ical from "ical-generator";
-import { calculateScheduleRange } from "./store.js";
+import { calculateScheduleRange } from "./store/index.js";
 import { getICSExportConfig } from "./config.js";
 
 // ICSエクスポート機能

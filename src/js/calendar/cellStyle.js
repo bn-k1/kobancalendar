@@ -1,7 +1,7 @@
 // calendar/cellStyle.js - 日付セルのスタイリング機能
 
 import dayjs from "dayjs";
-import { isHoliday } from "../store.js";
+import { isHoliday } from "../store/index.js";
 
 // 日付セルのスタイル適用
 function customizeDayCell(date, el) {

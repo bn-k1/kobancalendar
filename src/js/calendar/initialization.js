@@ -4,7 +4,7 @@ import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import dayjs from "dayjs";
-import { getHolidayName } from "../store.js";
+import { getHolidayName } from "../store/index.js";
 import { applyDayCellStyles, customizeDayCell } from "./cellStyle.js";
 
 // カレンダーの初期化

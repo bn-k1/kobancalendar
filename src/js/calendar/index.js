@@ -2,7 +2,7 @@
 
 import { initializeCalendar } from "./initialization.js";
 import { updateCalendar } from "./eventHandler.js";
-import { getState } from "../store.js";
+import { getState } from "../store/index.js";
 
 // カレンダービューの更新（再レンダリングなしでビューを更新）
 function refreshCalendarView() {

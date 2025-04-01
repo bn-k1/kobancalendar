@@ -2,7 +2,7 @@
 import "../css/style.css";
 import { loadConfig, loadEventConfig } from "./config.js";
 import { loadScheduleData, loadHolidays } from "./data-loader.js";
-import { setScheduleData, getState } from "./store.js";
+import { setScheduleData, getState } from "./store/index.js";
 import { initializeCalendar, handleCalendarUpdate } from "./calendar/index.js";
 import {
   updateBaseDateSection,

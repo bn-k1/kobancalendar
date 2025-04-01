@@ -1,7 +1,11 @@
 // calendar/eventHandler.js - イベント表示と操作の機能
 
 import dayjs from "dayjs";
-import { getEventType, isConfigLoaded, getScheduleForDate } from "../store.js";
+import {
+  getEventType,
+  isConfigLoaded,
+  getScheduleForDate,
+} from "../store/index.js";
 
 // カレンダーの更新
 function updateCalendar(currentBaseDate, lastBaseDate) {

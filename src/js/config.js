@@ -13,7 +13,7 @@ import {
   isConfigLoaded,
   getEventType,
   initializeCache,
-} from "./store.js";
+} from "./store/index.js";
 
 // Day.jsプラグインの設定
 dayjs.extend(customParseFormat);
