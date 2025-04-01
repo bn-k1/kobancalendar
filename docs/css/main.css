@@ -83,15 +83,6 @@ main {
   margin: var(--spacing-small) 0;
 }
 
-.event-meta {
-  font-size: 0.8em;
-  color: #555;
-  margin-top: 2px;
-  background-color: rgba(255, 255, 255, 0.7);
-  padding: 2px 4px;
-  border-radius: 2px;
-}
-
 legend {
   color: var(--primary-color);
   font-weight: bold;
@@ -167,6 +158,19 @@ button:focus {
   font-size: 0.9em;
 }
 
+.event-meta {
+  font-size: 0.8em;
+  color: #555;
+  margin-top: 2px;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 2px 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
 .fc-day-sat {
   background-color: var(--saturday-color);
 }
@@ -223,6 +227,19 @@ footer a:visited {
 
   .fc .fc-toolbar-chunk:last-child {
     margin-left: auto;
+  }
+
+  .event-meta {
+    font-size: 0.7em;
+    padding: 1px 2px;
+  }
+
+  .fc-daygrid-event .fc-event-title {
+    font-size: 0.9em;
+  }
+
+  .event-time {
+    font-size: 0.8em;
   }
 
   .controls {
