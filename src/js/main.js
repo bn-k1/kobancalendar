@@ -1,4 +1,4 @@
-// main.js - アプリケーションのエントリーポイント
+// main.js - カレンダー更新部分の修正
 
 import "../css/style.css";
 import dayjs from "dayjs";
@@ -13,7 +13,11 @@ import {
 
 import { loadScheduleData, loadHolidays } from "./data-loader.js";
 import { setScheduleData } from "./store.js";
-import { initializeCalendar, updateCalendar } from "./calendar.js";
+import {
+  initializeCalendar,
+  updateCalendar,
+  refreshCalendarView,
+} from "./calendar.js";
 import { exportICS } from "./export.js";
 import { getState } from "./store.js";
 
@@ -36,7 +40,10 @@ function handleCalendarUpdate() {
     );
     return;
   }
+
+  // カレンダー更新時にリフレッシュも実行
   updateCalendar(getState("currentBaseDate"), getState("lastBaseDate"));
+  refreshCalendarView();
 }
 
 // 基準日の変更時の処理を更新

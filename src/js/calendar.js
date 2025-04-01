@@ -5,14 +5,19 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import dayjs from "dayjs";
 
-import { getEventType, isConfigLoaded } from "./store.js";
-import { getScheduleForDate } from "./store.js";
+import {
+  getEventType,
+  isConfigLoaded,
+  getScheduleForDate,
+  isHoliday,
+} from "./store.js";
 
 let calendar;
 
 // カレンダーの初期化
 function initializeCalendar(updateCallback) {
   let calendarElement = document.getElementById("calendar");
+
   calendar = new Calendar(calendarElement, {
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: "dayGridMonth",
@@ -22,6 +27,31 @@ function initializeCalendar(updateCallback) {
     aspectRatio: 1.35,
     height: "auto",
 
+    // FullCalendarのAPIを使用してセルの表示をカスタマイズ
+    dayCellDidMount: (info) => {
+      const { date, el } = info;
+      const dateObj = dayjs(date);
+
+      // 土曜、日曜、祝日のスタイルを設定
+      if (isHoliday(dateObj)) {
+        el.classList.add("holiday");
+      }
+      if (dateObj.day() === 6) {
+        // 土曜日
+        el.classList.add("fc-day-sat");
+      }
+      if (dateObj.day() === 0) {
+        // 日曜日
+        el.classList.add("fc-day-sun");
+      }
+
+      // 今日の日付をハイライト
+      if (dateObj.isSame(dayjs().startOf("day"), "day")) {
+        el.classList.add("today-highlight");
+      }
+    },
+
+    // イベントコンテンツのカスタマイズ
     eventContent: (arg) => {
       let [title, startTime = "", endTime = ""] = arg.event.title.split("\n");
 
@@ -34,6 +64,7 @@ function initializeCalendar(updateCallback) {
       };
     },
   });
+
   calendar.render();
   return calendar;
 }
@@ -53,11 +84,31 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
   const startPosition = parseInt(document.getElementById("startNumber").value);
   const viewStartDate = dayjs(calendar.view.activeStart);
   const viewEndDate = dayjs(calendar.view.activeEnd);
+
+  // イベントデータを一度にまとめて準備
+  const calendarEvents = generateCalendarEvents(
+    viewStartDate,
+    viewEndDate,
+    startPosition,
+    currentBaseDate,
+    lastBaseDate,
+  );
+
+  // イベントの一括更新
+  calendar.removeAllEvents();
+  calendar.addEventSource(calendarEvents);
+}
+
+// 日付範囲のイベントデータを生成する関数
+function generateCalendarEvents(
+  viewStartDate,
+  viewEndDate,
+  startPosition,
+  currentBaseDate,
+  lastBaseDate,
+) {
   const calendarEvents = [];
 
-  const today = dayjs().startOf("day");
-
-  // 表示範囲の日付を順に処理
   let currentDate = viewStartDate;
   while (currentDate.isBefore(viewEndDate)) {
     const scheduleInfo = getScheduleForDate(
@@ -66,41 +117,16 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
       currentBaseDate,
       lastBaseDate,
     );
+
     if (!scheduleInfo) {
       currentDate = currentDate.add(1, "day");
       continue;
     }
 
-    const {
-      dateStr,
-      subject,
-      startTime,
-      endTime,
-      isHoliday: isHolidayFlag,
-      isSaturday,
-    } = scheduleInfo;
-
-    // カレンダーセルのスタイル設定
-    const calendarCell = document.querySelector(`[data-date='${dateStr}']`);
-    if (calendarCell) {
-      calendarCell.classList.remove("holiday", "fc-day-sat", "fc-day-sun");
-
-      if (isHolidayFlag) {
-        calendarCell.classList.add("holiday");
-      }
-      if (isSaturday) {
-        calendarCell.classList.add("fc-day-sat");
-      }
-      if (currentDate.day() === 0) {
-        calendarCell.classList.add("fc-day-sun");
-      }
-      if (currentDate.isSame(today, "day")) {
-        calendarCell.classList.add("today-highlight");
-      }
-    }
+    const { dateStr, subject, startTime, endTime } = scheduleInfo;
 
     try {
-      // イベントの追加 - ここでエラーが発生する可能性がある
+      // イベントの準備
       const { config } = getEventType(subject);
       calendarEvents.push({
         title: config.showTime
@@ -108,6 +134,12 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
           : subject,
         start: dateStr,
         color: config.color,
+        // 追加のメタデータ（必要に応じて）
+        extendedProps: {
+          startTime,
+          endTime,
+          isShift: true,
+        },
       });
     } catch (error) {
       console.error(
@@ -120,9 +152,14 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
     currentDate = currentDate.add(1, "day");
   }
 
-  // イベントの更新
-  calendar.removeAllEvents();
-  calendar.addEventSource(calendarEvents);
+  return calendarEvents;
+}
+
+// カレンダーの表示を更新（再レンダリングなしでビューを更新）
+function refreshCalendarView() {
+  if (calendar) {
+    calendar.render();
+  }
 }
 
 // 現在のカレンダーインスタンスを取得
@@ -131,4 +168,4 @@ function getCalendar() {
 }
 
 // エクスポート
-export { initializeCalendar, updateCalendar, getCalendar };
+export { initializeCalendar, updateCalendar, refreshCalendarView, getCalendar };
