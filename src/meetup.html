@@ -60,28 +60,43 @@
           <legend>参加者</legend>
           <div id="participantsList">
             <div class="participant-entry">
-              <select class="participant-position" aria-label="参加者のコマ位置">
+              <select
+                class="participant-position"
+                aria-label="参加者のコマ位置"
+              >
                 <option value="" disabled selected>コマ位置を選択</option>
                 <!-- JSで動的に生成 -->
               </select>
-              <button class="remove-participant" aria-label="この参加者を削除">✕</button>
+              <button class="remove-participant" aria-label="この参加者を削除">
+                ✕
+              </button>
             </div>
           </div>
-          <button id="addParticipantBtn" class="primary-btn">参加者を追加</button>
+          <button id="addParticipantBtn" class="primary-btn">
+            参加者を追加
+          </button>
         </fieldset>
 
-        <button id="findDatesBtn" class="primary-btn action-btn">日程を検索</button>
+        <button id="findDatesBtn" class="primary-btn action-btn">
+          日程を検索
+        </button>
       </div>
 
       <div id="results" class="results hidden">
         <h2>検索結果</h2>
         <div class="results-tabs">
-          <button id="allMatchesTab" class="tab-btn active" data-matches="all">全員一致</button>
-          <button id="partialMatchesTab" class="tab-btn" data-matches="partial">部分一致</button>
+          <button id="allMatchesTab" class="tab-btn active" data-matches="all">
+            全員一致
+          </button>
+          <button id="partialMatchesTab" class="tab-btn" data-matches="partial">
+            部分一致
+          </button>
         </div>
         <div id="resultsContent">
           <div id="allMatchesContent" class="tab-content active">
-            <div class="no-results-message hidden">全員が参加可能な日付は見つかりませんでした。</div>
+            <div class="no-results-message hidden">
+              全員が参加可能な日付は見つかりませんでした。
+            </div>
             <table id="allMatchesTable" class="results-table">
               <thead>
                 <tr>
@@ -97,7 +112,9 @@
             </table>
           </div>
           <div id="partialMatchesContent" class="tab-content">
-            <div class="no-results-message hidden">条件に合う日付は見つかりませんでした。</div>
+            <div class="no-results-message hidden">
+              条件に合う日付は見つかりませんでした。
+            </div>
             <table id="partialMatchesTable" class="results-table">
               <thead>
                 <tr>

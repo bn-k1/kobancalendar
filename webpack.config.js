@@ -6,7 +6,7 @@ module.exports = {
   mode: "development",
   entry: {
     main: "./src/js/bootstrap.js",
-    meetup: "./src/js/meetup/main.js"
+    meetup: "./src/js/meetup/main.js",
   },
   output: {
     filename: "js/[name].bundle.js", // [name] でエントリーポイント名が使われる
@@ -47,12 +47,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "./src/index.html",
       filename: "index.html",
-      chunks: ["main"]
+      chunks: ["main"],
     }),
     new HtmlWebpackPlugin({
       template: "./src/meetup.html",
       filename: "meetup.html",
-      chunks: ["meetup"]
+      chunks: ["meetup"],
     }),
     new MiniCssExtractPlugin({
       filename: "css/[name].css",

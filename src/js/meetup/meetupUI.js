@@ -8,7 +8,7 @@
 function updateMeetupBaseDateSection(baseDates, currentBaseDate) {
   const baseDateSelect = document.getElementById("baseDate");
   if (!baseDateSelect) return; // 要素が存在しない場合は何もしない
-  
+
   const currentBaseDateStr = currentBaseDate.format("YYYY-MM-DD");
 
   // 既存のオプションと新しいオプションの数が一致し、現在の値も正しければ更新しない
@@ -45,15 +45,15 @@ function updateMeetupBaseDateSection(baseDates, currentBaseDate) {
 function initializeMeetupUI(baseDates, currentBaseDate) {
   // 基準日セクションを更新
   updateMeetupBaseDateSection(baseDates, currentBaseDate);
-  
+
   // コントロールセクションを表示
   const sections = [
     "baseDateSection",
     "meetupSettingsSection",
-    "participantsSection"
+    "participantsSection",
   ];
-  
-  sections.forEach(id => {
+
+  sections.forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       element.classList.remove("hidden");

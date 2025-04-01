@@ -221,22 +221,22 @@ nav a:hover {
   .controls {
     padding: 0;
   }
-  
+
   .control-group {
     padding: var(--spacing-small);
   }
-  
+
   .results-table th,
   .results-table td {
     padding: 4px 6px;
     font-size: 0.9em;
   }
-  
+
   .modal-content {
     width: 95%;
     padding: var(--spacing-medium);
   }
-  
+
   .details-table th,
   .details-table td {
     padding: 4px 6px;
