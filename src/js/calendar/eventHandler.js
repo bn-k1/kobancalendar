@@ -2,7 +2,6 @@
 
 import dayjs from "dayjs";
 import { getEventType, isConfigLoaded, getScheduleForDate } from "../store.js";
-import { applyDayCellStyles } from "./cellStyle.js";
 
 // カレンダーの更新
 function updateCalendar(currentBaseDate, lastBaseDate) {
@@ -33,9 +32,6 @@ function updateCalendar(currentBaseDate, lastBaseDate) {
   // イベントの一括更新
   calendar.removeAllEvents();
   calendar.addEventSource(calendarEvents);
-
-  // 日付セルのスタイルを適用
-  setTimeout(applyDayCellStyles, 0);
 }
 
 // 日付範囲のイベントデータを生成する関数

@@ -12,6 +12,7 @@ import {
   updateCurrentBaseDate,
   isConfigLoaded,
   getEventType,
+  initializeCache,
 } from "./store.js";
 
 // Day.jsプラグインの設定
@@ -22,10 +23,6 @@ dayjs.extend(isSameOrAfter);
 // 設定ファイルの読み込み
 async function loadConfig() {
   try {
-    if (!config) {
-      throw new Error("設定ファイルの取得に失敗しました");
-    }
-
     let baseDates = [];
     if (config.base_dates) {
       baseDates = config.base_dates
@@ -68,18 +65,23 @@ async function loadConfig() {
     setState("currentBaseDate", currentBaseDate);
     setState("lastBaseDate", baseDates[baseDates.length - 1]);
 
+    // 祝日年範囲の設定（追加）
+    if (config.holiday_years_range !== undefined) {
+      setState("holidayYearsRange", config.holiday_years_range);
+    }
+
+    // キャッシュサイズの設定（追加）
+    if (config.max_cache_size !== undefined) {
+      setState("maxCacheSize", config.max_cache_size);
+      // キャッシュの初期化
+      initializeCache();
+    }
+
     // 祝日設定
     setState("userDefinedHolidays", config.custom_holidays || []);
 
     // ICSエクスポート設定を読み込む
-    const icsExportConfig = config.info || {
-      calendar_name: "KobanCalendar",
-      timezone: "Asia/Tokyo",
-      company: "bn-k1",
-      product: "kobancalendar",
-      language: "JP",
-      uid_domain: "kobancalendar.jp",
-    };
+    const icsExportConfig = config.info;
     setState("icsExportConfig", icsExportConfig);
 
     return {
@@ -89,6 +91,7 @@ async function loadConfig() {
       holidayYearsRange: getState("holidayYearsRange"),
       userDefinedHolidays: getState("userDefinedHolidays"),
       icsExportConfig: getState("icsExportConfig"),
+      maxCacheSize: getState("maxCacheSize"), // 追加
     };
   } catch (error) {
     console.error("設定ファイルの読み込みに失敗しました:", error.message);
@@ -99,9 +102,6 @@ async function loadConfig() {
 // イベント設定ファイルの読み込み
 async function loadEventConfig() {
   try {
-    if (!eventConfig) {
-      throw new Error("イベント設定ファイルの取得に失敗しました");
-    }
     setState("eventConfig", eventConfig);
     return eventConfig;
   } catch (error) {
@@ -139,8 +139,9 @@ export {
   getICSExportConfig,
 };
 
-// エクスポート（storeから直接取得するためのエイリアス）
 export const baseDates = () => getState("baseDates");
 export const currentBaseDate = () => getState("currentBaseDate");
 export const lastBaseDate = () => getState("lastBaseDate");
 export const userDefinedHolidays = () => getState("userDefinedHolidays");
+export const holidayYearsRange = () => getState("holidayYearsRange");
+export const maxCacheSize = () => getState("maxCacheSize");

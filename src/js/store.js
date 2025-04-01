@@ -20,16 +20,10 @@ const _state = {
   lastBaseDate: null,
 
   // 設定
-  holidayYearsRange: 5,
+  holidayYearsRange: 0,
+  maxCacheSize: 0,
   userDefinedHolidays: [],
-  icsExportConfig: {
-    calendar_name: "KobanCalendar",
-    timezone: "Asia/Tokyo",
-    company: "bn-k1",
-    product: "kobancalendar",
-    language: "JP",
-    uid_domain: "kobancalendar.jp",
-  },
+  icsExportConfig: {},
 
   // イベント設定
   eventConfig: null,
@@ -37,10 +31,8 @@ const _state = {
   // 祝日
   allHolidays: {},
 
-  // キャッシュ
-  scheduleCache: new LRUCache({
-    max: 1000,
-  }),
+  // キャッシュ（実際のサイズはconfigで初期化される）
+  scheduleCache: null,
 };
 
 // アクセサ関数 - 全ての状態プロパティへの統一的なアクセス方法
@@ -66,11 +58,25 @@ function getState(key) {
 function setState(key, value) {
   if (key in _state) {
     _state[key] = value;
-    // 変更通知は必要に応じて実装可能
+
+    // maxCacheSizeが更新された場合、キャッシュを再初期化
+    if (key === "maxCacheSize" && _state.scheduleCache) {
+      initializeCache();
+    }
+
     return true;
   }
   console.warn(`存在しない状態キー '${key}' への更新をスキップしました`);
   return false;
+}
+
+/**
+ * キャッシュの初期化
+ */
+function initializeCache() {
+  _state.scheduleCache = new LRUCache({
+    max: _state.maxCacheSize,
+  });
 }
 
 /**
@@ -86,7 +92,11 @@ function setScheduleData(data) {
  * スケジュールキャッシュのクリア
  */
 function clearScheduleCache() {
-  _state.scheduleCache.clear();
+  if (!_state.scheduleCache) {
+    initializeCache();
+  } else {
+    _state.scheduleCache.clear();
+  }
 }
 
 /**
@@ -144,7 +154,7 @@ function _getEventType(subject) {
 
   if (!eventConfig || !eventConfig.events) {
     console.error("イベント設定が読み込まれていないか無効です");
-    return { type: "default", config: { color: "#42a5f5", showTime: true } };
+    return { type: "default", config: eventConfig.events.default };
   }
 
   // events オブジェクト内のすべてのイベントタイプを確認
@@ -162,7 +172,7 @@ function _getEventType(subject) {
   // どのイベントタイプにも該当しなかった場合、default設定を返す
   return {
     type: "default",
-    config: eventConfig.events.default || { color: "#42a5f5", showTime: true },
+    config: eventConfig.events.default,
   };
 }
 
@@ -174,7 +184,7 @@ const getEventType = memoize(_getEventType);
  * @returns {boolean} 設定が読み込まれているかどうか
  */
 function isConfigLoaded() {
-  return _state.eventConfig !== null;
+  return _state.eventConfig !== null && _state.scheduleCache !== null;
 }
 
 /**
@@ -278,6 +288,11 @@ function getScheduleForDate(
   currentBaseDate,
   lastBaseDate,
 ) {
+  // キャッシュが初期化されていなければ初期化
+  if (!_state.scheduleCache) {
+    initializeCache();
+  }
+
   const key = `${targetDate.format("YYYY-MM-DD")}_${startPosition}_${currentBaseDate.format(
     "YYYY-MM-DD",
   )}_${lastBaseDate.format("YYYY-MM-DD")}`;
@@ -349,7 +364,7 @@ export {
   isConfigLoaded,
   getScheduleForDate,
   calculateScheduleRange,
-  // 新しくエクスポートする関数
   calculateShiftIndex,
   getHolidayName,
+  initializeCache,
 };
