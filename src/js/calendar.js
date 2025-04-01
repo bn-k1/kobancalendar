@@ -10,6 +10,7 @@ import {
   isConfigLoaded,
   getScheduleForDate,
   isHoliday,
+  getHolidayName,
 } from "./store.js";
 
 let calendar;
@@ -55,11 +56,24 @@ function initializeCalendar(updateCallback) {
     eventContent: (arg) => {
       let [title, startTime = "", endTime = ""] = arg.event.title.split("\n");
 
+      // extendedPropsからデバッグ情報を取得
+      const { shiftIndex, isHoliday } = arg.event.extendedProps;
+      const dateObj = dayjs(arg.event.start);
+
+      // 祝日名を取得
+      const holidayName = getHolidayName(dateObj);
+
+      // デバッグ情報の文字列を作成（土日の表示は排除）
+      const metaInfo = holidayName
+        ? `${shiftIndex + 1} ${holidayName}`
+        : `${shiftIndex + 1}`;
+
       return {
         html: `
           <div class="event-title">${title}</div>
           ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
           ${endTime ? `<div class="event-time">${endTime}</div>` : ""}
+          <div class="event-meta">${metaInfo}</div>
         `,
       };
     },
@@ -123,7 +137,15 @@ function generateCalendarEvents(
       continue;
     }
 
-    const { dateStr, subject, startTime, endTime } = scheduleInfo;
+    const {
+      dateStr,
+      subject,
+      startTime,
+      endTime,
+      isHoliday,
+      isSaturday,
+      shiftIndex,
+    } = scheduleInfo;
 
     try {
       // イベントの準備
@@ -134,11 +156,14 @@ function generateCalendarEvents(
           : subject,
         start: dateStr,
         color: config.color,
-        // 追加のメタデータ（必要に応じて）
+        // 追加のメタデータ
         extendedProps: {
           startTime,
           endTime,
           isShift: true,
+          isHoliday,
+          isSaturday,
+          shiftIndex,
         },
       });
     } catch (error) {

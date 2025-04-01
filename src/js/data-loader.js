@@ -44,7 +44,7 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
       ) {
         let formattedDate = `${year}-${month}-${day}`;
         if (allHolidays[formattedDate] === undefined) {
-          allHolidays[formattedDate] = "customholiday";
+          allHolidays[formattedDate] = "設定祝日";
         }
       }
     });

@@ -125,6 +125,16 @@ const isHoliday = memoize(
 );
 
 /**
+ * 祝日の名前を取得する関数
+ * @param {dayjs} date - 日付
+ * @returns {string|undefined} 祝日名または undefined
+ */
+function getHolidayName(date) {
+  const dateStr = date.format("YYYY-MM-DD");
+  return _state.allHolidays[dateStr];
+}
+
+/**
  * イベントの種類を判定
  * @param {string} subject - イベント名/件名
  * @returns {Object} イベントタイプと設定
@@ -168,6 +178,26 @@ function isConfigLoaded() {
 }
 
 /**
+ * シフトインデックスを計算する関数
+ * @param {dayjs} targetDate - 対象日付
+ * @param {number} startPosition - 開始位置
+ * @param {dayjs} currentBaseDate - 現在の基準日
+ * @returns {number} 計算されたシフトインデックス
+ */
+function calculateShiftIndex(targetDate, startPosition, currentBaseDate) {
+  const daysDifference = targetDate.diff(currentBaseDate, "day");
+  const adjustedStartPosition = startPosition - 1;
+  const rotationCycleLength = _state.scheduleData.rotationCycleLength;
+
+  const shiftIndex =
+    (((adjustedStartPosition + daysDifference) % rotationCycleLength) +
+      rotationCycleLength) %
+    rotationCycleLength;
+
+  return shiftIndex;
+}
+
+/**
  * 任意の日付とコマ位置から勤務内容を返す
  * @param {dayjs} targetDate - 対象日付
  * @param {number} startPosition - 開始位置
@@ -203,24 +233,21 @@ function _getScheduleForDate(
     };
   }
 
-  // 日付差分から勤務位置を計算
-  const daysDifference = targetDate.diff(currentBaseDate, "day");
-  const adjustedStartPosition = startPosition - 1;
-  const scheduleData = _state.scheduleData;
-  const shiftIndex =
-    (((adjustedStartPosition + daysDifference) %
-      scheduleData.rotationCycleLength) +
-      scheduleData.rotationCycleLength) %
-    scheduleData.rotationCycleLength;
+  // 日付差分から勤務位置を計算（calculateShiftIndex関数を使用）
+  const shiftIndex = calculateShiftIndex(
+    targetDate,
+    startPosition,
+    currentBaseDate,
+  );
 
   // 曜日タイプに基づくデータ選択
   let shiftData;
   if (isHolidayFlag) {
-    shiftData = scheduleData.holiday[shiftIndex];
+    shiftData = _state.scheduleData.holiday[shiftIndex];
   } else if (isSaturday) {
-    shiftData = scheduleData.saturday[shiftIndex];
+    shiftData = _state.scheduleData.saturday[shiftIndex];
   } else {
-    shiftData = scheduleData.weekday[shiftIndex];
+    shiftData = _state.scheduleData.weekday[shiftIndex];
   }
 
   if (!shiftData) return null;
@@ -233,6 +260,7 @@ function _getScheduleForDate(
     endTime,
     isHoliday: isHolidayFlag,
     isSaturday,
+    shiftIndex, // シフトインデックスを結果に含める
   };
 }
 
@@ -321,4 +349,7 @@ export {
   isConfigLoaded,
   getScheduleForDate,
   calculateScheduleRange,
+  // 新しくエクスポートする関数
+  calculateShiftIndex,
+  getHolidayName,
 };
