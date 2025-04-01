@@ -17,7 +17,7 @@ import {
   initializeCalendar,
   updateCalendar,
   refreshCalendarView,
-} from "./calendar.js";
+} from "./calendar/index.js";
 import { exportICS } from "./export.js";
 import { getState } from "./store.js";
 
