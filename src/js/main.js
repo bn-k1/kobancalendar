@@ -9,15 +9,13 @@ import {
   updateCurrentBaseDate,
   updateURLParams,
   isConfigLoaded,
-  baseDates,
-  currentBaseDate,
-  lastBaseDate,
 } from "./config.js";
 
 import { loadScheduleData, loadHolidays } from "./data-loader.js";
-import { setScheduleData } from "./calc.js";
+import { setScheduleData } from "./store.js";
 import { initializeCalendar, updateCalendar } from "./calendar.js";
 import { exportICS } from "./export.js";
+import { getState } from "./store.js";
 
 import {
   updateBaseDateSection,
@@ -38,7 +36,7 @@ function handleCalendarUpdate() {
     );
     return;
   }
-  updateCalendar(currentBaseDate, lastBaseDate);
+  updateCalendar(getState("currentBaseDate"), getState("lastBaseDate"));
 }
 
 // 基準日の変更時の処理を更新
@@ -53,7 +51,7 @@ function handleBaseDateChange() {
 // URLの更新とスケジュール生成
 function updateURLAndGenerateSchedule() {
   const startNumber = document.getElementById("startNumber").value;
-  updateURLParams(currentBaseDate, startNumber);
+  updateURLParams(getState("currentBaseDate"), startNumber);
   handleCalendarUpdate();
 }
 
@@ -61,7 +59,12 @@ function updateURLAndGenerateSchedule() {
 function handleExportICS() {
   const months = parseInt(document.getElementById("exportMonths").value);
   const startNumber = parseInt(document.getElementById("startNumber").value);
-  exportICS(months, startNumber, currentBaseDate, lastBaseDate);
+  exportICS(
+    months,
+    startNumber,
+    getState("currentBaseDate"),
+    getState("lastBaseDate"),
+  );
 }
 
 // イベントリスナーの設定
@@ -94,9 +97,9 @@ async function initializeApp() {
     );
 
     // UIの初期化
-    updateBaseDateSection(baseDates, currentBaseDate);
-    updateExportSectionLabel(currentBaseDate);
-    showControlSections(currentBaseDate);
+    updateBaseDateSection(getState("baseDates"), getState("currentBaseDate"));
+    updateExportSectionLabel(getState("currentBaseDate"));
+    showControlSections(getState("currentBaseDate"));
     initializeStartNumberSelection(shiftData.rotationCycleLength);
 
     // カレンダーを初期化

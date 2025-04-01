@@ -1,5 +1,5 @@
 {
-  "specialEvents": {
+  "events": {
     "restDay": {
       "keywords": ["公休", "法休"],
       "color": "#f44336",
@@ -19,10 +19,11 @@
       "keywords": ["-"],
       "color": "#78909c",
       "showTime": false
+    },
+    "default": {
+      "keywords": [],
+      "color": "#42a5f5",
+      "showTime": true
     }
-  },
-  "defaultEvent": {
-    "color": "#42a5f5",
-    "showTime": true
   }
 }

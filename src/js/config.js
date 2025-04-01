@@ -4,23 +4,20 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import { memoize } from "lodash";
 import config from "@config/config.json";
 import eventConfig from "@config/event.json";
+import {
+  getState,
+  setState,
+  updateCurrentBaseDate,
+  isConfigLoaded,
+  getEventType,
+} from "./store.js";
 
 // Day.jsプラグインの設定
 dayjs.extend(customParseFormat);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
-
-// 設定情報を保持する変数
-let baseDates = [];
-let currentBaseDate;
-let lastBaseDate;
-let holidayYearsRange;
-let userDefinedHolidays = [];
-let loadedEventConfig = null;
-let icsExportConfig = null;
 
 // 設定ファイルの読み込み
 async function loadConfig() {
@@ -29,6 +26,7 @@ async function loadConfig() {
       throw new Error("設定ファイルの取得に失敗しました");
     }
 
+    let baseDates = [];
     if (config.base_dates) {
       baseDates = config.base_dates
         .map((dateStr) => dayjs(dateStr))
@@ -39,6 +37,11 @@ async function loadConfig() {
       throw new Error("基準日が設定されていません");
     }
 
+    // ストアに基準日一覧を設定
+    setState("baseDates", baseDates);
+
+    // URLからの基準日取得処理
+    let currentBaseDate;
     const urlParameters = new URLSearchParams(window.location.search);
     if (urlParameters.has("baseDate")) {
       const requestedBaseDateStr = urlParameters.get("baseDate");
@@ -61,13 +64,15 @@ async function loadConfig() {
       currentBaseDate = baseDates[0];
     }
 
-    lastBaseDate = baseDates[baseDates.length - 1];
+    // ストアに現在と最終の基準日を設定
+    setState("currentBaseDate", currentBaseDate);
+    setState("lastBaseDate", baseDates[baseDates.length - 1]);
 
-    holidayYearsRange = config.holiday_years_range;
-    userDefinedHolidays = config.custom_holidays || [];
+    // 祝日設定
+    setState("userDefinedHolidays", config.custom_holidays || []);
 
     // ICSエクスポート設定を読み込む
-    icsExportConfig = config.info || {
+    const icsExportConfig = config.info || {
       calendar_name: "KobanCalendar",
       timezone: "Asia/Tokyo",
       company: "bn-k1",
@@ -75,14 +80,15 @@ async function loadConfig() {
       language: "JP",
       uid_domain: "kobancalendar.jp",
     };
+    setState("icsExportConfig", icsExportConfig);
 
     return {
       baseDates,
-      currentBaseDate,
-      lastBaseDate,
-      holidayYearsRange,
-      userDefinedHolidays,
-      icsExportConfig,
+      currentBaseDate: getState("currentBaseDate"),
+      lastBaseDate: getState("lastBaseDate"),
+      holidayYearsRange: getState("holidayYearsRange"),
+      userDefinedHolidays: getState("userDefinedHolidays"),
+      icsExportConfig: getState("icsExportConfig"),
     };
   } catch (error) {
     console.error("設定ファイルの読み込みに失敗しました:", error.message);
@@ -96,8 +102,8 @@ async function loadEventConfig() {
     if (!eventConfig) {
       throw new Error("イベント設定ファイルの取得に失敗しました");
     }
-    loadedEventConfig = eventConfig;
-    return loadedEventConfig;
+    setState("eventConfig", eventConfig);
+    return eventConfig;
   } catch (error) {
     console.error(
       "イベント設定ファイルの読み込みに失敗しました:",
@@ -105,32 +111,6 @@ async function loadEventConfig() {
     );
     throw error;
   }
-}
-
-// イベントの種類を判定 - getEventType は必ずイベント設定が読み込まれた後に使用する
-function _getEventType(subject) {
-  if (!loadedEventConfig) {
-    console.error("イベント設定が読み込まれていません");
-    return { type: "default", config: { color: "#42a5f5", showTime: true } };
-  }
-
-  for (const [type, config] of Object.entries(
-    loadedEventConfig.specialEvents,
-  )) {
-    if (config.keywords.some((keyword) => subject.includes(keyword))) {
-      return { type, config };
-    }
-  }
-  return { type: "default", config: loadedEventConfig.defaultEvent };
-}
-
-// memoizeを使用してパフォーマンスを向上
-const getEventType = memoize(_getEventType);
-
-// 基準日を更新する
-function updateCurrentBaseDate(newBaseDate) {
-  currentBaseDate = newBaseDate;
-  return currentBaseDate;
 }
 
 // URLのクエリパラメータを更新
@@ -143,14 +123,9 @@ function updateURLParams(baseDate, startNumber) {
   );
 }
 
-// 設定が完全に読み込まれたかチェックする
-function isConfigLoaded() {
-  return loadedEventConfig !== null;
-}
-
 // ICSエクスポート設定を取得
 function getICSExportConfig() {
-  return icsExportConfig;
+  return getState("icsExportConfig");
 }
 
 // エクスポート
@@ -162,8 +137,10 @@ export {
   updateURLParams,
   isConfigLoaded,
   getICSExportConfig,
-  baseDates,
-  currentBaseDate,
-  lastBaseDate,
-  userDefinedHolidays,
 };
+
+// エクスポート（storeから直接取得するためのエイリアス）
+export const baseDates = () => getState("baseDates");
+export const currentBaseDate = () => getState("currentBaseDate");
+export const lastBaseDate = () => getState("lastBaseDate");
+export const userDefinedHolidays = () => getState("userDefinedHolidays");

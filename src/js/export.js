@@ -1,7 +1,7 @@
 // export.js - ICSエクスポート機能を提供（ical-generatorを使用）
 import dayjs from "dayjs";
 import ical from "ical-generator";
-import { calculateScheduleRange } from "./calc.js";
+import { calculateScheduleRange } from "./store.js";
 import { getICSExportConfig } from "./config.js";
 
 // ICSエクスポート機能
@@ -76,11 +76,13 @@ function generateUID(
   subject = "",
   startTime = "",
   endTime = "",
-  domain = "kobancalendar.jp",
+  domain = null,
 ) {
+  // ドメインが指定されていない場合はICS設定から取得
+  const uidDomain = domain || getICSExportConfig().uid_domain;
   const dateStr = date.format("YYYYMMDD");
   const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);
-  return `${dateStr}-${contentHash}@${domain}`;
+  return `${dateStr}-${contentHash}@${uidDomain}`;
 }
 
 // シンプルなハッシュ関数 - 文字列から数値ハッシュを生成

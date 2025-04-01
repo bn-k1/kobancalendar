@@ -37,14 +37,13 @@
    ```json
    {
      "base_dates": ["YYYY-MM-DD", "YYYY-MM-DD"],
-     "holiday_years_range": 2,
      "custom_holidays": ["MM-DD", "MM-DD"]
    }
    ```
 
    - `base_dates`: シフト計算の基準日（YYYY-MM-DD形式）。複数登録可能。単一でも動作します。一番前の要素がデフォルトです。
-   - `holiday_years_range`: 祝日データ取得年数。
-   - `custom_holidays`: 独自に設定するカスタム祝日の配列。
+   - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
+   - `info`にはエクスポートされた.icsに記載したい情報を記述します。
 
 4. `data/`の.csv（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。フォーマットは以下のとおりです。全てのファイルの行数は同じある必要があります。Subject,StartTime,EndTimeの形式で、交番表のコマ数=.csvの行数になるように記述してください。
 

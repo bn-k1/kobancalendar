@@ -5,8 +5,8 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import dayjs from "dayjs";
 
-import { getEventType, isConfigLoaded } from "./config.js";
-import { getScheduleForDate } from "./calc.js";
+import { getEventType, isConfigLoaded } from "./store.js";
+import { getScheduleForDate } from "./store.js";
 
 let calendar;
 

@@ -2,12 +2,10 @@
 
 import dayjs from "dayjs";
 import JapaneseHolidays from "japanese-holidays";
-import { memoize } from "lodash";
 import holidayData from "@data/holiday.csv";
 import saturdayData from "@data/saturday.csv";
 import weekdayData from "@data/weekday.csv";
-
-let allHolidays = {};
+import { setHolidays, isHoliday } from "./store.js";
 
 // CSV形式のデータを処理する
 function processCSVData(csvData) {
@@ -18,7 +16,7 @@ function processCSVData(csvData) {
 async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
   try {
     const currentYear = dayjs().year();
-    allHolidays = {};
+    const allHolidays = {};
 
     // 指定された年範囲の祝日を取得
     for (
@@ -51,6 +49,8 @@ async function loadHolidays(holidayYearsRange, userDefinedHolidays) {
       }
     });
 
+    // ストアに祝日データを設定
+    setHolidays(allHolidays);
     return allHolidays;
   } catch (error) {
     console.error("祝日データの取得に失敗しました:", error);
@@ -88,18 +88,5 @@ async function loadScheduleData() {
   }
 }
 
-// 特定の日が祝日かどうか判定
-function _isHoliday(date) {
-  const dateStr = date.format("YYYY-MM-DD");
-  return allHolidays[dateStr] !== undefined || date.day() === 0; // day()は0が日曜
-}
-
-// memoizeを使用してパフォーマンスを向上
-// dayjs オブジェクトをキーとして扱えるよう、日付文字列に変換してからmemoize
-const isHoliday = memoize(
-  (date) => _isHoliday(date),
-  (date) => date.format("YYYY-MM-DD"),
-);
-
 // エクスポート
-export { loadScheduleData, loadHolidays, isHoliday, allHolidays };
+export { loadScheduleData, loadHolidays, isHoliday };
