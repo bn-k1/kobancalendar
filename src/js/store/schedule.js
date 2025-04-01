@@ -1,6 +1,7 @@
 // store/schedule.js - スケジュール計算関連の機能
 import dayjs from "dayjs";
-import { getState, initializeCache } from "./index.js";
+import { getState } from "./index.js";
+import { initializeCache } from "./state.js";
 import { isHoliday } from "./holidays.js";
 
 /**
