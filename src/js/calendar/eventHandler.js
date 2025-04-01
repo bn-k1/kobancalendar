@@ -6,10 +6,11 @@ import {
   isConfigLoaded,
   getScheduleForDate,
 } from "../store/index.js";
+import { getCalendarInstance } from "./calendarService.js";
 
 // カレンダーの更新
 function updateCalendar(currentBaseDate, lastBaseDate) {
-  const calendar = window.calendarInstance;
+  const calendar = getCalendarInstance();
   if (!currentBaseDate || !calendar) return;
 
   // 設定が読み込まれていることを確認

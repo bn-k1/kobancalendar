@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import dayjs from "dayjs";
 import { getHolidayName } from "../store/index.js";
 import { applyDayCellStyles, customizeDayCell } from "./cellStyle.js";
+import { setCalendarInstance } from "./calendarService.js";
 
 // カレンダーの初期化
 function initializeCalendar(updateCallback) {
@@ -37,8 +38,8 @@ function initializeCalendar(updateCallback) {
     applyDayCellStyles();
   });
 
-  // グローバル変数として保存（複数のモジュールからアクセスするため）
-  window.calendarInstance = calendar;
+  // カレンダーインスタンスを保存
+  setCalendarInstance(calendar);
 
   return calendar;
 }
@@ -49,7 +50,7 @@ function createEventContentRenderer() {
     let [title, startTime = "", endTime = ""] = arg.event.title.split("\n");
 
     // extendedPropsからデバッグ情報を取得
-    const { shiftIndex, isHoliday } = arg.event.extendedProps;
+    const { shiftIndex } = arg.event.extendedProps;
     const dateObj = dayjs(arg.event.start);
 
     // 祝日名を取得

@@ -2,6 +2,7 @@
 
 import dayjs from "dayjs";
 import { isHoliday } from "../store/index.js";
+import { getCalendarInstance } from "./calendarService.js";
 
 // 日付セルのスタイル適用
 function customizeDayCell(date, el) {
@@ -28,7 +29,7 @@ function customizeDayCell(date, el) {
 
 // カレンダー内のすべての日付セルにスタイルを適用する関数
 function applyDayCellStyles() {
-  const calendar = window.calendarInstance;
+  const calendar = getCalendarInstance();
   if (!calendar) return;
 
   // 現在表示されているすべての日付セルを取得
