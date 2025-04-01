@@ -4,9 +4,12 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   mode: "development",
-  entry: "./src/js/bootstrap.js",
+  entry: {
+    main: "./src/js/bootstrap.js",
+    meetup: "./src/js/meetup/main.js"
+  },
   output: {
-    filename: "bundle.js",
+    filename: "js/[name].bundle.js", // [name] でエントリーポイント名が使われる
     path: path.resolve(__dirname, "dist"),
     clean: true,
   },
@@ -44,6 +47,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "./src/index.html",
       filename: "index.html",
+      chunks: ["main"]
+    }),
+    new HtmlWebpackPlugin({
+      template: "./src/meetup.html",
+      filename: "meetup.html",
+      chunks: ["meetup"]
     }),
     new MiniCssExtractPlugin({
       filename: "css/[name].css",

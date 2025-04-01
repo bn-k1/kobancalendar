@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="交番表に基づいて飲み会などの調整をするためのツール"
+    />
+    <title>飲み会調整 - 交番カレンダー</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <!-- CSSの参照はwebpackが自動で挿入します -->
+  </head>
+  <body>
+    <header>
+      <h1>飲み会調整</h1>
+      <nav>
+        <a href="index.html">カレンダーに戻る</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="controls">
+        <fieldset id="baseDateSection" class="control-group">
+          <legend>基準日</legend>
+          <div class="form-group">
+            <select id="baseDate" aria-label="基準日を選択"></select>
+          </div>
+        </fieldset>
+
+        <fieldset id="meetupSettingsSection" class="control-group">
+          <legend>飲み会設定</legend>
+          <div class="form-group">
+            <label for="meetupStartTime">開始時間:</label>
+            <select id="meetupStartTime" aria-label="飲み会開始時間">
+              <option value="17:00">17:00</option>
+              <option value="17:30">17:30</option>
+              <option value="18:00" selected>18:00</option>
+              <option value="18:30">18:30</option>
+              <option value="19:00">19:00</option>
+              <option value="19:30">19:30</option>
+              <option value="20:00">20:00</option>
+              <option value="20:30">20:30</option>
+              <option value="21:00">21:00</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="searchPeriod">検索期間:</label>
+            <select id="searchPeriod" aria-label="検索期間">
+              <option value="7">1週間</option>
+              <option value="14">2週間</option>
+              <option value="30" selected>1ヶ月</option>
+              <option value="60">2ヶ月</option>
+              <option value="90">3ヶ月</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset id="participantsSection" class="control-group">
+          <legend>参加者</legend>
+          <div id="participantsList">
+            <div class="participant-entry">
+              <select class="participant-position" aria-label="参加者のコマ位置">
+                <option value="" disabled selected>コマ位置を選択</option>
+                <!-- JSで動的に生成 -->
+              </select>
+              <button class="remove-participant" aria-label="この参加者を削除">✕</button>
+            </div>
+          </div>
+          <button id="addParticipantBtn" class="primary-btn">参加者を追加</button>
+        </fieldset>
+
+        <button id="findDatesBtn" class="primary-btn action-btn">日程を検索</button>
+      </div>
+
+      <div id="results" class="results hidden">
+        <h2>検索結果</h2>
+        <div class="results-tabs">
+          <button id="allMatchesTab" class="tab-btn active" data-matches="all">全員一致</button>
+          <button id="partialMatchesTab" class="tab-btn" data-matches="partial">部分一致</button>
+        </div>
+        <div id="resultsContent">
+          <div id="allMatchesContent" class="tab-content active">
+            <div class="no-results-message hidden">全員が参加可能な日付は見つかりませんでした。</div>
+            <table id="allMatchesTable" class="results-table">
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>曜日</th>
+                  <th>参加可能人数</th>
+                  <th>詳細</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- JSで動的に生成 -->
+              </tbody>
+            </table>
+          </div>
+          <div id="partialMatchesContent" class="tab-content">
+            <div class="no-results-message hidden">条件に合う日付は見つかりませんでした。</div>
+            <table id="partialMatchesTable" class="results-table">
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>曜日</th>
+                  <th>参加可能人数</th>
+                  <th>詳細</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- JSで動的に生成 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="detailsModal" class="modal hidden">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h3 id="modalDate">日付詳細</h3>
+          <table id="detailsTable" class="details-table">
+            <thead>
+              <tr>
+                <th>コマ位置</th>
+                <th>勤務内容</th>
+                <th>時間</th>
+                <th>参加可否</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JSで動的に生成 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <p>
+        KobanCalendar -
+        <a
+          href="https://github.com/bn-k1/kobancalendar#README"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+      </p>
+    </footer>
+
+    <!-- スクリプトタグは不要、Webpackが自動で挿入します -->
+  </body>
+</html>
