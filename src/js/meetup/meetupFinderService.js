@@ -1,7 +1,6 @@
 // meetup/meetupFinderService.js - 飲み会可能日検索サービス
 import dayjs from "dayjs";
 import { getScheduleForDate, getState } from "../store/index.js";
-import { getEventType } from "./events.js";
 
 export class MeetupFinderService {
   /**
@@ -13,7 +12,7 @@ export class MeetupFinderService {
   canAttendMeetup(schedule, meetupStartTime) {
     if (!schedule) return false;
 
-    const { subject, startTime, endTime } = schedule;
+    const { subject, endTime } = schedule;
 
     // 公休、法休は常に参加可能
     if (subject === "公休" || subject === "法休" || subject === "-") {
@@ -84,8 +83,8 @@ export class MeetupFinderService {
           details: dateResults.details,
         });
       }
-      // 一部参加可能な場合（最低1人以上が参加可能）
-      else if (dateResults.availablePositions.length > 0) {
+      // 一部参加可能な場合（最低2人以上が参加可能）
+      else if (dateResults.availablePositions.length > 1) {
         result.partialMatches.push({
           date: currentDate,
           availableCount: dateResults.availablePositions.length,

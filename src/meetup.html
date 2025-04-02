@@ -7,16 +7,12 @@
       name="description"
       content="交番表に基づいて飲み会などの調整をするためのツール"
     />
-    <title>飲み会調整 - 交番カレンダー</title>
+    <title>KobanCalendar - 飲みに行くンダー</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
-    <!-- CSSの参照はwebpackが自動で挿入します -->
   </head>
   <body>
     <header>
-      <h1>飲み会調整</h1>
-      <nav>
-        <a href="index.html">カレンダーに戻る</a>
-      </nav>
+      <h1>飲みに行くンダー</h1>
     </header>
 
     <main>
@@ -29,29 +25,31 @@
         </fieldset>
 
         <fieldset id="meetupSettingsSection" class="control-group">
-          <legend>飲み会設定</legend>
+          <legend>検索条件</legend>
           <div class="form-group">
-            <label for="meetupStartTime">開始時間:</label>
+            <label for="meetupStartTime">飲会開始:</label>
             <select id="meetupStartTime" aria-label="飲み会開始時間">
-              <option value="17:00">17:00</option>
-              <option value="17:30">17:30</option>
-              <option value="18:00" selected>18:00</option>
-              <option value="18:30">18:30</option>
+              <option value="12:00">12:00</option>
+              <option value="13:00">13:00</option>
+              <option value="14:00">14:00</option>
+              <option value="15:00">15:00</option>
+              <option value="16:00">16:00</option>
+              <option value="17:00" selected>17:00</option>
+              <option value="18:00">18:00</option>
               <option value="19:00">19:00</option>
-              <option value="19:30">19:30</option>
               <option value="20:00">20:00</option>
-              <option value="20:30">20:30</option>
               <option value="21:00">21:00</option>
             </select>
           </div>
           <div class="form-group">
             <label for="searchPeriod">検索期間:</label>
             <select id="searchPeriod" aria-label="検索期間">
-              <option value="7">1週間</option>
-              <option value="14">2週間</option>
               <option value="30" selected>1ヶ月</option>
               <option value="60">2ヶ月</option>
               <option value="90">3ヶ月</option>
+              <option value="90">4ヶ月</option>
+              <option value="90">5ヶ月</option>
+              <option value="90">6ヶ月</option>
             </select>
           </div>
         </fieldset>
@@ -164,7 +162,5 @@
         </a>
       </p>
     </footer>
-
-    <!-- スクリプトタグは不要、Webpackが自動で挿入します -->
   </body>
 </html>

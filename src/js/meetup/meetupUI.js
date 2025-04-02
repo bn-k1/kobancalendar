@@ -1,4 +1,5 @@
 // meetup/meetupUI.js - meetupページ専用のUI初期化関数
+import { html, render } from "../htm-util.js";
 
 /**
  * 基準日セクションを更新する関数
@@ -19,21 +20,16 @@ function updateMeetupBaseDateSection(baseDates, currentBaseDate) {
     return;
   }
 
-  // 値が異なる場合は更新
-  baseDateSelect.innerHTML = "";
-
-  // DocumentFragmentを使用
-  const fragment = document.createDocumentFragment();
-
-  baseDates.forEach((date) => {
-    const option = document.createElement("option");
+  // HTMを使用してオプションを生成
+  const options = baseDates.map((date) => {
     const dateStr = date.format("YYYY-MM-DD");
-    option.value = dateStr;
-    option.text = dateStr;
-    fragment.appendChild(option);
+    return html`<option value=${dateStr}>${dateStr}</option>`;
   });
 
-  baseDateSelect.appendChild(fragment);
+  // レンダリング
+  render(options, baseDateSelect);
+
+  // 値を設定
   baseDateSelect.value = currentBaseDateStr;
 }
 

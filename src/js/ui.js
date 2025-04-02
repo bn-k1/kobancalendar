@@ -2,6 +2,7 @@
 
 import dayjs from "dayjs";
 import { getState } from "./store/index.js";
+import { html, render } from "./htm-util.js";
 
 // 基準日選択セクションを更新
 function updateBaseDateSection(baseDates, currentBaseDate) {
@@ -21,21 +22,16 @@ function updateBaseDateSection(baseDates, currentBaseDate) {
     return;
   }
 
-  // 値が異なる場合は更新
-  baseDateSelect.innerHTML = "";
-
-  // DocumentFragmentを使用してパフォーマンスを向上
-  const fragment = document.createDocumentFragment();
-
-  baseDates.forEach((date) => {
-    const option = document.createElement("option");
+  // HTMを使用してオプションを生成
+  const options = baseDates.map((date) => {
     const dateStr = date.format("YYYY-MM-DD");
-    option.value = dateStr;
-    option.text = dateStr;
-    fragment.appendChild(option);
+    return html`<option value=${dateStr}>${dateStr}</option>`;
   });
 
-  baseDateSelect.appendChild(fragment);
+  // レンダリング
+  render(options, baseDateSelect);
+
+  // 値を設定
   baseDateSelect.value = currentBaseDateStr;
 }
 
@@ -101,20 +97,16 @@ function initializeStartNumberSelection() {
     return;
   }
 
-  // オプション数が一致しない場合は再生成
-  startPositionSelect.innerHTML = "";
+  // HTMを使用してオプションを生成
+  const options = Array.from({ length: rotationCycleLength }, (_, i) => {
+    const value = i + 1;
+    return html`<option value=${value}>${value}</option>`;
+  });
 
-  // DocumentFragmentを使用
-  const fragment = document.createDocumentFragment();
+  // レンダリング
+  render(options, startPositionSelect);
 
-  for (let i = 1; i <= rotationCycleLength; i++) {
-    let option = document.createElement("option");
-    option.value = i;
-    option.text = i;
-    fragment.appendChild(option);
-  }
-
-  startPositionSelect.appendChild(fragment);
+  // 値を設定
   startPositionSelect.value = startNumberFromURL.toString();
 }
 

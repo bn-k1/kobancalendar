@@ -44,15 +44,18 @@ function handleExportICS() {
  * イベントリスナーの設定
  */
 function setupEventListeners() {
-  document
-    .getElementById("baseDate")
-    .addEventListener("change", handleBaseDateChange);
-  document
-    .getElementById("startNumber")
-    .addEventListener("change", updateURLAndGenerateSchedule);
-  document
-    .getElementById("exportButton")
-    .addEventListener("click", handleExportICS);
+  // イベントリスナー登録を関数で抽象化
+  function addListener(id, event, handler) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener(event, handler);
+    }
+  }
+
+  // 各イベントリスナーを設定
+  addListener("baseDate", "change", handleBaseDateChange);
+  addListener("startNumber", "change", updateURLAndGenerateSchedule);
+  addListener("exportButton", "click", handleExportICS);
 }
 
 export {

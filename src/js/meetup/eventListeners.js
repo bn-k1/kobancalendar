@@ -8,33 +8,45 @@ import { renderResults } from "./resultsRenderer.js";
  * イベントリスナーをセットアップ
  */
 function setupEventListeners() {
+  // イベントリスナー登録を関数で抽象化
+  function addListener(selector, event, handler) {
+    const element =
+      typeof selector === "string"
+        ? document.querySelector(selector)
+        : selector;
+
+    if (element) {
+      element.addEventListener(event, handler);
+    }
+  }
+
+  // 複数要素へのイベントリスナー登録
+  function addListenerAll(selector, event, handler) {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach((element) => {
+      element.addEventListener(event, handler);
+    });
+  }
+
   // 基準日変更イベント
-  document
-    .getElementById("baseDate")
-    .addEventListener("change", handleBaseDateChange);
+  addListener("#baseDate", "change", handleBaseDateChange);
 
   // 参加者追加ボタン
-  document
-    .getElementById("addParticipantBtn")
-    .addEventListener("click", addParticipant);
+  addListener("#addParticipantBtn", "click", addParticipant);
 
   // 日程検索ボタン
-  document
-    .getElementById("findDatesBtn")
-    .addEventListener("click", handleFindDates);
+  addListener("#findDatesBtn", "click", handleFindDates);
 
   // タブ切り替え
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.addEventListener("click", handleTabChange);
-  });
+  addListenerAll(".tab-btn", "click", handleTabChange);
 
   // モーダル閉じるボタン
-  document.querySelector(".close-modal").addEventListener("click", () => {
+  addListener(".close-modal", "click", () => {
     document.getElementById("detailsModal").classList.add("hidden");
   });
 
   // モーダル外クリックで閉じる
-  document.getElementById("detailsModal").addEventListener("click", (e) => {
+  addListener("#detailsModal", "click", (e) => {
     if (e.target === document.getElementById("detailsModal")) {
       document.getElementById("detailsModal").classList.add("hidden");
     }
@@ -93,7 +105,7 @@ function handleFindDates() {
   );
 
   // 結果をレンダリング
-  renderResults(results, positions);
+  renderResults(results);
 
   // 結果セクションを表示
   document.getElementById("results").classList.remove("hidden");
@@ -121,11 +133,9 @@ function handleTabChange(e) {
 
   // 対応するコンテンツを表示
   const type = e.target.dataset.matches;
-  if (type === "all") {
-    document.getElementById("allMatchesContent").classList.add("active");
-  } else {
-    document.getElementById("partialMatchesContent").classList.add("active");
-  }
+  const contentSelector =
+    type === "all" ? "#allMatchesContent" : "#partialMatchesContent";
+  document.querySelector(contentSelector).classList.add("active");
 }
 
 export { setupEventListeners };
