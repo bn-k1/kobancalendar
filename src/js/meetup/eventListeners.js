@@ -84,6 +84,12 @@ function handleFindDates() {
     return;
   }
 
+  // 参加者が1人の場合に確認アラート
+  if (positions.length === 1) {
+    alert("行ってこい！");
+    return;
+  }
+
   const meetupStartTime = document.getElementById("meetupStartTime").value;
   const searchPeriod = parseInt(
     document.getElementById("searchPeriod").value,

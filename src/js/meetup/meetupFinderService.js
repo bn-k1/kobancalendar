@@ -13,10 +13,18 @@ export class MeetupFinderService {
     if (!schedule) return false;
 
     const { subject, endTime } = schedule;
+    const eventConfig = getState("eventConfig");
 
-    // 公休、法休は常に参加可能
-    if (subject === "公休" || subject === "法休" || subject === "-") {
-      return true;
+    // 公休、法休などの休日タイプを設定から取得
+    if (eventConfig && eventConfig.events) {
+      const restDayConfig = eventConfig.events.restDay;
+
+      // 設定から取得した休日キーワードを使用して判定
+      if (restDayConfig && restDayConfig.keywords) {
+        if (restDayConfig.keywords.some((keyword) => subject === keyword)) {
+          return true;
+        }
+      }
     }
 
     // 勤務終了時間が設定されていない場合は参加不可
@@ -83,8 +91,8 @@ export class MeetupFinderService {
           details: dateResults.details,
         });
       }
-      // 一部参加可能な場合（最低2人以上が参加可能）
-      else if (dateResults.availablePositions.length > 1) {
+      // 一部参加可能な場合（最低1人以上が参加可能）
+      else if (dateResults.availablePositions.length > 0) {
         result.partialMatches.push({
           date: currentDate,
           availableCount: dateResults.availablePositions.length,
