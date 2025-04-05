@@ -39,7 +39,7 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
   // 各勤務スケジュールをカレンダーイベントに変換
   scheduleRange.forEach((schedule) => {
     const { subject, startTime, endTime, date } = schedule;
-    const eventDate = date.toDate();
+    const eventDate = date;
     const event = calendar.createEvent({
       summary: subject,
       uid: generateUID(date, subject, startTime, endTime, icsConfig.uid_domain),
@@ -50,19 +50,24 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
       const [startHour, startMinute = "00"] = startTime.split(":");
       const [endHour, endMinute = "00"] = endTime.split(":");
 
-      // 開始時間と終了時間を設定
-      const start = new Date(eventDate);
-      start.setHours(parseInt(startHour, 10), parseInt(startMinute, 10), 0);
+      const start = eventDate
+        .hour(parseInt(startHour, 10))
+        .minute(parseInt(startMinute, 10))
+        .second(0)
+        .toDate();
 
-      const end = new Date(eventDate);
-      end.setHours(parseInt(endHour, 10), parseInt(endMinute, 10), 0);
+      const end = eventDate
+        .hour(parseInt(endHour, 10))
+        .minute(parseInt(endMinute, 10))
+        .second(0)
+        .toDate();
 
       event.start(start);
       event.end(end);
     } else {
       // 終日イベントの設定
       event.allDay(true);
-      event.start(eventDate);
+      event.start(eventDate.toDate());
     }
   });
 

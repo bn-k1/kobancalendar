@@ -1,6 +1,8 @@
 // config.js - 設定関連の機能を提供するモジュール
 
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
@@ -16,9 +18,13 @@ import {
 } from "./store/index.js";
 
 // Day.jsプラグインの設定
+dayjs.extend(utc);
+dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
+
+dayjs.tz.setDefault("Asia/Tokyo");
 
 // 設定ファイルの読み込み
 async function loadConfig() {

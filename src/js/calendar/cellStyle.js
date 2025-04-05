@@ -39,7 +39,7 @@ function applyDayCellStyles() {
     // データ属性から日付を取得
     const dateStr = cell.getAttribute("data-date");
     if (dateStr) {
-      const date = new Date(dateStr);
+      const date = dayjs(dateStr);
       customizeDayCell(date, cell);
     }
   });
