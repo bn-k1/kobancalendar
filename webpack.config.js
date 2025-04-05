@@ -6,7 +6,7 @@ module.exports = {
   mode: "development",
   entry: {
     main: "./src/js/bootstrap.js",
-    meetup: "./src/js/meetup/main.js",
+    meetup: "./src/js/meetup/bootstrap.js",
   },
   output: {
     filename: "js/[name].bundle.js", // [name] でエントリーポイント名が使われる

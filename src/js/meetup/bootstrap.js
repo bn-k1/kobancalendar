@@ -1,4 +1,4 @@
-// meetup/main.js - 飲み会調整機能のメインスクリプト
+// meetup/bootstrap.js - 飲み会調整機能のメインスクリプト
 import "../../css/style.css"; // スタイルシートをインポート
 import "../../css/meetup.css"; // スタイルシートをインポート
 import { loadConfig, loadEventConfig } from "../config.js";
