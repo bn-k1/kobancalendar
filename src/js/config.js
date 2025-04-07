@@ -1,6 +1,8 @@
 // config.js - 設定関連の機能を提供するモジュール
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
+import { handleError } from "./error-handler.js";
+import { ERROR_MESSAGES } from "./constants.js";
 
 // 設定ファイルのインポート（パスは適宜調整）
 import config from "@config/config.json";
@@ -19,7 +21,7 @@ export async function loadConfig() {
     } else if (config.base_date) {
       baseDates = [dayjs(config.base_date)];
     } else {
-      throw new Error("基準日が設定されていません");
+      throw new Error(ERROR_MESSAGES.NO_BASE_DATE);
     }
 
     // ストアに基準日一覧を設定
@@ -41,7 +43,7 @@ export async function loadConfig() {
         );
 
         if (!dateExists) {
-          alert("無効な基準日です");
+          alert(ERROR_MESSAGES.INVALID_BASE_DATE);
           currentBaseDate = baseDates[0];
         }
       }
@@ -73,8 +75,7 @@ export async function loadConfig() {
       icsExportConfig: store.icsExportConfig,
     };
   } catch (error) {
-    console.error("設定ファイルの読み込みに失敗しました:", error.message);
-    throw error;
+    return handleError(error, "設定ファイルの読み込みに失敗しました");
   }
 }
 
@@ -84,10 +85,6 @@ export async function loadEventConfig() {
     Alpine.store("state").eventConfig = eventConfig;
     return eventConfig;
   } catch (error) {
-    console.error(
-      "イベント設定ファイルの読み込みに失敗しました:",
-      error.message,
-    );
-    throw error;
+    return handleError(error, "イベント設定ファイルの読み込みに失敗しました");
   }
 }

@@ -12,11 +12,20 @@ import "../css/style.css";
 
 // プロジェクト固有のモジュール
 import { initializeStore } from "./store.js";
-import { loadScheduleData, loadHolidays } from "./data-loader.js";
+import { loadScheduleData } from "./schedule-service.js";
+import { loadHolidays } from "./holiday-service.js";
 import { loadConfig, loadEventConfig } from "./config.js";
 import { initializeCalendar, updateCalendar } from "./calendar.js";
 import { exportICS } from "./export.js";
-import { updateURLParams } from "./utils.js";
+import { updateURLParams } from "./ui-utils.js";
+import { isBaseDateInPast } from "./date-utils.js";
+import { tryCatchAsync, handleError } from "./error-handler.js";
+import { APP_CONFIG, DATE_FORMATS, ERROR_MESSAGES } from "./constants.js";
+
+// CSVデータのインポート
+import holidayData from "@data/holiday.csv";
+import saturdayData from "@data/saturday.csv";
+import weekdayData from "@data/weekday.csv";
 
 // Day.jsプラグインの設定
 dayjs.extend(utc);
@@ -36,28 +45,36 @@ Alpine.data("scheduleManager", () => ({
   isLoaded: false,
   baseDates: [],
   selectedBaseDate: "",
-  startPosition: 1,
+  startPosition: APP_CONFIG.DEFAULT_START_POSITION,
   rotationCycleLength: 0,
   calendar: null,
-  exportMonths: 3,
+  exportMonths: APP_CONFIG.DEFAULT_EXPORT_MONTHS,
   isBaseDateInPast: false,
 
   // 初期化処理
   async init() {
-    try {
+    await tryCatchAsync(async () => {
       // 設定の読み込み
       await Promise.all([loadConfig(), loadEventConfig()]);
 
       // ストアから値を取得
       this.baseDates = Alpine.store("state").baseDates;
-      this.selectedBaseDate =
-        Alpine.store("state").currentBaseDate.format("YYYY-MM-DD");
+      this.selectedBaseDate = Alpine.store("state").currentBaseDate.format(
+        DATE_FORMATS.ISO_DATE,
+      );
       this.rotationCycleLength = 0;
 
       // データの読み込み
-      const scheduleData = await loadScheduleData();
+      const scheduleData = await loadScheduleData(
+        holidayData,
+        saturdayData,
+        weekdayData,
+      );
       Alpine.store("state").setScheduleData(scheduleData);
       this.rotationCycleLength = scheduleData.rotationCycleLength;
+
+      // 祝日データの読み込み
+      const store = Alpine.store("state");
       await loadHolidays();
 
       // URLクエリパラメータから開始位置を取得
@@ -80,17 +97,12 @@ Alpine.data("scheduleManager", () => ({
       this.calendar = initializeCalendar();
 
       this.isLoaded = true;
-    } catch (error) {
-      console.error("アプリケーションの初期化に失敗しました:", error);
-      alert(`アプリケーションの初期化に失敗しました: ${error.message}`);
-    }
+    }, ERROR_MESSAGES.INIT_FAILED);
   },
 
   // 基準日が過去かどうかの状態を更新
   updateBaseDateStatus() {
-    const today = dayjs().startOf("day");
-    const currentBaseDate = dayjs(this.selectedBaseDate);
-    this.isBaseDateInPast = currentBaseDate.isBefore(today);
+    this.isBaseDateInPast = isBaseDateInPast(this.selectedBaseDate);
   },
 
   // カレンダーの更新

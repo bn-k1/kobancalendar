@@ -13,8 +13,24 @@ import "../css/meetup.css";
 
 // プロジェクト固有のモジュール
 import { initializeStore } from "./store.js";
-import { loadScheduleData, loadHolidays } from "./data-loader.js";
+import { loadScheduleData } from "./schedule-service.js";
+import { loadHolidays } from "./holiday-service.js";
 import { loadConfig, loadEventConfig } from "./config.js";
+import { canAttendMeetup } from "./event-service.js";
+import { getWeekdayName, getDayClass } from "./date-utils.js";
+import { closeModalOnOutsideClick } from "./ui-utils.js";
+import { tryCatchAsync, handleError } from "./error-handler.js";
+import {
+  APP_CONFIG,
+  DATE_FORMATS,
+  WEEKDAYS,
+  ERROR_MESSAGES,
+} from "./constants.js";
+
+// CSVデータのインポート
+import holidayData from "@data/holiday.csv";
+import saturdayData from "@data/saturday.csv";
+import weekdayData from "@data/weekday.csv";
 
 // Day.jsプラグインの設定
 dayjs.extend(utc);
@@ -35,38 +51,43 @@ Alpine.data("meetupFinder", () => ({
   baseDates: [],
   selectedBaseDate: "",
   participants: [{ position: "" }],
-  meetupStartTime: "17:00", // HTMLでデフォルト値が17:00なので合わせる
-  searchPeriod: 30,
+  meetupStartTime: APP_CONFIG.DEFAULT_MEETUP_START_TIME,
+  searchPeriod: APP_CONFIG.DEFAULT_SEARCH_PERIOD,
   rotationCycleLength: 0,
   results: { allMatches: [], partialMatches: [] },
   showResults: false,
   activeTab: "all",
   showModal: false,
-  currentDetails: { details: [] }, // 空のオブジェクトをデフォルト値として設定
+  currentDetails: { details: [] },
   modalTitle: "",
 
   // 初期化処理
   async init() {
-    try {
+    await tryCatchAsync(async () => {
       // 設定の読み込み
       await Promise.all([loadConfig(), loadEventConfig()]);
 
       // ストアから値を取得
       this.baseDates = Alpine.store("state").baseDates;
-      this.selectedBaseDate =
-        Alpine.store("state").currentBaseDate.format("YYYY-MM-DD");
+      this.selectedBaseDate = Alpine.store("state").currentBaseDate.format(
+        DATE_FORMATS.ISO_DATE,
+      );
 
       // データの読み込み
-      const scheduleData = await loadScheduleData();
+      const scheduleData = await loadScheduleData(
+        holidayData,
+        saturdayData,
+        weekdayData,
+      );
       Alpine.store("state").setScheduleData(scheduleData);
       this.rotationCycleLength = scheduleData.rotationCycleLength;
+
+      // 祝日データの読み込み
+      const store = Alpine.store("state");
       await loadHolidays();
 
       this.isLoaded = true;
-    } catch (error) {
-      console.error("アプリケーションの初期化に失敗しました:", error);
-      alert(`アプリケーションの初期化に失敗しました: ${error.message}`);
-    }
+    }, ERROR_MESSAGES.INIT_FAILED);
   },
 
   // 基準日変更処理
@@ -94,7 +115,7 @@ Alpine.data("meetupFinder", () => ({
 
     // 入力チェック
     if (positions.length === 0) {
-      alert("参加者を1人以上選択してください。");
+      alert(ERROR_MESSAGES.NO_PARTICIPANTS);
       return;
     }
 
@@ -201,7 +222,11 @@ Alpine.data("meetupFinder", () => ({
       );
 
       // 参加可否を判定
-      const isAvailable = this.canAttendMeetup(schedule, meetupStartTime);
+      const isAvailable = canAttendMeetup(
+        schedule,
+        meetupStartTime,
+        Alpine.store("state").eventConfig,
+      );
 
       // 詳細情報を記録
       result.details.push({
@@ -219,69 +244,28 @@ Alpine.data("meetupFinder", () => ({
     return result;
   },
 
-  // 飲み会に参加可能かどうかを判定
-  canAttendMeetup(schedule, meetupStartTime) {
-    if (!schedule) return false;
-
-    const { subject, endTime } = schedule;
-    const eventConfig = Alpine.store("state").eventConfig;
-
-    // 公休、法休などの休日タイプを設定から取得
-    if (eventConfig && eventConfig.events) {
-      const restDayConfig = eventConfig.events.restDay;
-
-      // 設定から取得した休日キーワードを使用して判定
-      if (restDayConfig && restDayConfig.keywords) {
-        if (restDayConfig.keywords.some((keyword) => subject === keyword)) {
-          return true;
-        }
-      }
-    }
-
-    // 勤務終了時間が設定されていない場合は参加不可
-    if (!endTime) {
-      return false;
-    }
-
-    // 勤務終了時間を解析
-    const [endHour, endMinute = "00"] = endTime.split(":");
-    const endTimeObj = dayjs()
-      .hour(parseInt(endHour, 10))
-      .minute(parseInt(endMinute, 10));
-
-    // 飲み会開始時間を解析
-    const [meetupHour, meetupMinute = "00"] = meetupStartTime.split(":");
-    const meetupTimeObj = dayjs()
-      .hour(parseInt(meetupHour, 10))
-      .minute(parseInt(meetupMinute, 10));
-
-    // 勤務終了時間が飲み会開始時間より前なら参加可能
-    return endTimeObj.isBefore(meetupTimeObj);
-  },
-
   // 詳細を表示
   showDetails(match) {
     this.currentDetails = match;
-    this.modalTitle = `${match.date.format("YYYY/MM/DD")}（${this.getWeekday(match.date)}）詳細`;
+    this.modalTitle = `${match.date.format(DATE_FORMATS.DISPLAY_DATE)}（${this.getWeekday(match.date)}）詳細`;
     this.showModal = true;
   },
 
   // 曜日名を取得
   getWeekday(date) {
-    const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
-    return weekdays[date.day()];
+    return getWeekdayName(date);
   },
 
   // 日付クラスを取得
   getDayClass(date) {
-    return date.day() === 0 ? "sunday" : date.day() === 6 ? "saturday" : "";
+    return getDayClass(date);
   },
 
   // モーダル外クリックで閉じる
   closeModalOnOutsideClick(e) {
-    if (e.target.id === "detailsModal") {
+    closeModalOnOutsideClick(e, "detailsModal", () => {
       this.showModal = false;
-    }
+    });
   },
 
   // 時間表示形式を取得
