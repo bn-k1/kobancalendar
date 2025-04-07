@@ -2,6 +2,7 @@
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
 import ical from "ical-generator";
+import { simpleHash } from "./utils.js";
 
 // ICSエクスポート機能
 export function exportICS(
@@ -94,20 +95,6 @@ function generateUID(
   const dateStr = date.format("YYYYMMDD");
   const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);
   return `${dateStr}-${contentHash}@${uidDomain}`;
-}
-
-// シンプルなハッシュ関数 - 文字列から数値ハッシュを生成
-function simpleHash(str) {
-  let hash = 0;
-  if (str.length === 0) return hash;
-
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-
-  return Math.abs(hash).toString(16);
 }
 
 // ICSファイルをダウンロードするヘルパー関数

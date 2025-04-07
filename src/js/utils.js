@@ -91,3 +91,33 @@ export function simpleHash(str) {
 
   return Math.abs(hash).toString(16);
 }
+
+/**
+ * 日付が範囲内かどうかを確認する関数
+ * @param {dayjs} date - 確認する日付
+ * @param {dayjs} startDate - 範囲の開始日
+ * @param {dayjs} endDate - 範囲の終了日
+ * @returns {boolean} 範囲内であればtrue
+ */
+export function isDateInRange(date, startDate, endDate) {
+  return (
+    (date.isAfter(startDate) || date.isSame(startDate, "day")) &&
+    (date.isBefore(endDate) || date.isSame(endDate, "day"))
+  );
+}
+
+/**
+ * 時間文字列を解析してdayjsオブジェクトを返す関数
+ * @param {string} timeStr - 時間文字列 (例: "09:30")
+ * @param {dayjs} baseDate - 基準となる日付オブジェクト
+ * @returns {dayjs} 時間を設定したdayjsオブジェクト
+ */
+export function parseTimeToDate(timeStr, baseDate = dayjs()) {
+  if (!timeStr) return null;
+
+  const [hours, minutes = "00"] = timeStr.split(":");
+  return baseDate
+    .hour(parseInt(hours, 10))
+    .minute(parseInt(minutes, 10))
+    .second(0);
+}

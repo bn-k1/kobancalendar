@@ -15,6 +15,7 @@ import "../css/meetup.css";
 import { initializeStore } from "./store.js";
 import { loadScheduleData, loadHolidays } from "./data-loader.js";
 import { loadConfig, loadEventConfig } from "./config.js";
+import { getWeekdayName, getDayClass } from "./utils.js";
 
 // Day.jsプラグインの設定
 dayjs.extend(utc);
@@ -23,9 +24,6 @@ dayjs.extend(customParseFormat);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 dayjs.tz.setDefault("Asia/Tokyo");
-
-// 日本語の曜日名
-const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
 
 // Alpineストアの初期化
 document.addEventListener("alpine:init", () => {
@@ -270,7 +268,7 @@ Alpine.data("meetupFinder", () => ({
   // 詳細を表示
   showDetails(match) {
     this.currentDetails = match;
-    this.modalTitle = `${match.date.format("YYYY/MM/DD")}（${this.getWeekday(match.date)}）詳細`;
+    this.modalTitle = `${match.date.format("YYYY/MM/DD")}（${getWeekdayName(match.date)}）詳細`;
     this.showModal = true;
   },
 
@@ -279,16 +277,6 @@ Alpine.data("meetupFinder", () => ({
     if (e.target.id === "detailsModal") {
       this.showModal = false;
     }
-  },
-
-  // 曜日名を取得
-  getWeekday(date) {
-    return weekdays[date.day()];
-  },
-
-  // 曜日のクラスを取得
-  getDayClass(date) {
-    return date.day() === 0 ? "sunday" : date.day() === 6 ? "saturday" : "";
   },
 
   // 時間表示形式を取得
