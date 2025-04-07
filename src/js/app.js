@@ -19,7 +19,7 @@ import { initializeCalendar, updateCalendar } from "./calendar.js";
 import { exportICS } from "./export.js";
 import { updateURLParams } from "./ui-utils.js";
 import { isBaseDateInPast } from "./date-utils.js";
-import { tryCatchAsync, handleError } from "./error-handler.js";
+import { tryCatchAsync } from "./error-handler.js";
 import { APP_CONFIG, DATE_FORMATS, ERROR_MESSAGES } from "./constants.js";
 
 // CSVデータのインポート
@@ -74,7 +74,6 @@ Alpine.data("scheduleManager", () => ({
       this.rotationCycleLength = scheduleData.rotationCycleLength;
 
       // 祝日データの読み込み
-      const store = Alpine.store("state");
       await loadHolidays();
 
       // URLクエリパラメータから開始位置を取得

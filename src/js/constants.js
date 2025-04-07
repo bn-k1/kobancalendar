@@ -47,4 +47,5 @@ export const ERROR_MESSAGES = {
   EVENT_CONFIG_ERROR: "イベント設定が読み込まれていないか無効です",
   NO_PARTICIPANTS: "参加者を1人以上選択してください",
   HOLIDAYS_LOAD_ERROR: "祝日データの取得に失敗しました",
+  GOAHEAD: "行ってらっしゃいませ",
 };

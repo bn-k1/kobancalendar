@@ -1,5 +1,4 @@
 // ui-utils.js - UI関連のユーティリティ関数
-import Alpine from "alpinejs";
 import dayjs from "dayjs";
 
 /**

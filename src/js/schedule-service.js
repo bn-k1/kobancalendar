@@ -1,5 +1,4 @@
 // schedule-service.js - スケジュール関連の機能を提供するモジュール
-import Alpine from "alpinejs";
 import dayjs from "dayjs";
 
 // CSV形式のデータを処理する

@@ -1,6 +1,5 @@
 // store.js - Alpine.js によるストア実装
 import Alpine from "alpinejs";
-import dayjs from "dayjs";
 import { isHoliday, getHolidayName } from "./holiday-service.js";
 import {
   calculateShiftIndex,
@@ -8,7 +7,6 @@ import {
   calculateScheduleRange,
 } from "./schedule-service.js";
 import { getEventType } from "./event-service.js";
-import { ERROR_MESSAGES } from "./constants.js";
 
 // ストア初期化
 export function initializeStore() {
