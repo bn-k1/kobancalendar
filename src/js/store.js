@@ -16,14 +16,10 @@ export function initializeStore() {
     currentBaseDate: null,
     lastBaseDate: null,
     holidayYearsRange: 0,
-    maxCacheSize: 1000, // デフォルトキャッシュサイズ
     userDefinedHolidays: [],
     icsExportConfig: {},
     eventConfig: null,
     allHolidays: {},
-
-    // キャッシュ
-    scheduleCache: new Map(),
 
     // メソッド
     updateCurrentBaseDate(newBaseDate) {
@@ -32,25 +28,11 @@ export function initializeStore() {
     },
 
     isConfigLoaded() {
-      return this.eventConfig !== null && this.scheduleCache !== null;
-    },
-
-    initializeCache() {
-      // LRUキャッシュの簡易実装として通常のマップを使用
-      this.scheduleCache = new Map();
-    },
-
-    clearScheduleCache() {
-      if (!this.scheduleCache) {
-        this.initializeCache();
-      } else {
-        this.scheduleCache.clear();
-      }
+      return this.eventConfig !== null;
     },
 
     setScheduleData(data) {
       this.scheduleData = data;
-      this.clearScheduleCache();
     },
 
     setHolidays(holidays) {
@@ -118,32 +100,12 @@ export function initializeStore() {
       currentBaseDate,
       lastBaseDate,
     ) {
-      // キャッシュが初期化されていなければ初期化
-      if (!this.scheduleCache) {
-        this.initializeCache();
-      }
-
-      const key = `${targetDate.format("YYYY-MM-DD")}_${startPosition}_${currentBaseDate.format(
-        "YYYY-MM-DD",
-      )}_${lastBaseDate.format("YYYY-MM-DD")}`;
-
-      if (!this.scheduleCache.has(key)) {
-        const result = this._getScheduleForDate(
-          targetDate,
-          startPosition,
-          currentBaseDate,
-          lastBaseDate,
-        );
-        this.scheduleCache.set(key, result);
-
-        // キャッシュサイズの制限（簡易的なLRU実装）
-        if (this.scheduleCache.size > this.maxCacheSize) {
-          const firstKey = this.scheduleCache.keys().next().value;
-          this.scheduleCache.delete(firstKey);
-        }
-      }
-
-      return this.scheduleCache.get(key);
+      return this._getScheduleForDate(
+        targetDate,
+        startPosition,
+        currentBaseDate,
+        lastBaseDate,
+      );
     },
 
     _getScheduleForDate(

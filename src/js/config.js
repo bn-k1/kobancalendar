@@ -58,13 +58,6 @@ export async function loadConfig() {
       store.holidayYearsRange = config.holiday_years_range;
     }
 
-    // キャッシュサイズの設定
-    if (config.max_cache_size !== undefined) {
-      store.maxCacheSize = config.max_cache_size;
-      // キャッシュの初期化
-      store.initializeCache();
-    }
-
     // 祝日設定
     store.userDefinedHolidays = config.custom_holidays || [];
 
@@ -78,7 +71,6 @@ export async function loadConfig() {
       holidayYearsRange: store.holidayYearsRange,
       userDefinedHolidays: store.userDefinedHolidays,
       icsExportConfig: store.icsExportConfig,
-      maxCacheSize: store.maxCacheSize,
     };
   } catch (error) {
     console.error("設定ファイルの読み込みに失敗しました:", error.message);
