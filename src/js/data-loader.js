@@ -1,11 +1,12 @@
 // data-loader.js - データの読み込みを担当するモジュール
-
+import Alpine from "alpinejs";
 import dayjs from "dayjs";
 import JapaneseHolidays from "japanese-holidays";
+
+// CSVデータはimportからパスを適宜調整
 import holidayData from "@data/holiday.csv";
 import saturdayData from "@data/saturday.csv";
 import weekdayData from "@data/weekday.csv";
-import { setHolidays, isHoliday, getState } from "./store/index.js";
 
 // CSV形式のデータを処理する
 function processCSVData(csvData) {
@@ -13,11 +14,12 @@ function processCSVData(csvData) {
 }
 
 // 祝日データの取得（japanese-holidaysを使用）
-async function loadHolidays() {
+export async function loadHolidays() {
   try {
     // storeから必要な値を取得
-    const holidayYearsRange = getState("holidayYearsRange");
-    const userDefinedHolidays = getState("userDefinedHolidays");
+    const store = Alpine.store("state");
+    const holidayYearsRange = store.holidayYearsRange;
+    const userDefinedHolidays = store.userDefinedHolidays;
 
     const currentYear = dayjs().year();
     const allHolidays = {};
@@ -56,7 +58,7 @@ async function loadHolidays() {
     }
 
     // ストアに祝日データを設定
-    setHolidays(allHolidays);
+    store.setHolidays(allHolidays);
     return allHolidays;
   } catch (error) {
     console.error("祝日データの取得に失敗しました:", error);
@@ -65,7 +67,7 @@ async function loadHolidays() {
 }
 
 // スケジュールデータの読み込み
-async function loadScheduleData() {
+export async function loadScheduleData() {
   try {
     // インポートしたCSVデータを処理
     const processedHolidayData = processCSVData(holidayData);
@@ -93,6 +95,3 @@ async function loadScheduleData() {
     throw error;
   }
 }
-
-// エクスポート
-export { loadScheduleData, loadHolidays, isHoliday };

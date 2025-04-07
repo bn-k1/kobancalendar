@@ -1,34 +1,16 @@
 // config.js - 設定関連の機能を提供するモジュール
-
+import Alpine from "alpinejs";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+
+// 設定ファイルのインポート（パスは適宜調整）
 import config from "@config/config.json";
 import eventConfig from "@config/event.json";
-import {
-  getState,
-  setState,
-  updateCurrentBaseDate,
-  isConfigLoaded,
-  getEventType,
-  initializeCache,
-} from "./store/index.js";
-
-// Day.jsプラグインの設定
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.extend(customParseFormat);
-dayjs.extend(isSameOrBefore);
-dayjs.extend(isSameOrAfter);
-
-dayjs.tz.setDefault("Asia/Tokyo");
 
 // 設定ファイルの読み込み
-async function loadConfig() {
+export async function loadConfig() {
   try {
+    const store = Alpine.store("state");
+
     let baseDates = [];
     if (config.base_dates) {
       baseDates = config.base_dates
@@ -41,7 +23,7 @@ async function loadConfig() {
     }
 
     // ストアに基準日一覧を設定
-    setState("baseDates", baseDates);
+    store.baseDates = baseDates;
 
     // URLからの基準日取得処理
     let currentBaseDate;
@@ -68,36 +50,35 @@ async function loadConfig() {
     }
 
     // ストアに現在と最終の基準日を設定
-    setState("currentBaseDate", currentBaseDate);
-    setState("lastBaseDate", baseDates[baseDates.length - 1]);
+    store.currentBaseDate = currentBaseDate;
+    store.lastBaseDate = baseDates[baseDates.length - 1];
 
-    // 祝日年範囲の設定（追加）
+    // 祝日年範囲の設定
     if (config.holiday_years_range !== undefined) {
-      setState("holidayYearsRange", config.holiday_years_range);
+      store.holidayYearsRange = config.holiday_years_range;
     }
 
-    // キャッシュサイズの設定（追加）
+    // キャッシュサイズの設定
     if (config.max_cache_size !== undefined) {
-      setState("maxCacheSize", config.max_cache_size);
+      store.maxCacheSize = config.max_cache_size;
       // キャッシュの初期化
-      initializeCache();
+      store.initializeCache();
     }
 
     // 祝日設定
-    setState("userDefinedHolidays", config.custom_holidays || []);
+    store.userDefinedHolidays = config.custom_holidays || [];
 
     // ICSエクスポート設定を読み込む
-    const icsExportConfig = config.info;
-    setState("icsExportConfig", icsExportConfig);
+    store.icsExportConfig = config.info;
 
     return {
       baseDates,
-      currentBaseDate: getState("currentBaseDate"),
-      lastBaseDate: getState("lastBaseDate"),
-      holidayYearsRange: getState("holidayYearsRange"),
-      userDefinedHolidays: getState("userDefinedHolidays"),
-      icsExportConfig: getState("icsExportConfig"),
-      maxCacheSize: getState("maxCacheSize"), // 追加
+      currentBaseDate: store.currentBaseDate,
+      lastBaseDate: store.lastBaseDate,
+      holidayYearsRange: store.holidayYearsRange,
+      userDefinedHolidays: store.userDefinedHolidays,
+      icsExportConfig: store.icsExportConfig,
+      maxCacheSize: store.maxCacheSize,
     };
   } catch (error) {
     console.error("設定ファイルの読み込みに失敗しました:", error.message);
@@ -106,9 +87,9 @@ async function loadConfig() {
 }
 
 // イベント設定ファイルの読み込み
-async function loadEventConfig() {
+export async function loadEventConfig() {
   try {
-    setState("eventConfig", eventConfig);
+    Alpine.store("state").eventConfig = eventConfig;
     return eventConfig;
   } catch (error) {
     console.error(
@@ -118,36 +99,3 @@ async function loadEventConfig() {
     throw error;
   }
 }
-
-// URLのクエリパラメータを更新
-function updateURLParams(baseDate, startNumber) {
-  const baseDateStr = baseDate.format("YYYY-MM-DD");
-  window.history.pushState(
-    {},
-    "",
-    `?baseDate=${baseDateStr}&startNumber=${startNumber}`,
-  );
-}
-
-// ICSエクスポート設定を取得
-function getICSExportConfig() {
-  return getState("icsExportConfig");
-}
-
-// エクスポート
-export {
-  loadConfig,
-  loadEventConfig,
-  getEventType,
-  updateCurrentBaseDate,
-  updateURLParams,
-  isConfigLoaded,
-  getICSExportConfig,
-};
-
-export const baseDates = () => getState("baseDates");
-export const currentBaseDate = () => getState("currentBaseDate");
-export const lastBaseDate = () => getState("lastBaseDate");
-export const userDefinedHolidays = () => getState("userDefinedHolidays");
-export const holidayYearsRange = () => getState("holidayYearsRange");
-export const maxCacheSize = () => getState("maxCacheSize");

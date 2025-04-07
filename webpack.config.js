@@ -5,8 +5,8 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 module.exports = {
   mode: "development",
   entry: {
-    main: "./src/js/bootstrap.js",
-    meetup: "./src/js/meetup/bootstrap.js",
+    main: "./src/js/app.js",
+    meetup: "./src/js/meetup.js",
   },
   output: {
     filename: "js/[name].bundle.js", // [name] でエントリーポイント名が使われる

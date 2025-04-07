@@ -1,11 +1,16 @@
-// export.js - ICSエクスポート機能を提供（ical-generatorを使用）
+// export.js - ICSエクスポート機能を提供
+import Alpine from "alpinejs";
 import dayjs from "dayjs";
 import ical from "ical-generator";
-import { calculateScheduleRange } from "./store/index.js";
-import { getICSExportConfig } from "./config.js";
 
 // ICSエクスポート機能
-function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
+export function exportICS(
+  months,
+  startPosition,
+  currentBaseDate,
+  lastBaseDate,
+) {
+  const store = Alpine.store("state");
   const today = dayjs().startOf("day");
   const startDate =
     currentBaseDate.isAfter(today) || currentBaseDate.isSame(today)
@@ -14,7 +19,7 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
   const endDate = startDate.add(months, "month");
 
   // 日付範囲の勤務スケジュールを取得
-  const scheduleRange = calculateScheduleRange(
+  const scheduleRange = store.calculateScheduleRange(
     startDate,
     endDate,
     startPosition,
@@ -23,7 +28,7 @@ function exportICS(months, startPosition, currentBaseDate, lastBaseDate) {
   );
 
   // 設定から値を取得
-  const icsConfig = getICSExportConfig();
+  const icsConfig = store.icsExportConfig;
 
   // ical-generatorを使用してカレンダーを作成
   const calendar = ical({
@@ -83,8 +88,9 @@ function generateUID(
   endTime = "",
   domain = null,
 ) {
+  const store = Alpine.store("state");
   // ドメインが指定されていない場合はICS設定から取得
-  const uidDomain = domain || getICSExportConfig().uid_domain;
+  const uidDomain = domain || store.icsExportConfig.uid_domain;
   const dateStr = date.format("YYYYMMDD");
   const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);
   return `${dateStr}-${contentHash}@${uidDomain}`;
@@ -128,6 +134,3 @@ function downloadICS(icsContent, startDate, endDate) {
     URL.revokeObjectURL(url);
   }, 100);
 }
-
-// エクスポート
-export { exportICS };
