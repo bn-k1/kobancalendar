@@ -1,25 +1,26 @@
 // event-service.js - イベント関連の機能を提供するモジュール
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
+import { handleError } from "./error-handler.js";
+import { ERROR_MESSAGES } from "./constants.js";
 
-// イベント設定ファイルの読み込み
 export async function loadEventConfig(eventConfig) {
   try {
     Alpine.store("state").eventConfig = eventConfig;
     return eventConfig;
   } catch (error) {
-    console.error(
-      "イベント設定ファイルの読み込みに失敗しました:",
-      error.message,
-    );
-    throw error;
+    return handleError(error, ERROR_MESSAGES.EVENT_CONFIG_ERROR);
   }
 }
 
 // イベントタイプの取得
 export function getEventType(subject, eventConfig) {
   if (!eventConfig || !eventConfig.events) {
-    console.error("イベント設定が読み込まれていないか無効です");
+    handleError(
+      new Error(ERROR_MESSAGES.EVENT_CONFIG_ERROR),
+      ERROR_MESSAGES.EVENT_CONFIG_ERROR,
+      false,
+    );
     return {
       type: "default",
       config: eventConfig?.events?.default || {},

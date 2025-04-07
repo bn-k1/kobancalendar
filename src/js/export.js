@@ -88,7 +88,7 @@ export function exportICS(
     // ICSファイルをダウンロード
     downloadICS(calendar.toString(), startDate, endDate);
   } catch (error) {
-    handleError(error, "ICSファイルのエクスポート中にエラーが発生しました");
+    handleError(error, ERROR_MESSAGES.ICS_EXPORT_ERROR);
   }
 }
 
@@ -103,7 +103,7 @@ function generateUID(
   const store = Alpine.store("state");
   // ドメインが指定されていない場合はICS設定から取得
   const uidDomain = domain || store.icsExportConfig.uid_domain;
-  const dateStr = date.format("YYYYMMDD");
+  const dateStr = date.format(DATE_FORMATS.FILE_NAME_DATE);
   const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);
   return `${dateStr}-${contentHash}@${uidDomain}`;
 }

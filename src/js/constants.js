@@ -38,14 +38,20 @@ export const CALENDAR_CONFIG = {
   INITIAL_VIEW: "dayGridMonth",
 };
 
+export const CUSTOM_HOLIDAY = "設定祝日";
+
 export const ERROR_MESSAGES = {
   INIT_FAILED: "アプリケーションの初期化に失敗しました",
   CSV_ROWS_MISMATCH: "CSVファイルの行数が一致しません",
   NO_BASE_DATE: "基準日が設定されていません",
   INVALID_BASE_DATE: "無効な基準日です",
   CONFIG_NOT_LOADED: "設定が完全に読み込まれていません",
+  CONFIG_LOAD_ERROR: "設定の取得に失敗しました",
+  EVENT_CONFIG_LOAD_ERROR: "イベント設定ファイルの読み込みに失敗しました",
   EVENT_CONFIG_ERROR: "イベント設定が読み込まれていないか無効です",
-  NO_PARTICIPANTS: "参加者を1人以上選択してください",
+  SCHEDULE_DATA_ERROR: "スケジュールデータの読み込みに失敗しました",
   HOLIDAYS_LOAD_ERROR: "祝日データの取得に失敗しました",
+  ICS_EXPORT_ERROR: "ICSファイルのエクスポート中にエラーが発生しました",
+  NO_PARTICIPANTS: "参加者を1人以上選択してください",
   GOAHEAD: "行ってらっしゃいませ",
 };

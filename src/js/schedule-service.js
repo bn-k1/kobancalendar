@@ -1,12 +1,13 @@
 // schedule-service.js - スケジュール関連の機能を提供するモジュール
 import dayjs from "dayjs";
+import { handleError } from "./error-handler.js";
+import { ERROR_MESSAGES, DATE_FORMATS } from "./constants.js";
 
 // CSV形式のデータを処理する
 function processCSVData(csvData) {
   return csvData.map((row) => row.join(","));
 }
 
-// スケジュールデータの読み込み
 export async function loadScheduleData(holidayData, saturdayData, weekdayData) {
   try {
     // インポートしたCSVデータを処理
@@ -19,7 +20,7 @@ export async function loadScheduleData(holidayData, saturdayData, weekdayData) {
       holidayLength !== processedSaturdayData.length ||
       holidayLength !== processedWeekdayData.length
     ) {
-      throw new Error("CSVファイルの行数が一致しません");
+      throw new Error(ERROR_MESSAGES.CSV_ROWS_MISMATCH);
     }
 
     const rotationCycleLength = holidayLength;
@@ -31,8 +32,7 @@ export async function loadScheduleData(holidayData, saturdayData, weekdayData) {
       rotationCycleLength,
     };
   } catch (error) {
-    console.error("スケジュールデータの読み込みに失敗しました:", error.message);
-    throw error;
+    return handleError(error, ERROR_MESSAGES.SCHEDULE_DATA_ERROR);
   }
 }
 
@@ -63,11 +63,13 @@ export function getScheduleForDate(
   scheduleData,
   isHolidayFn,
 ) {
-  const dateStr = targetDate.format("YYYY-MM-DD");
+  const dateStr = targetDate.format(DATE_FORMATS.ISO_DATE);
   const isHolidayFlag = isHolidayFn(targetDate);
   const isSaturday = targetDate.day() === 6; // day()は0が日曜、6が土曜
-  const formattedCurrentBaseDate = currentBaseDate.format("YYYY-MM-DD");
-  const formattedLastBaseDate = lastBaseDate.format("YYYY-MM-DD");
+  const formattedCurrentBaseDate = currentBaseDate.format(
+    DATE_FORMATS.ISO_DATE,
+  );
+  const formattedLastBaseDate = lastBaseDate.format(DATE_FORMATS.ISO_DATE);
 
   // 日付が基準範囲外の場合
   if (

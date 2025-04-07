@@ -1,5 +1,6 @@
 // date-utils.js - 日付操作関連のユーティリティ関数
 import dayjs from "dayjs";
+import { WEEKDAYS } from "./constants.js";
 
 /**
  * 曜日名を返す関数
@@ -7,8 +8,7 @@ import dayjs from "dayjs";
  * @returns {string} 曜日名
  */
 export function getWeekdayName(date) {
-  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
-  return weekdays[date.day()];
+  return WEEKDAYS[date.day()];
 }
 
 /**

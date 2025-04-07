@@ -6,7 +6,8 @@ import Alpine from "alpinejs";
 import dayjs from "dayjs";
 import { customizeDayCell } from "./ui-utils.js";
 import { createEventContentRenderer } from "./event-service.js";
-import { CALENDAR_CONFIG } from "./constants.js";
+import { handleError } from "./error-handler.js";
+import { CALENDAR_CONFIG, ERROR_MESSAGES } from "./constants.js";
 
 // カレンダーの初期化
 export function initializeCalendar() {
@@ -56,8 +57,10 @@ export function updateCalendar(
 
   // 設定が読み込まれていることを確認
   if (!Alpine.store("state").isConfigLoaded()) {
-    console.warn(
-      "設定が完全に読み込まれていません。カレンダー更新をスキップします。",
+    handleError(
+      new Error(ERROR_MESSAGES.CONFIG_NOT_LOADED),
+      ERROR_MESSAGES.CONFIG_NOT_LOADED,
+      false,
     );
     return;
   }
@@ -132,33 +135,24 @@ function generateCalendarEvents(
       shiftIndex,
     } = scheduleInfo;
 
-    try {
-      // イベントの準備
-      const { config } = Alpine.store("state").getEventType(subject);
-      calendarEvents.push({
-        title: config.showTime
-          ? `${subject}\n${startTime} - \n${endTime}`
-          : subject,
-        start: dateStr,
-        color: config.color,
-        // 追加のメタデータ
-        extendedProps: {
-          startTime,
-          endTime,
-          isShift: true,
-          isHoliday,
-          isSaturday,
-          shiftIndex,
-        },
-      });
-    } catch (error) {
-      console.error(
-        `日付 ${dateStr} のイベント処理中にエラーが発生しました:`,
-        error,
-      );
-      // エラーが発生しても処理を続行
-    }
-
+    // イベントの準備
+    const { config } = Alpine.store("state").getEventType(subject);
+    calendarEvents.push({
+      title: config.showTime
+        ? `${subject}\n${startTime} - \n${endTime}`
+        : subject,
+      start: dateStr,
+      color: config.color,
+      // 追加のメタデータ
+      extendedProps: {
+        startTime,
+        endTime,
+        isShift: true,
+        isHoliday,
+        isSaturday,
+        shiftIndex,
+      },
+    });
     currentDate = currentDate.add(1, "day");
   }
 

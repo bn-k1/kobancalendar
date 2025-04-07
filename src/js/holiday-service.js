@@ -2,7 +2,8 @@
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
 import JapaneseHolidays from "japanese-holidays";
-import { ERROR_MESSAGES } from "./constants.js";
+import { handleError } from "./error-handler.js";
+import { ERROR_MESSAGES, DATE_FORMATS, CUSTOM_HOLIDAY } from "./constants.js";
 
 // 祝日データの取得（japanese-holidaysを使用）
 export async function loadHolidays() {
@@ -21,8 +22,7 @@ export async function loadHolidays() {
     store.setHolidays(allHolidays);
     return allHolidays;
   } catch (error) {
-    console.error(ERROR_MESSAGES.HOLIDAYS_LOAD_ERROR, error);
-    return {};
+    return handleError(error, ERROR_MESSAGES.HOLIDAYS_LOAD_ERROR, false);
   }
 }
 
@@ -44,7 +44,7 @@ export async function fetchHolidays(holidayYearsRange, userDefinedHolidays) {
           holiday.date,
         ).padStart(2, "0")}`,
       );
-      const dateStr = dateObj.format("YYYY-MM-DD");
+      const dateStr = dateObj.format(DATE_FORMATS.ISO_DATE);
       allHolidays[dateStr] = holiday.name;
     });
   }
@@ -78,7 +78,7 @@ export function addUserDefinedHolidays(
     ) {
       let formattedDate = `${year}-${month}-${day}`;
       if (allHolidays[formattedDate] === undefined) {
-        allHolidays[formattedDate] = "設定祝日";
+        allHolidays[formattedDate] = CUSTOM_HOLIDAY;
       }
     }
   });
@@ -87,13 +87,13 @@ export function addUserDefinedHolidays(
 // 日付が祝日かどうかをチェック
 export function isHoliday(date, holidays) {
   const dateObj = dayjs.isDayjs(date) ? date : dayjs(date);
-  const dateStr = dateObj.format("YYYY-MM-DD");
-  return holidays[dateStr] !== undefined || dateObj.day() === 0; // day()は0が日曜
+  const dateStr = dateObj.format(DATE_FORMATS.ISO_DATE);
+  return holidays[dateStr] !== undefined || dateObj.day() === 0;
 }
 
 // 祝日名を取得
 export function getHolidayName(date, holidays) {
   const dateObj = dayjs.isDayjs(date) ? date : dayjs(date);
-  const dateStr = dateObj.format("YYYY-MM-DD");
+  const dateStr = dateObj.format(DATE_FORMATS.ISO_DATE);
   return holidays[dateStr];
 }

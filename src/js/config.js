@@ -8,7 +8,6 @@ import { ERROR_MESSAGES } from "./constants.js";
 import config from "@config/config.json";
 import eventConfig from "@config/event.json";
 
-// 設定ファイルの読み込み
 export async function loadConfig() {
   try {
     const store = Alpine.store("state");
@@ -39,11 +38,16 @@ export async function loadConfig() {
       } else {
         const dateExists = baseDates.some(
           (date) =>
-            date.format("YYYY-MM-DD") === currentBaseDate.format("YYYY-MM-DD"),
+            date.format(DATE_FORMATS.ISO_DATE) ===
+            currentBaseDate.format(DATE_FORMATS.ISO_DATE),
         );
 
         if (!dateExists) {
-          alert(ERROR_MESSAGES.INVALID_BASE_DATE);
+          handleError(
+            new Error(ERROR_MESSAGES.INVALID_BASE_DATE),
+            ERROR_MESSAGES.INVALID_BASE_DATE,
+            true,
+          );
           currentBaseDate = baseDates[0];
         }
       }
@@ -75,7 +79,7 @@ export async function loadConfig() {
       icsExportConfig: store.icsExportConfig,
     };
   } catch (error) {
-    return handleError(error, "設定ファイルの読み込みに失敗しました");
+    return handleError(error, ERROR_MESSAGES.CONFIG_LOAD_ERROR);
   }
 }
 
@@ -85,6 +89,6 @@ export async function loadEventConfig() {
     Alpine.store("state").eventConfig = eventConfig;
     return eventConfig;
   } catch (error) {
-    return handleError(error, "イベント設定ファイルの読み込みに失敗しました");
+    return handleError(error, ERROR_MESSAGES.EVENT_CONFIG_LOAD_ERROR);
   }
 }
