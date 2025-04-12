@@ -1,6 +1,7 @@
 // date-utils.js - 日付操作関連のユーティリティ関数
 import dayjs from "dayjs";
 import { WEEKDAYS } from "./constants.js";
+import Alpine from "alpinejs";
 
 /**
  * 曜日名を返す関数
@@ -12,14 +13,21 @@ export function getWeekdayName(date) {
 }
 
 /**
- * 日付の曜日に応じたクラス名を返す関数
+ * 日付の曜日や祝日に応じたクラス名を返す関数
  * @param {dayjs} date - 日付オブジェクト
  * @returns {string} クラス名
  */
 export function getDayClass(date) {
   const day = date.day();
-  if (day === 0) return "sunday";
-  if (day === 6) return "saturday";
+
+  if (Alpine.store("state") && Alpine.store("state").isHoliday(date)) {
+    return "holiday";
+  }
+
+  // 曜日による判定
+  if (day === 0) return "fc-day-sun";
+  if (day === 6) return "fc-day-sat";
+
   return "";
 }
 

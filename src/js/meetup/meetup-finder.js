@@ -160,4 +160,39 @@ Alpine.data("meetupFinder", () => ({
       ? `${detail.schedule.startTime} - ${detail.schedule.endTime}`
       : "-";
   },
+
+  //  翌日の勤務内容を取得
+  getNextDayShift(detail) {
+    if (
+      !detail ||
+      !detail.position ||
+      !this.currentDetails ||
+      !this.currentDetails.date
+    ) {
+      return "-";
+    }
+
+    // 翌日の日付を計算
+    const nextDay = this.currentDetails.date.add(1, "day");
+
+    // 翌日のスケジュールを取得
+    const nextDaySchedule = Alpine.store("state").getScheduleForDate(
+      nextDay,
+      detail.position,
+      dayjs(this.selectedBaseDate),
+      Alpine.store("state").lastBaseDate,
+    );
+
+    // 翌日の勤務内容を整形して返す
+    if (nextDaySchedule && nextDaySchedule.subject) {
+      // その他の勤務の場合は開始時間も表示
+      if (nextDaySchedule.startTime) {
+        return `${nextDaySchedule.subject}(~${nextDaySchedule.startTime})`;
+      }
+
+      return nextDaySchedule.subject;
+    }
+
+    return "-";
+  },
 }));
