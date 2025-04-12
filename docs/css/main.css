@@ -98,6 +98,10 @@ footer a:visited {
   color: var(--text-light);
 }
 
+[x-cloak] {
+  display: none !important;
+}
+
 /* コントロールスタイル */
 .controls {
   display: flex;

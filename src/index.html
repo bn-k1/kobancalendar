@@ -21,9 +21,10 @@
           <fieldset
             id="baseDateSection"
             class="control-group"
-            :class="{'hidden': !isLoaded}"
+            x-show="isLoaded"
+            x-cloak
           >
-            <legend x-show="isLoaded">基準日</legend>
+            <legend>基準日</legend>
             <div class="form-group">
               <select
                 id="baseDate"
@@ -47,9 +48,10 @@
           <fieldset
             id="startNumberSection"
             class="control-group"
-            :class="{'hidden': !isLoaded}"
+            x-show="isLoaded"
+            x-cloak
           >
-            <legend x-show="isLoaded">コマ位置</legend>
+            <legend>コマ位置</legend>
             <div class="form-group">
               <select
                 id="startNumber"
@@ -70,9 +72,10 @@
         <fieldset
           id="exportSection"
           class="control-group"
-          :class="{'hidden': !isLoaded}"
+          x-show="isLoaded"
+          x-cloak
         >
-          <legend x-show="isLoaded">エクスポート</legend>
+          <legend>エクスポート</legend>
           <div class="form-group">
             <span id="exportLabelPostBaseDate" x-show="isBaseDateInPast"
               >今日から</span

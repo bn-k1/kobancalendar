@@ -21,9 +21,10 @@
           <fieldset
             id="baseDateSection"
             class="control-group"
-            :class="{'hidden': !isLoaded}"
+            x-show="isLoaded"
+            x-cloak
           >
-            <legend x-show="isLoaded">基準日</legend>
+            <legend>基準日</legend>
             <div class="form-group">
               <select
                 id="baseDate"
@@ -47,9 +48,10 @@
           <fieldset
             id="meetupSettingsSection"
             class="control-group"
-            :class="{'hidden': !isLoaded}"
+            x-show="isLoaded"
+            x-cloak
           >
-            <legend x-show="isLoaded">検索条件</legend>
+            <legend>検索条件</legend>
             <div class="form-group">
               <label for="meetupStartTime">飲会開始:</label>
               <select
@@ -89,9 +91,10 @@
           <fieldset
             id="participantsSection"
             class="control-group"
-            :class="{'hidden': !isLoaded}"
+            x-show="isLoaded"
+            x-cloak
           >
-            <legend x-show="isLoaded">参加者(コマ位置)</legend>
+            <legend>参加者(コマ位置)</legend>
             <div id="participantsList">
               <template
                 x-for="(participant, index) in participants"
@@ -130,13 +133,15 @@
           <button
             id="findDatesBtn"
             class="primary-btn action-btn"
+            x-show="isLoaded"
+            x-cloak
             @click="findDates()"
           >
             日程を検索
           </button>
         </div>
 
-        <div id="results" class="results" x-show="showResults">
+        <div id="results" class="results" x-show="showResults" x-cloak>
           <h2>検索結果</h2>
           <div class="results-tabs">
             <button
