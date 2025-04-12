@@ -21,9 +21,9 @@
           <fieldset
             id="baseDateSection"
             class="control-group"
-            x-show="isLoaded"
+            :class="{'hidden': !isLoaded}"
           >
-            <legend>基準日</legend>
+            <legend x-show="isLoaded">基準日</legend>
             <div class="form-group">
               <select
                 id="baseDate"
@@ -47,9 +47,9 @@
           <fieldset
             id="meetupSettingsSection"
             class="control-group"
-            x-show="isLoaded"
+            :class="{'hidden': !isLoaded}"
           >
-            <legend>検索条件</legend>
+            <legend x-show="isLoaded">検索条件</legend>
             <div class="form-group">
               <label for="meetupStartTime">飲会開始:</label>
               <select
@@ -89,9 +89,9 @@
           <fieldset
             id="participantsSection"
             class="control-group"
-            x-show="isLoaded"
+            :class="{'hidden': !isLoaded}"
           >
-            <legend>参加者(コマ位置)</legend>
+            <legend x-show="isLoaded">参加者(コマ位置)</legend>
             <div id="participantsList">
               <template
                 x-for="(participant, index) in participants"
@@ -267,6 +267,7 @@
           id="detailsModal"
           class="modal"
           :class="{'hidden': !showModal}"
+          x-cloak
           @click="closeModalOnOutsideClick"
         >
           <div class="modal-content">

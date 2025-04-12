@@ -21,9 +21,9 @@
           <fieldset
             id="baseDateSection"
             class="control-group"
-            x-show="isLoaded"
+            :class="{'hidden': !isLoaded}"
           >
-            <legend>基準日</legend>
+            <legend x-show="isLoaded">基準日</legend>
             <div class="form-group">
               <select
                 id="baseDate"
@@ -47,9 +47,9 @@
           <fieldset
             id="startNumberSection"
             class="control-group"
-            x-show="isLoaded"
+            :class="{'hidden': !isLoaded}"
           >
-            <legend>コマ位置</legend>
+            <legend x-show="isLoaded">コマ位置</legend>
             <div class="form-group">
               <select
                 id="startNumber"
@@ -67,8 +67,12 @@
 
         <div id="calendar" aria-label="勤務スケジュールカレンダー"></div>
 
-        <fieldset id="exportSection" class="control-group" x-show="isLoaded">
-          <legend>エクスポート</legend>
+        <fieldset
+          id="exportSection"
+          class="control-group"
+          :class="{'hidden': !isLoaded}"
+        >
+          <legend x-show="isLoaded">エクスポート</legend>
           <div class="form-group">
             <span id="exportLabelPostBaseDate" x-show="isBaseDateInPast"
               >今日から</span
