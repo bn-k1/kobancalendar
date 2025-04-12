@@ -21,14 +21,6 @@ export const DATE_FORMATS = {
   FILE_NAME_DATE: "YYYYMMDD",
 };
 
-export const EVENT_TYPES = {
-  REST_DAY: "restDay",
-  EMPTY_SHIFT: "emptyShift",
-  SPECIAL_SHIFT: "specialShift",
-  NULL_SHIFT: "nullShift",
-  DEFAULT: "default",
-};
-
 export const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
 export const CALENDAR_CONFIG = {
