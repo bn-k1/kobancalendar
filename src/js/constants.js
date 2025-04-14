@@ -6,15 +6,6 @@ export const APP_CONFIG = {
   DEFAULT_MEETUP_START_TIME: "17:00",
 };
 
-export const CSS_CLASSES = {
-  HOLIDAY: "holiday",
-  SATURDAY: "fc-day-sat",
-  SUNDAY: "fc-day-sun",
-  TODAY: "today-highlight",
-  ACTIVE: "active",
-  HIDDEN: "hidden",
-};
-
 export const DATE_FORMATS = {
   ISO_DATE: "YYYY-MM-DD",
   DISPLAY_DATE: "YYYY/MM/DD",

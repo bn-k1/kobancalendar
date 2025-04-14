@@ -9,15 +9,15 @@ import { handleError } from "./error-handler.js";
 import { CALENDAR_CONFIG, ERROR_MESSAGES } from "./constants.js";
 
 // カレンダーの初期化
-export function initializeCalendar() {
+export function initializeCalendar(initialDate = null) {
   const calendarEl = document.getElementById("calendar");
 
   const calendar = new Calendar(calendarEl, {
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: CALENDAR_CONFIG.INITIAL_VIEW,
+    initialDate: initialDate ? initialDate.toDate() : undefined, // 初期表示月を設定
     locale: CALENDAR_CONFIG.LOCALE,
     events: [],
-    // datesSetイベントハンドラを削除
     aspectRatio: CALENDAR_CONFIG.DEFAULT_ASPECT_RATIO,
     height: CALENDAR_CONFIG.HEIGHT,
 

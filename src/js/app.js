@@ -86,8 +86,13 @@ Alpine.data("scheduleManager", () => ({
       // 基準日が過去か確認
       this.updateBaseDateStatus();
 
-      // カレンダーの初期化
-      this.calendar = initializeCalendar();
+      // カレンダーの初期化（基準日が今日以降の場合のみその月に移動）
+      const currentBaseDate = dayjs(this.selectedBaseDate);
+      const today = dayjs().startOf("day");
+      const initialDate = currentBaseDate.isSameOrAfter(today)
+        ? currentBaseDate
+        : null;
+      this.calendar = initializeCalendar(initialDate);
 
       // datesSetイベントハンドラを追加
       if (this.calendar) {
@@ -104,7 +109,6 @@ Alpine.data("scheduleManager", () => ({
       handleError(error, ERROR_MESSAGES.INIT_FAILED);
     }
   },
-
   // 基準日が過去かどうかの状態を更新
   updateBaseDateStatus() {
     this.isBaseDateInPast = isBaseDateInPast(this.selectedBaseDate);
@@ -127,6 +131,18 @@ Alpine.data("scheduleManager", () => ({
     Alpine.store("state").updateCurrentBaseDate(newBaseDate);
     this.updateBaseDateStatus();
     this.updateURLParams();
+
+    // 今日以降の日付の場合のみカレンダーの表示月を変更
+    if (this.calendar) {
+      const today = dayjs().startOf("day");
+      if (newBaseDate.isSameOrAfter(today)) {
+        // 今日以降の日付ならその月に移動
+        this.calendar.gotoDate(newBaseDate.toDate());
+      } else {
+        // 過去の日付なら今月に移動
+        this.calendar.gotoDate(today.toDate());
+      }
+    }
     this.updateCalendar();
   },
 
