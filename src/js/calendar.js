@@ -4,7 +4,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
-import { createEventContentRenderer } from "./event-service.js";
 import { handleError } from "./error-handler.js";
 import { CALENDAR_CONFIG, ERROR_MESSAGES } from "./constants.js";
 
@@ -12,36 +11,31 @@ import { CALENDAR_CONFIG, ERROR_MESSAGES } from "./constants.js";
 export function initializeCalendar(initialDate = null) {
   const calendarEl = document.getElementById("calendar");
 
+  // イベントコンテンツレンダラーを作成
+  const eventContentRenderer = (info) =>
+    createEventContent(info, (date) =>
+      Alpine.store("state").getHolidayName(date),
+    );
+
   const calendar = new Calendar(calendarEl, {
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: CALENDAR_CONFIG.INITIAL_VIEW,
-    initialDate: initialDate ? initialDate.toDate() : undefined, // 初期表示月を設定
+    initialDate: initialDate ? initialDate.toDate() : undefined,
     locale: CALENDAR_CONFIG.LOCALE,
     events: [],
     aspectRatio: CALENDAR_CONFIG.DEFAULT_ASPECT_RATIO,
     height: CALENDAR_CONFIG.HEIGHT,
 
-    // セルのカスタマイズ
-    dayCellDidMount: (info) => {
-      const { date, el } = info;
-      customizeDayCell(date, el, (date) =>
+    dayCellClassNames: (arg) => {
+      return getDayCellClassNames(arg.date, (date) =>
         Alpine.store("state").isHoliday(date),
       );
     },
 
-    // イベントコンテンツのカスタマイズ
-    eventContent: createEventContentRenderer((date) =>
-      Alpine.store("state").getHolidayName(date),
-    ),
+    eventContent: eventContentRenderer,
   });
 
   calendar.render();
-
-  // カスタムのdatesSetイベントハンドラを追加
-  calendar.on("datesSet", () => {
-    // 日付セルのスタイルを適用
-    applyDayCellStyles(calendar);
-  });
 
   return calendar;
 }
@@ -49,13 +43,12 @@ export function initializeCalendar(initialDate = null) {
 // カレンダーの更新
 export function updateCalendar(
   calendar,
-  startPosition = 1,
+  startPosition,
   currentBaseDate = Alpine.store("state").currentBaseDate,
   lastBaseDate = Alpine.store("state").lastBaseDate,
 ) {
   if (!calendar) return;
 
-  // 設定が読み込まれていることを確認
   if (!Alpine.store("state").isConfigLoaded()) {
     handleError(
       new Error(ERROR_MESSAGES.CONFIG_NOT_LOADED),
@@ -68,7 +61,6 @@ export function updateCalendar(
   const viewStartDate = dayjs(calendar.view.activeStart);
   const viewEndDate = dayjs(calendar.view.activeEnd);
 
-  // イベントデータを一度にまとめて準備
   const calendarEvents = generateCalendarEvents(
     viewStartDate,
     viewEndDate,
@@ -77,28 +69,72 @@ export function updateCalendar(
     lastBaseDate,
   );
 
-  // イベントの一括更新
   calendar.removeAllEvents();
   calendar.addEventSource(calendarEvents);
 }
 
-// カレンダー内のすべての日付セルにスタイルを適用
-function applyDayCellStyles(calendar) {
-  if (!calendar) return;
+// 日付セルのクラス名を生成する関数
+function getDayCellClassNames(date, isHolidayFn) {
+  const classNames = [];
+  const dateObj = dayjs(date);
 
-  // 現在表示されているすべての日付セルを取得
-  const dayCells = document.querySelectorAll(".fc-daygrid-day");
+  if (isHolidayFn(dateObj)) {
+    classNames.push("holiday");
+  }
+  if (dateObj.day() === 6) {
+    classNames.push("fc-day-sat");
+  }
+  if (dateObj.day() === 0) {
+    classNames.push("fc-day-sun");
+  }
 
-  dayCells.forEach((cell) => {
-    // データ属性から日付を取得
-    const dateStr = cell.getAttribute("data-date");
-    if (dateStr) {
-      const date = dayjs(dateStr);
-      customizeDayCell(date, cell, (date) =>
-        Alpine.store("state").isHoliday(date),
-      );
-    }
-  });
+  if (dateObj.isSame(dayjs().startOf("day"), "day")) {
+    classNames.push("today-highlight");
+  }
+
+  return classNames;
+}
+
+// イベントコンテンツの生成関数
+function createEventContent(arg, getHolidayNameFn) {
+  let [title, startTime = "", endTime = ""] = arg.event.title.split("\n");
+
+  const { shiftIndex } = arg.event.extendedProps;
+  const dateObj = dayjs(arg.event.start);
+
+  const holidayName = getHolidayNameFn(dateObj);
+
+  const metaInfo = holidayName
+    ? `${shiftIndex + 1} ${holidayName}`
+    : `${shiftIndex + 1}`;
+
+  const container = document.createElement("div");
+
+  const titleEl = document.createElement("div");
+  titleEl.className = "event-title";
+  titleEl.textContent = title;
+  container.appendChild(titleEl);
+
+  if (startTime) {
+    const startTimeEl = document.createElement("div");
+    startTimeEl.className = "event-time";
+    startTimeEl.textContent = startTime;
+    container.appendChild(startTimeEl);
+  }
+
+  if (endTime) {
+    const endTimeEl = document.createElement("div");
+    endTimeEl.className = "event-time";
+    endTimeEl.textContent = endTime;
+    container.appendChild(endTimeEl);
+  }
+
+  const metaEl = document.createElement("div");
+  metaEl.className = "event-meta";
+  metaEl.textContent = metaInfo;
+  container.appendChild(metaEl);
+
+  return { domNodes: [container] };
 }
 
 // 日付範囲のイベントデータを生成
@@ -135,7 +171,6 @@ function generateCalendarEvents(
       shiftIndex,
     } = scheduleInfo;
 
-    // イベントの準備
     const { config } = Alpine.store("state").getEventType(subject);
     calendarEvents.push({
       title: config.showTime
@@ -143,7 +178,6 @@ function generateCalendarEvents(
         : subject,
       start: dateStr,
       color: config.color,
-      // 追加のメタデータ
       extendedProps: {
         startTime,
         endTime,
@@ -157,27 +191,4 @@ function generateCalendarEvents(
   }
 
   return calendarEvents;
-}
-
-// 日付セルのスタイルを適用する関数
-function customizeDayCell(date, el, isHolidayFn) {
-  const dateObj = dayjs(date);
-
-  // 土曜、日曜、祝日のスタイルを設定
-  if (isHolidayFn(dateObj)) {
-    el.classList.add("holiday");
-  }
-  if (dateObj.day() === 6) {
-    // 土曜日
-    el.classList.add("fc-day-sat");
-  }
-  if (dateObj.day() === 0) {
-    // 日曜日
-    el.classList.add("fc-day-sun");
-  }
-
-  // 今日の日付をハイライト
-  if (dateObj.isSame(dayjs().startOf("day"), "day")) {
-    el.classList.add("today-highlight");
-  }
 }
