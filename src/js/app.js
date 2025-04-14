@@ -95,7 +95,18 @@ Alpine.data("scheduleManager", () => ({
       // カレンダーの初期化
       this.calendar = initializeCalendar();
 
+      // datesSetイベントハンドラを追加
+      if (this.calendar) {
+        this.calendar.on("datesSet", () => {
+          // ビューが変更されたときに現在の設定でカレンダーを更新
+          this.updateCalendar();
+        });
+      }
+
       this.isLoaded = true;
+
+      // データロード完了後に明示的にカレンダーを更新
+      this.updateCalendar();
     }, ERROR_MESSAGES.INIT_FAILED);
   },
 
@@ -120,6 +131,12 @@ Alpine.data("scheduleManager", () => ({
     const newBaseDate = dayjs(this.selectedBaseDate);
     Alpine.store("state").updateCurrentBaseDate(newBaseDate);
     this.updateBaseDateStatus();
+    this.updateURLParams();
+    this.updateCalendar();
+  },
+
+  // コマ位置変更処理
+  handlePositionChange() {
     this.updateURLParams();
     this.updateCalendar();
   },

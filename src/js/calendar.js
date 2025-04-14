@@ -18,7 +18,7 @@ export function initializeCalendar() {
     initialView: CALENDAR_CONFIG.INITIAL_VIEW,
     locale: CALENDAR_CONFIG.LOCALE,
     events: [],
-    datesSet: () => updateCalendar(calendar),
+    // datesSetイベントハンドラを削除
     aspectRatio: CALENDAR_CONFIG.DEFAULT_ASPECT_RATIO,
     height: CALENDAR_CONFIG.HEIGHT,
 
@@ -38,8 +38,9 @@ export function initializeCalendar() {
 
   calendar.render();
 
-  // 月が変わった時にも日付セルのスタイルを適用
+  // カスタムのdatesSetイベントハンドラを追加
   calendar.on("datesSet", () => {
+    // 日付セルのスタイルを適用
     applyDayCellStyles(calendar);
   });
 

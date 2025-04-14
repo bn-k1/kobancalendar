@@ -57,7 +57,7 @@
                 id="startNumber"
                 aria-label="コマ位置を選択"
                 x-model="startPosition"
-                @change="updateCalendar()"
+                @change="handlePositionChange()"
               >
                 <template x-for="i in rotationCycleLength" :key="i">
                   <option :value="i" x-text="i"></option>
