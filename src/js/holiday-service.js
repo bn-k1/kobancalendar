@@ -6,17 +6,14 @@ import { handleError } from "./error-handler.js";
 import { ERROR_MESSAGES, DATE_FORMATS, CUSTOM_HOLIDAY } from "./constants.js";
 
 // 祝日データの取得（japanese-holidaysを使用）
-export async function loadHolidays() {
+export function loadHolidays() {
   try {
     // storeから必要な値を取得
     const store = Alpine.store("state");
     const holidayYearsRange = store.holidayYearsRange;
     const userDefinedHolidays = store.userDefinedHolidays;
 
-    const allHolidays = await fetchHolidays(
-      holidayYearsRange,
-      userDefinedHolidays,
-    );
+    const allHolidays = fetchHolidays(holidayYearsRange, userDefinedHolidays);
 
     // ストアに祝日データを設定
     store.setHolidays(allHolidays);
@@ -27,7 +24,7 @@ export async function loadHolidays() {
 }
 
 // 指定された年範囲の祝日を取得
-export async function fetchHolidays(holidayYearsRange, userDefinedHolidays) {
+export function fetchHolidays(holidayYearsRange, userDefinedHolidays) {
   const currentYear = dayjs().year();
   const allHolidays = {};
 

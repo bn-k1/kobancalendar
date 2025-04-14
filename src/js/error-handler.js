@@ -42,21 +42,6 @@ function logError(error, context) {
 }
 
 /**
- * 特定の操作を試みて、エラーを適切に処理する関数
- * @param {Function} operation - 実行する操作（Promise を返す関数）
- * @param {string} context - 操作のコンテキスト
- * @param {boolean} showAlert - エラー時にアラートを表示するかどうか
- * @returns {Promise<any>} 操作の結果
- */
-export async function tryCatchAsync(operation, context, showAlert = true) {
-  try {
-    return await operation();
-  } catch (error) {
-    return handleError(error, context, showAlert);
-  }
-}
-
-/**
  * UIコンポーネント初期化時のエラーハンドラー
  * @param {Function} initFunction - 初期化関数
  * @returns {Function} エラーハンドリングを含む初期化関数

@@ -19,7 +19,7 @@ import { initializeCalendar, updateCalendar } from "./calendar.js";
 import { exportICS } from "./export.js";
 import { updateURLParams } from "./ui-utils.js";
 import { isBaseDateInPast } from "./date-utils.js";
-import { tryCatchAsync } from "./error-handler.js";
+import { handleError } from "./error-handler.js";
 import { APP_CONFIG, DATE_FORMATS, ERROR_MESSAGES } from "./constants.js";
 
 // CSVデータのインポート
@@ -53,9 +53,9 @@ Alpine.data("scheduleManager", () => ({
 
   // 初期化処理
   async init() {
-    await tryCatchAsync(async () => {
-      // 設定の読み込み
-      await Promise.all([loadConfig(), loadEventConfig()]);
+    try {
+      loadConfig();
+      loadEventConfig();
 
       // ストアから値を取得
       this.baseDates = Alpine.store("state").baseDates;
@@ -65,7 +65,7 @@ Alpine.data("scheduleManager", () => ({
       this.rotationCycleLength = 0;
 
       // データの読み込み
-      const scheduleData = await loadScheduleData(
+      const scheduleData = loadScheduleData(
         holidayData,
         saturdayData,
         weekdayData,
@@ -74,7 +74,7 @@ Alpine.data("scheduleManager", () => ({
       this.rotationCycleLength = scheduleData.rotationCycleLength;
 
       // 祝日データの読み込み
-      await loadHolidays();
+      loadHolidays();
 
       // URLクエリパラメータから開始位置を取得
       const urlParams = new URLSearchParams(window.location.search);
@@ -98,7 +98,6 @@ Alpine.data("scheduleManager", () => ({
       // datesSetイベントハンドラを追加
       if (this.calendar) {
         this.calendar.on("datesSet", () => {
-          // ビューが変更されたときに現在の設定でカレンダーを更新
           this.updateCalendar();
         });
       }
@@ -107,7 +106,9 @@ Alpine.data("scheduleManager", () => ({
 
       // データロード完了後に明示的にカレンダーを更新
       this.updateCalendar();
-    }, ERROR_MESSAGES.INIT_FAILED);
+    } catch (error) {
+      handleError(error, ERROR_MESSAGES.INIT_FAILED);
+    }
   },
 
   // 基準日が過去かどうかの状態を更新

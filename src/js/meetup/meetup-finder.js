@@ -1,7 +1,7 @@
 // meetup/meetup-finder.js - 飲み会調整コンポーネント
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
-import { tryCatchAsync } from "../error-handler.js";
+import { handleError } from "../error-handler.js";
 import {
   findMeetupDates,
   checkDateForPositions,
@@ -36,9 +36,9 @@ Alpine.data("meetupFinder", () => ({
 
   // 初期化処理
   async init() {
-    await tryCatchAsync(async () => {
-      // 設定の読み込み
-      await Promise.all([loadConfig(), loadEventConfig()]);
+    try {
+      loadConfig();
+      loadEventConfig();
 
       // ストアから値を取得
       this.baseDates = Alpine.store("state").baseDates;
@@ -47,7 +47,7 @@ Alpine.data("meetupFinder", () => ({
       );
 
       // データの読み込み
-      const scheduleData = await loadScheduleData(
+      const scheduleData = loadScheduleData(
         holidayData,
         saturdayData,
         weekdayData,
@@ -56,10 +56,12 @@ Alpine.data("meetupFinder", () => ({
       this.rotationCycleLength = scheduleData.rotationCycleLength;
 
       // 祝日データの読み込み
-      await loadHolidays();
+      loadHolidays();
 
       this.isLoaded = true;
-    }, ERROR_MESSAGES.INIT_FAILED);
+    } catch (error) {
+      handleError(error, ERROR_MESSAGES.INIT_FAILED);
+    }
   },
 
   // 基準日変更処理

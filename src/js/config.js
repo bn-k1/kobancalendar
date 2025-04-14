@@ -8,7 +8,7 @@ import { ERROR_MESSAGES, DATE_FORMATS } from "./constants.js";
 import config from "@config/config.json";
 import eventConfig from "@config/event.json";
 
-export async function loadConfig() {
+export function loadConfig() {
   try {
     const store = Alpine.store("state");
 
@@ -84,7 +84,7 @@ export async function loadConfig() {
 }
 
 // イベント設定ファイルの読み込み
-export async function loadEventConfig() {
+export function loadEventConfig() {
   try {
     Alpine.store("state").eventConfig = eventConfig;
     return eventConfig;

@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { handleError } from "./error-handler.js";
 import { ERROR_MESSAGES } from "./constants.js";
 
-export async function loadEventConfig(eventConfig) {
+export function loadEventConfig(eventConfig) {
   try {
     Alpine.store("state").eventConfig = eventConfig;
     return eventConfig;

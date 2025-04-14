@@ -8,7 +8,7 @@ function processCSVData(csvData) {
   return csvData.map((row) => row.join(","));
 }
 
-export async function loadScheduleData(holidayData, saturdayData, weekdayData) {
+export function loadScheduleData(holidayData, saturdayData, weekdayData) {
   try {
     // インポートしたCSVデータを処理
     const processedHolidayData = processCSVData(holidayData);

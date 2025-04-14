@@ -56,10 +56,8 @@ export function downloadICS(icsContent, startDate, endDate) {
   downloadLink.click();
 
   // クリーンアップ
-  setTimeout(() => {
-    document.body.removeChild(downloadLink);
-    URL.revokeObjectURL(url);
-  }, 100);
+  document.body.removeChild(downloadLink);
+  URL.revokeObjectURL(url);
 }
 
 /**
