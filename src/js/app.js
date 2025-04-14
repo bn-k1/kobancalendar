@@ -17,7 +17,7 @@ import { loadHolidays } from "./holiday-service.js";
 import { loadConfig, loadEventConfig } from "./config.js";
 import { initializeCalendar, updateCalendar } from "./calendar.js";
 import { exportICS } from "./export.js";
-import { updateURLParams } from "./ui-utils.js";
+import { updateURLParams, getNumberParam } from "./url-utils.js";
 import { isBaseDateInPast } from "./date-utils.js";
 import { handleError } from "./error-handler.js";
 import { APP_CONFIG, DATE_FORMATS, ERROR_MESSAGES } from "./constants.js";
@@ -77,18 +77,12 @@ Alpine.data("scheduleManager", () => ({
       loadHolidays();
 
       // URLクエリパラメータから開始位置を取得
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has("startNumber")) {
-        const startNum = parseInt(urlParams.get("startNumber"));
-        if (
-          !isNaN(startNum) &&
-          startNum >= 1 &&
-          startNum <= this.rotationCycleLength
-        ) {
-          this.startPosition = startNum;
-        }
-      }
-
+      this.startPosition = getNumberParam(
+        "startNumber",
+        APP_CONFIG.DEFAULT_START_POSITION,
+        1,
+        this.rotationCycleLength,
+      );
       // 基準日が過去か確認
       this.updateBaseDateStatus();
 

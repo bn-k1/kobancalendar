@@ -4,7 +4,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
-import { customizeDayCell } from "./ui-utils.js";
 import { createEventContentRenderer } from "./event-service.js";
 import { handleError } from "./error-handler.js";
 import { CALENDAR_CONFIG, ERROR_MESSAGES } from "./constants.js";
@@ -158,4 +157,27 @@ function generateCalendarEvents(
   }
 
   return calendarEvents;
+}
+
+// 日付セルのスタイルを適用する関数
+function customizeDayCell(date, el, isHolidayFn) {
+  const dateObj = dayjs(date);
+
+  // 土曜、日曜、祝日のスタイルを設定
+  if (isHolidayFn(dateObj)) {
+    el.classList.add("holiday");
+  }
+  if (dateObj.day() === 6) {
+    // 土曜日
+    el.classList.add("fc-day-sat");
+  }
+  if (dateObj.day() === 0) {
+    // 日曜日
+    el.classList.add("fc-day-sun");
+  }
+
+  // 今日の日付をハイライト
+  if (dateObj.isSame(dayjs().startOf("day"), "day")) {
+    el.classList.add("today-highlight");
+  }
 }

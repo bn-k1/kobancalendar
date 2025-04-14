@@ -7,7 +7,6 @@ import {
   checkDateForPositions,
 } from "./availability-service.js";
 import { getWeekdayName, getDayClass } from "../date-utils.js";
-import { closeModalOnOutsideClick } from "../ui-utils.js";
 import { loadScheduleData } from "../schedule-service.js";
 import { loadHolidays } from "../holiday-service.js";
 import { loadConfig, loadEventConfig } from "../config.js";
@@ -149,9 +148,9 @@ Alpine.data("meetupFinder", () => ({
 
   // モーダル外クリックで閉じる
   closeModalOnOutsideClick(e) {
-    closeModalOnOutsideClick(e, "detailsModal", () => {
+    if (e.target.id === "detailsModal") {
       this.showModal = false;
-    });
+    }
   },
 
   // 現在の日の勤務内容を取得

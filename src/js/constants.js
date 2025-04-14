@@ -38,6 +38,8 @@ export const ERROR_MESSAGES = {
   NO_BASE_DATE: "基準日が設定されていません",
   INVALID_BASE_DATE: "無効な基準日です",
   INVALID_STARTNUMBER: "無効なコマ位置です",
+  INVALID_URL_PARAM: "無効なURLパラメータです",
+  PARAM_OUT_OF_RANGE: "パラメータが有効範囲外です",
   CONFIG_NOT_LOADED: "設定が完全に読み込まれていません",
   CONFIG_LOAD_ERROR: "設定の取得に失敗しました",
   EVENT_CONFIG_LOAD_ERROR: "イベント設定ファイルの読み込みに失敗しました",

@@ -2,7 +2,6 @@
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
 import ical from "ical-generator";
-import { downloadICS } from "./ui-utils.js";
 import { handleError } from "./error-handler.js";
 
 // ICSエクスポート機能
@@ -90,6 +89,29 @@ export function exportICS(
   } catch (error) {
     handleError(error, ERROR_MESSAGES.ICS_EXPORT_ERROR);
   }
+}
+
+// ICSファイルをダウンロードするヘルパー関数
+function downloadICS(icsContent, startDate, endDate) {
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const downloadLink = document.createElement("a");
+
+  // ファイル名に日付範囲を含める
+  const startDateStr = startDate.format("YYYYMMDD");
+  const endDateStr = endDate.add(-1, "day").format("YYYYMMDD"); // 終了日は範囲の最後の日
+
+  downloadLink.href = url;
+  downloadLink.download = `schedule_${startDateStr}-${endDateStr}.ics`;
+
+  // ダウンロードリンクを非表示で追加してクリック
+  downloadLink.style.display = "none";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+
+  // クリーンアップ
+  document.body.removeChild(downloadLink);
+  URL.revokeObjectURL(url);
 }
 
 // UID生成関数 - 同一スケジュールには常に同じUIDを返すように改善

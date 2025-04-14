@@ -1,6 +1,7 @@
 // config.js - 設定関連の機能を提供するモジュール
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
+import { getDateParam, parseURLParams } from "./url-utils.js";
 import { handleError } from "./error-handler.js";
 import { ERROR_MESSAGES, DATE_FORMATS } from "./constants.js";
 
@@ -27,33 +28,11 @@ export function loadConfig() {
     store.baseDates = baseDates;
 
     // URLからの基準日取得処理
-    let currentBaseDate;
-    const urlParameters = new URLSearchParams(window.location.search);
-    if (urlParameters.has("baseDate")) {
-      const requestedBaseDateStr = urlParameters.get("baseDate");
-      currentBaseDate = dayjs(requestedBaseDateStr);
 
-      if (!currentBaseDate.isValid()) {
-        currentBaseDate = baseDates[0];
-      } else {
-        const dateExists = baseDates.some(
-          (date) =>
-            date.format(DATE_FORMATS.ISO_DATE) ===
-            currentBaseDate.format(DATE_FORMATS.ISO_DATE),
-        );
-
-        if (!dateExists) {
-          handleError(
-            new Error(ERROR_MESSAGES.INVALID_BASE_DATE),
-            ERROR_MESSAGES.INVALID_BASE_DATE,
-            true,
-          );
-          currentBaseDate = baseDates[0];
-        }
-      }
-    } else {
-      currentBaseDate = baseDates[0];
-    }
+    const params = parseURLParams({
+      baseDate: { type: "date", default: baseDates[0], validValues: baseDates },
+    });
+    const currentBaseDate = params.baseDate;
 
     // ストアに現在と最終の基準日を設定
     store.currentBaseDate = currentBaseDate;
