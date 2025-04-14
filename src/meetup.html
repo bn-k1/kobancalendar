@@ -282,9 +282,8 @@
               <thead>
                 <tr>
                   <th>コマ位置</th>
-                  <th>勤務内容</th>
-                  <th>時間</th>
-                  <th>翌日</th>
+                  <th>当日内容</th>
+                  <th>翌日内容</th>
                   <th>参加可否</th>
                 </tr>
               </thead>
@@ -296,8 +295,7 @@
                   >
                     <tr>
                       <td x-text="detail.position"></td>
-                      <td x-text="detail.schedule?.subject || '-'"></td>
-                      <td x-text="getTimeDisplay(detail)"></td>
+                      <td x-text="getCurrentDayShift(detail)"></td>
                       <td x-text="getNextDayShift(detail)"></td>
                       <td
                         :class="detail.isAvailable ? 'availability-yes' : 'availability-no'"

@@ -154,13 +154,39 @@ Alpine.data("meetupFinder", () => ({
     });
   },
 
-  // 時間表示形式を取得
-  getTimeDisplay(detail) {
-    return detail.schedule &&
-      detail.schedule.startTime &&
-      detail.schedule.endTime
-      ? `${detail.schedule.startTime} - ${detail.schedule.endTime}`
-      : "-";
+  // 現在の日の勤務内容を取得
+  getCurrentDayShift(detail) {
+    if (
+      !detail ||
+      !detail.position ||
+      !this.currentDetails ||
+      !this.currentDetails.date
+    ) {
+      return "-";
+    }
+
+    // 現在の日付を取得
+    const currentDay = this.currentDetails.date;
+
+    // 現在の日のスケジュールを取得
+    const currentDaySchedule = Alpine.store("state").getScheduleForDate(
+      currentDay,
+      detail.position,
+      dayjs(this.selectedBaseDate),
+      Alpine.store("state").lastBaseDate,
+    );
+
+    // 現在の日の勤務内容を整形して返す
+    if (currentDaySchedule && currentDaySchedule.subject) {
+      // その他の勤務の場合は開始時間と終了時間を表示
+      if (currentDaySchedule.endTime) {
+        return `${currentDaySchedule.subject}(~${currentDaySchedule.endTime})`;
+      }
+
+      return currentDaySchedule.subject;
+    }
+
+    return "-";
   },
 
   //  翌日の勤務内容を取得
@@ -189,7 +215,7 @@ Alpine.data("meetupFinder", () => ({
     if (nextDaySchedule && nextDaySchedule.subject) {
       // その他の勤務の場合は開始時間も表示
       if (nextDaySchedule.startTime) {
-        return `${nextDaySchedule.subject}(~${nextDaySchedule.startTime})`;
+        return `${nextDaySchedule.subject}(${nextDaySchedule.startTime}~)`;
       }
 
       return nextDaySchedule.subject;
