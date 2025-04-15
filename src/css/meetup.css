@@ -17,6 +17,10 @@ nav a:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
+[x-cloak] {
+  display: none !important;
+}
+
 /* 参加者セクション */
 .participant-entry {
   display: flex;

@@ -1,3 +1,9 @@
+/* 
+ * Combined stylesheet for calendar and meetup application
+ * Optimized and merged from multiple source files
+ */
+
+/* Variables */
 :root {
   --primary-color: #3f51b5;
   --primary-light: #757de8;
@@ -20,6 +26,7 @@
   --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Base Styles */
 body {
   font-family: "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
@@ -43,6 +50,38 @@ main {
   margin: 0 auto;
   padding: 0 var(--spacing-medium);
 }
+
+footer {
+  margin-top: var(--spacing-large);
+  padding: var(--spacing-medium);
+  background-color: var(--primary-dark);
+  color: var(--text-light);
+}
+
+footer a:link,
+footer a:visited {
+  color: var(--text-light);
+}
+
+/* Navigation */
+nav {
+  margin-top: var(--spacing-small);
+}
+
+nav a {
+  color: var(--text-light);
+  text-decoration: none;
+  padding: var(--spacing-small) var(--spacing-medium);
+  border-radius: var(--border-radius);
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: background-color 0.3s;
+}
+
+nav a:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Form Controls */
 legend {
   color: var(--primary-color);
   font-weight: bold;
@@ -86,23 +125,29 @@ button:focus {
   outline-offset: 2px;
 }
 
-footer {
-  margin-top: var(--spacing-large);
-  padding: var(--spacing-medium);
-  background-color: var(--primary-dark);
+.primary-btn {
+  background-color: var(--primary-color);
   color: var(--text-light);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-small) var(--spacing-medium);
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-footer a:link,
-footer a:visited {
-  color: var(--text-light);
+.primary-btn:hover {
+  background-color: var(--primary-light);
 }
 
-[x-cloak] {
-  display: none !important;
+.action-btn {
+  font-size: 1.1em;
+  padding: var(--spacing-medium) var(--spacing-large);
+  margin: var(--spacing-medium) auto;
+  display: block;
+  min-width: 200px;
 }
 
-/* コントロールスタイル */
+/* Controls & Groups */
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -126,7 +171,17 @@ footer a:visited {
   gap: var(--spacing-small);
 }
 
-/* カレンダーツールバーの表示調整 */
+/* Calendar Styles */
+#calendar {
+  max-width: 100%;
+  width: 100%;
+  margin: var(--spacing-medium) auto;
+  overflow-x: hidden;
+  background-color: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
 .fc-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -139,21 +194,6 @@ footer a:visited {
   display: flex;
   align-items: center;
   margin: var(--spacing-small) 0;
-}
-
-.hidden {
-  display: none;
-}
-
-/* カレンダースタイル */
-#calendar {
-  max-width: 100%;
-  width: 100%;
-  margin: var(--spacing-medium) auto;
-  overflow-x: hidden;
-  background-color: var(--background-light);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
 }
 
 .fc-daygrid-event .fc-event-title {
@@ -201,7 +241,7 @@ footer a:visited {
   z-index: 1;
 }
 
-/* fc-day-today の重複スタイルをマージ */
+/* fc-day-today styling */
 .fc .fc-day-today.holiday {
   background-color: var(--holiday-color) !important;
 }
@@ -214,8 +254,191 @@ footer a:visited {
   background-color: var(--holiday-color) !important;
 }
 
-/* レスポンシブ対応 */
+/* Participant Section */
+.participant-entry {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-small);
+  width: 100%;
+}
+
+.participant-position {
+  flex-grow: 1;
+  margin-right: var(--spacing-small);
+}
+
+.remove-participant {
+  background-color: var(--error-color);
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#addParticipantBtn {
+  margin-top: var(--spacing-small);
+  width: 100%;
+}
+
+/* Results Section */
+.results {
+  background-color: var(--background-light);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-medium);
+  margin-top: var(--spacing-large);
+  box-shadow: var(--box-shadow);
+}
+
+.results h2 {
+  text-align: center;
+  margin-bottom: var(--spacing-medium);
+  color: var(--primary-dark);
+}
+
+.results-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--gray-light);
+  margin-bottom: var(--spacing-medium);
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: var(--spacing-small) var(--spacing-medium);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  color: var(--text-color);
+  transition: all 0.3s;
+}
+
+.tab-btn.active {
+  border-bottom-color: var(--primary-color);
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--spacing-medium);
+}
+
+.results-table th,
+.results-table td {
+  border: 1px solid var(--gray-light);
+  padding: var(--spacing-small) var(--spacing-medium);
+  text-align: center;
+}
+
+.results-table th {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+}
+
+.results-table tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.results-table .view-details {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.no-results-message {
+  text-align: center;
+  padding: var(--spacing-large);
+  color: var(--gray-color);
+  font-style: italic;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--background-light);
+  padding: var(--spacing-large);
+  border-radius: var(--border-radius);
+  max-width: 90%;
+  width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: var(--spacing-small);
+  right: var(--spacing-medium);
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--gray-color);
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--spacing-medium);
+}
+
+.details-table th,
+.details-table td {
+  border: 1px solid var(--gray-light);
+  padding: var(--spacing-small) var(--spacing-medium);
+}
+
+.details-table th {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+}
+
+.availability-yes {
+  color: var(--success-color);
+  font-weight: bold;
+}
+
+.availability-no {
+  color: var(--error-color);
+}
+
+/* Utility Classes */
+[x-cloak] {
+  display: none !important;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Responsive Styles */
 @media screen and (max-width: 480px) {
+  /* Calendar */
   .fc .fc-toolbar {
     flex-wrap: nowrap;
   }
@@ -245,14 +468,17 @@ footer a:visited {
     font-size: 0.8em;
   }
 
+  /* Controls */
   .controls {
     flex-direction: column;
     align-items: center;
+    padding: 0;
   }
 
   .control-group {
     width: 100%;
     max-width: 300px;
+    padding: var(--spacing-small);
   }
 
   .form-group {
@@ -264,5 +490,24 @@ footer a:visited {
   button {
     width: 100%;
     margin-top: var(--spacing-small);
+  }
+
+  /* Results tables */
+  .results-table th,
+  .results-table td {
+    padding: 4px 6px;
+    font-size: 0.9em;
+  }
+
+  /* Modal */
+  .modal-content {
+    width: 95%;
+    padding: var(--spacing-medium);
+  }
+
+  .details-table th,
+  .details-table td {
+    padding: 4px 6px;
+    font-size: 0.9em;
   }
 }

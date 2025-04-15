@@ -1,3 +1,9 @@
+/* 
+ * Combined stylesheet for calendar and meetup application
+ * Optimized and merged from multiple source files
+ */
+
+/* Variables */
 :root {
   --primary-color: #3f51b5;
   --primary-light: #757de8;
@@ -20,6 +26,7 @@
   --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Base Styles */
 body {
   font-family: "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
@@ -43,6 +50,38 @@ main {
   margin: 0 auto;
   padding: 0 var(--spacing-medium);
 }
+
+footer {
+  margin-top: var(--spacing-large);
+  padding: var(--spacing-medium);
+  background-color: var(--primary-dark);
+  color: var(--text-light);
+}
+
+footer a:link,
+footer a:visited {
+  color: var(--text-light);
+}
+
+/* Navigation */
+nav {
+  margin-top: var(--spacing-small);
+}
+
+nav a {
+  color: var(--text-light);
+  text-decoration: none;
+  padding: var(--spacing-small) var(--spacing-medium);
+  border-radius: var(--border-radius);
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: background-color 0.3s;
+}
+
+nav a:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Form Controls */
 legend {
   color: var(--primary-color);
   font-weight: bold;
@@ -86,23 +125,29 @@ button:focus {
   outline-offset: 2px;
 }
 
-footer {
-  margin-top: var(--spacing-large);
-  padding: var(--spacing-medium);
-  background-color: var(--primary-dark);
+.primary-btn {
+  background-color: var(--primary-color);
   color: var(--text-light);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-small) var(--spacing-medium);
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-footer a:link,
-footer a:visited {
-  color: var(--text-light);
+.primary-btn:hover {
+  background-color: var(--primary-light);
 }
 
-[x-cloak] {
-  display: none !important;
+.action-btn {
+  font-size: 1.1em;
+  padding: var(--spacing-medium) var(--spacing-large);
+  margin: var(--spacing-medium) auto;
+  display: block;
+  min-width: 200px;
 }
 
-/* コントロールスタイル */
+/* Controls & Groups */
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -126,7 +171,17 @@ footer a:visited {
   gap: var(--spacing-small);
 }
 
-/* カレンダーツールバーの表示調整 */
+/* Calendar Styles */
+#calendar {
+  max-width: 100%;
+  width: 100%;
+  margin: var(--spacing-medium) auto;
+  overflow-x: hidden;
+  background-color: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
 .fc-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -139,21 +194,6 @@ footer a:visited {
   display: flex;
   align-items: center;
   margin: var(--spacing-small) 0;
-}
-
-.hidden {
-  display: none;
-}
-
-/* カレンダースタイル */
-#calendar {
-  max-width: 100%;
-  width: 100%;
-  margin: var(--spacing-medium) auto;
-  overflow-x: hidden;
-  background-color: var(--background-light);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
 }
 
 .fc-daygrid-event .fc-event-title {
@@ -201,7 +241,7 @@ footer a:visited {
   z-index: 1;
 }
 
-/* fc-day-today の重複スタイルをマージ */
+/* fc-day-today styling */
 .fc .fc-day-today.holiday {
   background-color: var(--holiday-color) !important;
 }
@@ -214,79 +254,7 @@ footer a:visited {
   background-color: var(--holiday-color) !important;
 }
 
-/* レスポンシブ対応 */
-@media screen and (max-width: 480px) {
-  .fc .fc-toolbar {
-    flex-wrap: nowrap;
-  }
-
-  .fc .fc-toolbar-title {
-    text-align: left;
-    margin-right: auto;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .fc .fc-toolbar-chunk:last-child {
-    margin-left: auto;
-  }
-
-  .event-meta {
-    font-size: 0.7em;
-    padding: 1px 2px;
-  }
-
-  .fc-daygrid-event .fc-event-title {
-    font-size: 0.9em;
-  }
-
-  .event-time {
-    font-size: 0.8em;
-  }
-
-  .controls {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .control-group {
-    width: 100%;
-    max-width: 300px;
-  }
-
-  .form-group {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  select,
-  button {
-    width: 100%;
-    margin-top: var(--spacing-small);
-  }
-}
-
-/* meetup.css - 飲み会調整ページ用のスタイル */
-
-nav {
-  margin-top: var(--spacing-small);
-}
-
-nav a {
-  color: var(--text-light);
-  text-decoration: none;
-  padding: var(--spacing-small) var(--spacing-medium);
-  border-radius: var(--border-radius);
-  background-color: rgba(255, 255, 255, 0.2);
-  transition: background-color 0.3s;
-}
-
-nav a:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-/* 参加者セクション */
+/* Participant Section */
 .participant-entry {
   display: flex;
   align-items: center;
@@ -316,29 +284,7 @@ nav a:hover {
   width: 100%;
 }
 
-.primary-btn {
-  background-color: var(--primary-color);
-  color: var(--text-light);
-  border: none;
-  border-radius: var(--border-radius);
-  padding: var(--spacing-small) var(--spacing-medium);
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.primary-btn:hover {
-  background-color: var(--primary-light);
-}
-
-.action-btn {
-  font-size: 1.1em;
-  padding: var(--spacing-medium) var(--spacing-large);
-  margin: var(--spacing-medium) auto;
-  display: block;
-  min-width: 200px;
-}
-
-/* 結果セクション */
+/* Results Section */
 .results {
   background-color: var(--background-light);
   border-radius: var(--border-radius);
@@ -421,7 +367,7 @@ nav a:hover {
   font-style: italic;
 }
 
-/* モーダル */
+/* Modal Styles */
 .modal {
   position: fixed;
   top: 0;
@@ -481,26 +427,79 @@ nav a:hover {
   color: var(--error-color);
 }
 
-/* ユーティリティ */
+/* Utility Classes */
+[x-cloak] {
+  display: none !important;
+}
+
 .hidden {
   display: none !important;
 }
 
+/* Responsive Styles */
 @media screen and (max-width: 480px) {
+  /* Calendar */
+  .fc .fc-toolbar {
+    flex-wrap: nowrap;
+  }
+
+  .fc .fc-toolbar-title {
+    text-align: left;
+    margin-right: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .fc .fc-toolbar-chunk:last-child {
+    margin-left: auto;
+  }
+
+  .event-meta {
+    font-size: 0.7em;
+    padding: 1px 2px;
+  }
+
+  .fc-daygrid-event .fc-event-title {
+    font-size: 0.9em;
+  }
+
+  .event-time {
+    font-size: 0.8em;
+  }
+
+  /* Controls */
   .controls {
+    flex-direction: column;
+    align-items: center;
     padding: 0;
   }
 
   .control-group {
+    width: 100%;
+    max-width: 300px;
     padding: var(--spacing-small);
   }
 
+  .form-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  select,
+  button {
+    width: 100%;
+    margin-top: var(--spacing-small);
+  }
+
+  /* Results tables */
   .results-table th,
   .results-table td {
     padding: 4px 6px;
     font-size: 0.9em;
   }
 
+  /* Modal */
   .modal-content {
     width: 95%;
     padding: var(--spacing-medium);

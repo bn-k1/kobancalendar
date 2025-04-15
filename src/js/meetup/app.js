@@ -9,7 +9,6 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 
 // CSSのインポート
 import "../../css/style.css";
-import "../../css/meetup.css";
 
 // プロジェクト固有のモジュール
 import { initializeStore } from "../store.js";

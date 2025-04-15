@@ -1,17 +1,11 @@
-// store.js - Alpine.js によるストア実装
+// store.js - Alpine.js による状態管理の実装
 import Alpine from "alpinejs";
-import { isHoliday, getHolidayName } from "./holiday-service.js";
-import {
-  calculateShiftIndex,
-  getScheduleForDate,
-  calculateScheduleRange,
-} from "./schedule-service.js";
-import { getEventType } from "./event-service.js";
+import { createStoreService } from "./store-service.js";
 
 // ストア初期化
 export function initializeStore() {
-  Alpine.store("state", {
-    // データ
+  // 状態オブジェクトの作成 - データのみを含む
+  const stateData = {
     scheduleData: {
       holiday: [],
       saturday: [],
@@ -26,78 +20,14 @@ export function initializeStore() {
     icsExportConfig: {},
     eventConfig: null,
     allHolidays: {},
+  };
 
-    // メソッド
-    updateCurrentBaseDate(newBaseDate) {
-      this.currentBaseDate = newBaseDate;
-      return this.currentBaseDate;
-    },
+  // ストアサービスの作成
+  const storeService = createStoreService();
 
-    isConfigLoaded() {
-      return this.eventConfig !== null;
-    },
-
-    setScheduleData(data) {
-      this.scheduleData = data;
-    },
-
-    setHolidays(holidays) {
-      this.allHolidays = holidays;
-    },
-
-    isHoliday(date) {
-      return isHoliday(date, this.allHolidays);
-    },
-
-    getHolidayName(date) {
-      return getHolidayName(date, this.allHolidays);
-    },
-
-    getEventType(subject) {
-      return getEventType(subject, this.eventConfig);
-    },
-
-    calculateShiftIndex(targetDate, startPosition, currentBaseDate) {
-      return calculateShiftIndex(
-        targetDate,
-        startPosition,
-        currentBaseDate,
-        this.scheduleData.rotationCycleLength,
-      );
-    },
-
-    getScheduleForDate(
-      targetDate,
-      startPosition,
-      currentBaseDate,
-      lastBaseDate,
-    ) {
-      return getScheduleForDate(
-        targetDate,
-        startPosition,
-        currentBaseDate,
-        lastBaseDate,
-        this.scheduleData,
-        this.isHoliday.bind(this),
-      );
-    },
-
-    calculateScheduleRange(
-      startDate,
-      endDate,
-      startPosition,
-      currentBaseDate,
-      lastBaseDate,
-    ) {
-      return calculateScheduleRange(
-        startDate,
-        endDate,
-        startPosition,
-        currentBaseDate,
-        lastBaseDate,
-        this.scheduleData,
-        this.isHoliday.bind(this),
-      );
-    },
+  // ストアにデータと関数を登録
+  Alpine.store("state", {
+    ...stateData,
+    ...storeService,
   });
 }
