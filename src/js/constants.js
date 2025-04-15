@@ -1,6 +1,6 @@
 // constants.js - アプリケーション全体で使用される定数を定義
 export const APP_CONFIG = {
-  DEFAULT_EXPORT_MONTHS: 3,
+  DEFAULT_EXPORT_MONTHS: 1,
   DEFAULT_START_POSITION: 1,
   DEFAULT_SEARCH_PERIOD: 30,
   DEFAULT_MEETUP_START_TIME: "17:00",

@@ -38,6 +38,7 @@
                 >
                   <option
                     :value="date.format('YYYY-MM-DD')"
+                    :selected="date.format('YYYY-MM-DD') === selectedBaseDate"
                     x-text="date.format('YYYY-MM-DD')"
                   ></option>
                 </template>
@@ -56,11 +57,15 @@
               <select
                 id="startNumber"
                 aria-label="コマ位置を選択"
-                x-model="startPosition"
+                x-model.number="startPosition"
                 @change="handlePositionChange()"
               >
                 <template x-for="i in rotationCycleLength" :key="i">
-                  <option :value="i" x-text="i"></option>
+                  <option
+                    :value="i"
+                    :selected="i == startPosition"
+                    x-text="i"
+                  ></option>
                 </template>
               </select>
             </div>
