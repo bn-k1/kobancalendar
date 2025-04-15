@@ -1,7 +1,7 @@
 // schedule-service.js - スケジュール関連の機能を提供するモジュール
 import dayjs from "dayjs";
 import memoize from "lodash.memoize";
-import { handleError } from "./error-handler.js";
+import { handleError } from "./utils.js";
 import { ERROR_MESSAGES, DATE_FORMATS } from "./constants.js";
 
 // CSV形式のデータを処理する

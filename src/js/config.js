@@ -1,9 +1,9 @@
 // config.js - 設定関連の機能を提供するモジュール
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
-import { getDateParam, parseURLParams } from "./url-utils.js";
-import { handleError } from "./error-handler.js";
-import { ERROR_MESSAGES, DATE_FORMATS } from "./constants.js";
+import { getDateParam } from "./utils.js";
+import { handleError } from "./utils.js";
+import { ERROR_MESSAGES } from "./constants.js";
 
 // 設定ファイルのインポート（パスは適宜調整）
 import config from "@config/config.json";
@@ -28,11 +28,7 @@ export function loadConfig() {
     store.baseDates = baseDates;
 
     // URLからの基準日取得処理
-
-    const params = parseURLParams({
-      baseDate: { type: "date", default: baseDates[0], validValues: baseDates },
-    });
-    const currentBaseDate = params.baseDate;
+    const currentBaseDate = getDateParam("baseDate", baseDates[0], baseDates);
 
     // ストアに現在と最終の基準日を設定
     store.currentBaseDate = currentBaseDate;

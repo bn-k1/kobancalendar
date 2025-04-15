@@ -2,7 +2,7 @@
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
 import JapaneseHolidays from "japanese-holidays";
-import { handleError } from "./error-handler.js";
+import { handleError } from "./utils.js";
 import { ERROR_MESSAGES, DATE_FORMATS, CUSTOM_HOLIDAY } from "./constants.js";
 
 // 祝日データの取得（japanese-holidaysを使用）

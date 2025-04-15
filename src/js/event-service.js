@@ -1,17 +1,7 @@
 // event-service.js - イベント関連の機能を提供するモジュール
-import Alpine from "alpinejs";
 import dayjs from "dayjs";
-import { handleError } from "./error-handler.js";
+import { handleError } from "./utils.js";
 import { ERROR_MESSAGES } from "./constants.js";
-
-export function loadEventConfig(eventConfig) {
-  try {
-    Alpine.store("state").eventConfig = eventConfig;
-    return eventConfig;
-  } catch (error) {
-    return handleError(error, ERROR_MESSAGES.EVENT_CONFIG_ERROR);
-  }
-}
 
 // イベントタイプの取得
 export function getEventType(subject, eventConfig) {
@@ -43,34 +33,6 @@ export function getEventType(subject, eventConfig) {
   return {
     type: "default",
     config: eventConfig.events.default,
-  };
-}
-
-// カレンダーイベントのコンテンツレンダラーを作成
-export function createEventContentRenderer(getHolidayNameFn) {
-  return (arg) => {
-    let [title, startTime = "", endTime = ""] = arg.event.title.split("\n");
-
-    // extendedPropsからデバッグ情報を取得
-    const { shiftIndex } = arg.event.extendedProps;
-    const dateObj = dayjs(arg.event.start);
-
-    // 祝日名を取得
-    const holidayName = getHolidayNameFn(dateObj);
-
-    // デバッグ情報の文字列を作成（土日の表示は排除）
-    const metaInfo = holidayName
-      ? `${shiftIndex + 1} ${holidayName}`
-      : `${shiftIndex + 1}`;
-
-    return {
-      html: `
-        <div class="event-title">${title}</div>
-        ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
-        ${endTime ? `<div class="event-time">${endTime}</div>` : ""}
-        <div class="event-meta">${metaInfo}</div>
-      `,
-    };
   };
 }
 

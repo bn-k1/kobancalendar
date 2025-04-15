@@ -1,12 +1,12 @@
 // meetup/meetup-finder.js - 飲み会調整コンポーネント
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
-import { handleError } from "../error-handler.js";
+import { handleError } from "../utils.js";
 import {
   findMeetupDates,
   checkDateForPositions,
 } from "./availability-service.js";
-import { getWeekdayName, getDayClass } from "../date-utils.js";
+import { getWeekdayName, getDayClass } from "../utils.js";
 import { loadScheduleData } from "../schedule-service.js";
 import { loadHolidays } from "../holiday-service.js";
 import { loadConfig, loadEventConfig } from "../config.js";

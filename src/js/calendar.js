@@ -5,7 +5,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
 import memoize from "lodash.memoize";
-import { handleError } from "./error-handler.js";
+import { handleError } from "./utils.js";
 import { CALENDAR_CONFIG, ERROR_MESSAGES } from "./constants.js";
 
 // カレンダーの初期化

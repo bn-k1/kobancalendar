@@ -1,12 +1,53 @@
-// url-utils.js - URL関連のユーティリティ関数
-import { handleError } from "./error-handler.js";
-import { ERROR_MESSAGES } from "./constants.js";
 import dayjs from "dayjs";
+import Alpine from "alpinejs";
+import { WEEKDAYS, ERROR_MESSAGES } from "./constants.js";
 
-/**
- * URLクエリパラメータを更新する関数
- * @param {Object} params - 更新するクエリパラメータオブジェクト
- */
+const shownErrors = new Map();
+
+export function handleError(error, context, showAlert = true) {
+  // エラーをコンソールに記録
+  console.error(`${context}:`, error);
+
+  // 重複アラートを防止
+  const errorKey = `${context}_${error.message}`;
+
+  // ユーザーにエラーを通知（一度だけ）
+  if (showAlert && !shownErrors.has(errorKey)) {
+    shownErrors.set(errorKey, true);
+    alert(`${error.message}`);
+  }
+
+  return { success: false, error: error.message };
+}
+
+// 曜日名を返す関数
+export function getWeekdayName(date) {
+  return WEEKDAYS[date.day()];
+}
+
+// 日付の曜日や祝日に応じたクラス名を返す関数
+export function getDayClass(date) {
+  const day = date.day();
+
+  if (Alpine.store("state") && Alpine.store("state").isHoliday(date)) {
+    return "holiday";
+  }
+
+  // 曜日による判定
+  if (day === 0) return "fc-day-sun";
+  if (day === 6) return "fc-day-sat";
+
+  return "";
+}
+
+// 基準日が過去かどうかを確認する関数
+export function isBaseDateInPast(selectedBaseDate) {
+  const today = dayjs().startOf("day");
+  const currentBaseDate = dayjs(selectedBaseDate);
+  return currentBaseDate.isBefore(today);
+}
+
+// URLクエリパラメータを更新する関数
 export function updateURLParams(params) {
   const url = new URL(window.location);
 
@@ -23,24 +64,13 @@ export function updateURLParams(params) {
   window.history.pushState({}, "", url);
 }
 
-/**
- * URLから指定したクエリパラメータを取得する関数
- * @param {string} paramName - パラメータ名
- * @param {any} defaultValue - デフォルト値
- * @returns {string|null} パラメータの値
- */
+// URLから指定したクエリパラメータを取得する関数
 export function getURLParam(paramName, defaultValue = null) {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.has(paramName) ? urlParams.get(paramName) : defaultValue;
 }
 
-/**
- * URLから日付パラメータを取得し、検証する関数
- * @param {string} paramName - パラメータ名
- * @param {dayjs} defaultValue - デフォルト値
- * @param {Array} validDates - 有効な日付の配列（オプション）
- * @returns {dayjs} 検証済みの日付
- */
+// URLから日付パラメータを取得し、検証する関数
 export function getDateParam(paramName, defaultValue, validDates = []) {
   const dateStr = getURLParam(paramName);
 
@@ -79,14 +109,7 @@ export function getDateParam(paramName, defaultValue, validDates = []) {
   return dateObj;
 }
 
-/**
- * URLから数値パラメータを取得し、検証する関数
- * @param {string} paramName - パラメータ名
- * @param {number} defaultValue - デフォルト値
- * @param {number} min - 最小値（オプション）
- * @param {number} max - 最大値（オプション）
- * @returns {number} 検証済みの数値
- */
+// URLから数値パラメータを取得し、検証する関数
 export function getNumberParam(
   paramName,
   defaultValue,
@@ -131,45 +154,4 @@ export function getNumberParam(
   }
 
   return value;
-}
-
-/**
- * 現在のURLをパースして複数のパラメータを一度に取得する関数
- * @param {Object} paramConfig - パラメータ設定オブジェクト
- * @returns {Object} 検証済みのパラメータオブジェクト
- *
- * 使用例:
- * const params = parseURLParams({
- *   baseDate: { type: 'date', default: dayjs(), validValues: baseDates },
- *   startNumber: { type: 'number', default: 1, min: 1, max: 5 },
- *   view: { type: 'string', default: 'month' }
- * });
- */
-export function parseURLParams(paramConfig) {
-  const result = {};
-
-  Object.entries(paramConfig).forEach(([paramName, config]) => {
-    switch (config.type) {
-      case "date":
-        result[paramName] = getDateParam(
-          paramName,
-          config.default,
-          config.validValues,
-        );
-        break;
-      case "number":
-        result[paramName] = getNumberParam(
-          paramName,
-          config.default,
-          config.min,
-          config.max,
-        );
-        break;
-      case "string":
-      default:
-        result[paramName] = getURLParam(paramName, config.default);
-    }
-  });
-
-  return result;
 }
