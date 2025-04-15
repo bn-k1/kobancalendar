@@ -36,6 +36,7 @@
     "alpinejs": "^3.14.9",
     "dayjs": "^1.11.13",
     "ical-generator": "^8.1.1",
-    "japanese-holidays": "^1.0.10"
+    "japanese-holidays": "^1.0.10",
+    "lodash.memoize": "^4.1.2"
   }
 }

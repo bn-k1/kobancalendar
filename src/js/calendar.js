@@ -4,6 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import Alpine from "alpinejs";
 import dayjs from "dayjs";
+import memoize from "lodash.memoize";
 import { handleError } from "./error-handler.js";
 import { CALENDAR_CONFIG, ERROR_MESSAGES } from "./constants.js";
 
@@ -11,12 +12,7 @@ import { CALENDAR_CONFIG, ERROR_MESSAGES } from "./constants.js";
 export function initializeCalendar(initialDate = null) {
   const calendarEl = document.getElementById("calendar");
 
-  // イベントコンテンツレンダラーを作成
-  const eventContentRenderer = (info) =>
-    createEventContent(info, (date) =>
-      Alpine.store("state").getHolidayName(date),
-    );
-
+  // カレンダーコンフィグを作成
   const calendar = new Calendar(calendarEl, {
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: CALENDAR_CONFIG.INITIAL_VIEW,
@@ -26,17 +22,22 @@ export function initializeCalendar(initialDate = null) {
     aspectRatio: CALENDAR_CONFIG.DEFAULT_ASPECT_RATIO,
     height: CALENDAR_CONFIG.HEIGHT,
 
+    // 日付セルのクラス名をカスタマイズ
     dayCellClassNames: (arg) => {
       return getDayCellClassNames(arg.date, (date) =>
         Alpine.store("state").isHoliday(date),
       );
     },
 
-    eventContent: eventContentRenderer,
+    // イベントコンテンツをカスタマイズ
+    eventContent: (arg) => {
+      return createEventContent(arg, (date) =>
+        Alpine.store("state").getHolidayName(date),
+      );
+    },
   });
 
   calendar.render();
-
   return calendar;
 }
 
@@ -61,6 +62,7 @@ export function updateCalendar(
   const viewStartDate = dayjs(calendar.view.activeStart);
   const viewEndDate = dayjs(calendar.view.activeEnd);
 
+  // イベントデータを効率的に一括処理
   const calendarEvents = generateCalendarEvents(
     viewStartDate,
     viewEndDate,
@@ -69,6 +71,7 @@ export function updateCalendar(
     lastBaseDate,
   );
 
+  // イベントの一括更新
   calendar.removeAllEvents();
   calendar.addEventSource(calendarEvents);
 }
@@ -108,33 +111,14 @@ function createEventContent(arg, getHolidayNameFn) {
     ? `${shiftIndex + 1} ${holidayName}`
     : `${shiftIndex + 1}`;
 
-  const container = document.createElement("div");
-
-  const titleEl = document.createElement("div");
-  titleEl.className = "event-title";
-  titleEl.textContent = title;
-  container.appendChild(titleEl);
-
-  if (startTime) {
-    const startTimeEl = document.createElement("div");
-    startTimeEl.className = "event-time";
-    startTimeEl.textContent = startTime;
-    container.appendChild(startTimeEl);
-  }
-
-  if (endTime) {
-    const endTimeEl = document.createElement("div");
-    endTimeEl.className = "event-time";
-    endTimeEl.textContent = endTime;
-    container.appendChild(endTimeEl);
-  }
-
-  const metaEl = document.createElement("div");
-  metaEl.className = "event-meta";
-  metaEl.textContent = metaInfo;
-  container.appendChild(metaEl);
-
-  return { domNodes: [container] };
+  return {
+    html: `
+      <div class="event-title">${title}</div>
+      ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
+      ${endTime ? `<div class="event-time">${endTime}</div>` : ""}
+      <div class="event-meta">${metaInfo}</div>
+    `,
+  };
 }
 
 // 日付範囲のイベントデータを生成
@@ -147,13 +131,29 @@ function generateCalendarEvents(
 ) {
   const calendarEvents = [];
 
+  // getScheduleForDateをメモ化
+  const memoizedGetSchedule = memoize(
+    (dateStr, startPos, currentBaseDateStr) => {
+      return Alpine.store("state").getScheduleForDate(
+        dayjs(dateStr),
+        startPos,
+        dayjs(currentBaseDateStr),
+        lastBaseDate,
+      );
+    },
+    // キャッシュキー生成関数
+    (dateStr, startPos, currentBaseDateStr) => {
+      return `${dateStr}_${startPos}_${currentBaseDateStr}`;
+    },
+  );
+
   let currentDate = viewStartDate;
   while (currentDate.isBefore(viewEndDate)) {
-    const scheduleInfo = Alpine.store("state").getScheduleForDate(
-      currentDate,
+    // メモ化した関数を使用
+    const scheduleInfo = memoizedGetSchedule(
+      currentDate.format("YYYY-MM-DD"),
       startPosition,
-      currentBaseDate,
-      lastBaseDate,
+      currentBaseDate.format("YYYY-MM-DD"),
     );
 
     if (!scheduleInfo) {
