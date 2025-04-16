@@ -1,5 +1,4 @@
 // store/state.js - 基本的な状態管理機能
-import { LRUCache } from "lru-cache";
 
 // ストア内部の状態オブジェクト - プライベート
 const _state = {
@@ -28,7 +27,7 @@ const _state = {
   // 祝日
   allHolidays: {},
 
-  // キャッシュ（実際のサイズはconfigで初期化される）
+  // シンプルなキャッシュオブジェクト
   scheduleCache: null,
 };
 
@@ -83,11 +82,9 @@ function isConfigLoaded() {
   return _state.eventConfig !== null && _state.scheduleCache !== null;
 }
 
-// キャッシュ初期化関数
+// シンプルなキャッシュ初期化関数
 function initializeCache() {
-  _state.scheduleCache = new LRUCache({
-    max: _state.maxCacheSize,
-  });
+  _state.scheduleCache = new Map();
 }
 
 /**

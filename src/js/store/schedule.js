@@ -32,7 +32,7 @@ function calculateShiftIndex(targetDate, startPosition, currentBaseDate) {
  * @param {dayjs} lastBaseDate - 最終基準日
  * @returns {Object|null} スケジュール情報
  */
-function _getScheduleForDate(
+function getScheduleForDate(
   targetDate,
   startPosition,
   currentBaseDate,
@@ -60,7 +60,7 @@ function _getScheduleForDate(
     };
   }
 
-  // 日付差分から勤務位置を計算（calculateShiftIndex関数を使用）
+  // 日付差分から勤務位置を計算
   const shiftIndex = calculateShiftIndex(
     targetDate,
     startPosition,
@@ -90,43 +90,6 @@ function _getScheduleForDate(
     isSaturday,
     shiftIndex, // シフトインデックスを結果に含める
   };
-}
-
-/**
- * スケジュール情報を取得（キャッシュ対応）
- * @param {dayjs} targetDate - 対象日付
- * @param {number} startPosition - 開始位置
- * @param {dayjs} currentBaseDate - 現在の基準日
- * @param {dayjs} lastBaseDate - 最終基準日
- * @returns {Object|null} スケジュール情報
- */
-function getScheduleForDate(
-  targetDate,
-  startPosition,
-  currentBaseDate,
-  lastBaseDate,
-) {
-  // キャッシュが初期化されていなければ初期化
-  const scheduleCache = getState("scheduleCache");
-  if (!scheduleCache) {
-    initializeCache();
-  }
-
-  const key = `${targetDate.format("YYYY-MM-DD")}_${startPosition}_${currentBaseDate.format(
-    "YYYY-MM-DD",
-  )}_${lastBaseDate.format("YYYY-MM-DD")}`;
-
-  if (!scheduleCache.has(key)) {
-    const result = _getScheduleForDate(
-      targetDate,
-      startPosition,
-      currentBaseDate,
-      lastBaseDate,
-    );
-    scheduleCache.set(key, result);
-  }
-
-  return scheduleCache.get(key);
 }
 
 /**

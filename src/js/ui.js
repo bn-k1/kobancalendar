@@ -2,7 +2,7 @@
 
 import dayjs from "dayjs";
 import { getState } from "./store/index.js";
-import { html, render } from "./htm-util.js";
+import { clearElement, createOption } from "./dom-util.js";
 
 // 基準日選択セクションを更新
 function updateBaseDateSection(baseDates, currentBaseDate) {
@@ -22,14 +22,15 @@ function updateBaseDateSection(baseDates, currentBaseDate) {
     return;
   }
 
-  // HTMを使用してオプションを生成
-  const options = baseDates.map((date) => {
-    const dateStr = date.format("YYYY-MM-DD");
-    return html`<option value=${dateStr}>${dateStr}</option>`;
-  });
+  // 要素をクリアして新しいオプションを追加
+  clearElement(baseDateSelect);
 
-  // レンダリング
-  render(options, baseDateSelect);
+  // オプションを追加
+  baseDates.forEach((date) => {
+    const dateStr = date.format("YYYY-MM-DD");
+    const option = createOption(dateStr, dateStr);
+    baseDateSelect.appendChild(option);
+  });
 
   // 値を設定
   baseDateSelect.value = currentBaseDateStr;
@@ -97,14 +98,15 @@ function initializeStartNumberSelection() {
     return;
   }
 
-  // HTMを使用してオプションを生成
-  const options = Array.from({ length: rotationCycleLength }, (_, i) => {
-    const value = i + 1;
-    return html`<option value=${value}>${value}</option>`;
-  });
+  // 要素をクリアして新しいオプションを追加
+  clearElement(startPositionSelect);
 
-  // レンダリング
-  render(options, startPositionSelect);
+  // オプションを追加
+  for (let i = 0; i < rotationCycleLength; i++) {
+    const value = i + 1;
+    const option = createOption(value.toString(), value.toString());
+    startPositionSelect.appendChild(option);
+  }
 
   // 値を設定
   startPositionSelect.value = startNumberFromURL.toString();

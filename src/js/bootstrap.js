@@ -10,7 +10,7 @@ import {
   initializeStartNumberSelection,
   updateExportSectionLabel,
 } from "./ui.js";
-import { setupEventListeners } from "./eventListener.js";
+import { setupEventListeners } from "./eventListeners.js";
 
 async function initializeApp() {
   try {

@@ -1,4 +1,4 @@
-// eventListener.js - イベントリスナーとイベントハンドラーを管理
+// eventListeners.js - イベントリスナーとイベントハンドラーを管理
 import dayjs from "dayjs";
 import { updateCurrentBaseDate, updateURLParams } from "./config.js";
 import { getState } from "./store/index.js";

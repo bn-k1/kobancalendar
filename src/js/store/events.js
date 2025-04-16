@@ -1,5 +1,4 @@
 // store/events.js - イベントタイプ関連の機能
-import { memoize } from "lodash";
 import { getState } from "./state.js";
 
 /**
@@ -7,12 +6,12 @@ import { getState } from "./state.js";
  * @param {string} subject - イベント名/件名
  * @returns {Object} イベントタイプと設定
  */
-function _getEventType(subject) {
+function getEventType(subject) {
   const eventConfig = getState("eventConfig");
 
   if (!eventConfig || !eventConfig.events) {
     console.error("イベント設定が読み込まれていないか無効です");
-    return { type: "default", config: eventConfig.events.default };
+    return { type: "default", config: eventConfig?.events?.default || {} };
   }
 
   // events オブジェクト内のすべてのイベントタイプを確認
@@ -21,7 +20,7 @@ function _getEventType(subject) {
     if (
       type !== "default" &&
       config.keywords &&
-      config.keywords.some((keyword) => subject.includes(keyword))
+      config.keywords.some((keyword) => subject?.includes(keyword))
     ) {
       return { type, config };
     }
@@ -33,8 +32,5 @@ function _getEventType(subject) {
     config: eventConfig.events.default,
   };
 }
-
-// memoizeを使用してパフォーマンスを向上
-const getEventType = memoize(_getEventType);
 
 export { getEventType };
