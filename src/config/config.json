@@ -12,7 +12,6 @@
     "01-03"
   ],
   "holiday_years_range": 5,
-  "max_cache_size": 3000,
   "info": {
     "calendar_name": "KobanCalendar",
     "timezone": "Asia/Tokyo",
