@@ -14,7 +14,7 @@
             :key="date.format('YYYY-MM-DD')"
             :value="date.format('YYYY-MM-DD')"
           >
-            {{ date.format('YYYY-MM-DD') }}
+            {{ date.format("YYYY-MM-DD") }}
           </option>
         </select>
       </div>
@@ -29,11 +29,7 @@
           v-model="startPosition"
           @change="handlePositionChange"
         >
-          <option
-            v-for="i in rotationCycleLength"
-            :key="i"
-            :value="i"
-          >
+          <option v-for="i in rotationCycleLength" :key="i" :value="i">
             {{ i }}
           </option>
         </select>
@@ -45,23 +41,23 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
-import dayjs from 'dayjs';
-import { useScheduleStore } from '@/stores/schedule';
-import { useCalendarStore } from '@/stores/calendar';
-import { updateURLParams } from '@/utils/params-utils';
+import { ref, computed, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import dayjs from "dayjs";
+import { useScheduleStore } from "@/stores/schedule";
+import { useCalendarStore } from "@/stores/calendar";
+import { updateURLParams } from "@/utils/params-utils";
 
 // プロップス
 const props = defineProps({
   isLoaded: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 // エミット
-const emit = defineEmits(['change']);
+const emit = defineEmits(["change"]);
 
 // ストア
 const scheduleStore = useScheduleStore();
@@ -70,7 +66,7 @@ const calendarStore = useCalendarStore();
 const { startPosition } = storeToRefs(calendarStore);
 
 // ローカル状態
-const selectedBaseDate = ref('');
+const selectedBaseDate = ref("");
 const rotationCycleLength = computed(() => {
   return scheduleStore.scheduleData.rotationCycleLength;
 });
@@ -80,25 +76,25 @@ function handleBaseDateChange() {
   const newBaseDate = dayjs(selectedBaseDate.value);
   scheduleStore.updateCurrentBaseDate(newBaseDate);
   updateURLParams({
-    baseDate: selectedBaseDate.value
+    baseDate: selectedBaseDate.value,
   });
-  emit('change', { type: 'baseDate', value: newBaseDate });
+  emit("change", { type: "baseDate", value: newBaseDate });
 }
 
 // コマ位置変更処理
 function handlePositionChange() {
   updateURLParams({
-    startNumber: startPosition.value
+    startNumber: startPosition.value,
   });
-  emit('change', { type: 'position', value: startPosition.value });
+  emit("change", { type: "position", value: startPosition.value });
 }
 
 // 初期化
 onMounted(() => {
   if (currentBaseDate.value) {
-    selectedBaseDate.value = currentBaseDate.value.format('YYYY-MM-DD');
+    selectedBaseDate.value = currentBaseDate.value.format("YYYY-MM-DD");
   } else if (baseDates.value.length > 0) {
-    selectedBaseDate.value = baseDates.value[0].format('YYYY-MM-DD');
+    selectedBaseDate.value = baseDates.value[0].format("YYYY-MM-DD");
   }
 });
 </script>

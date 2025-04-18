@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
-import { ERROR_MESSAGES } from '@/config/constants';
+import dayjs from "dayjs";
+import { ERROR_MESSAGES } from "@/config/constants";
 
 /**
  * URLクエリパラメータを更新する関数
@@ -7,7 +7,7 @@ import { ERROR_MESSAGES } from '@/config/constants';
  */
 export function updateURLParams(params) {
   const url = new URL(window.location);
-  
+
   // 現在のパラメータをすべて保持しながら新しいパラメータを追加/更新
   Object.entries(params).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
@@ -16,9 +16,9 @@ export function updateURLParams(params) {
       url.searchParams.delete(key);
     }
   });
-  
+
   // 履歴に追加（現在のページを置き換え）
-  window.history.pushState({}, '', url);
+  window.history.pushState({}, "", url);
 }
 
 /**
@@ -41,31 +41,31 @@ export function getURLParam(paramName, defaultValue = null) {
  */
 export function getDateParam(paramName, defaultValue, validDates = []) {
   const dateStr = getURLParam(paramName);
-  
+
   if (!dateStr) {
     return defaultValue;
   }
-  
+
   const dateObj = dayjs(dateStr);
-  
+
   // 日付形式が無効な場合
   if (!dateObj.isValid()) {
     console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
     return defaultValue;
   }
-  
+
   // 有効な日付リストが指定されている場合、チェックする
   if (validDates.length > 0) {
     const dateExists = validDates.some(
-      (date) => date.format('YYYY-MM-DD') === dateObj.format('YYYY-MM-DD'),
+      (date) => date.format("YYYY-MM-DD") === dateObj.format("YYYY-MM-DD"),
     );
-    
+
     if (!dateExists) {
       console.error(ERROR_MESSAGES.INVALID_BASE_DATE);
       return defaultValue;
     }
   }
-  
+
   return dateObj;
 }
 
@@ -84,29 +84,29 @@ export function getNumberParam(
   max = null,
 ) {
   const valueStr = getURLParam(paramName);
-  
+
   if (!valueStr) {
     return defaultValue;
   }
-  
+
   const value = parseInt(valueStr, 10);
-  
+
   // 数値でない場合
   if (isNaN(value)) {
     console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
     return defaultValue;
   }
-  
+
   // 範囲チェック
   if (min !== null && value < min) {
     console.error(ERROR_MESSAGES.INVALID_STARTNUMBER);
     return defaultValue;
   }
-  
+
   if (max !== null && value > max) {
     console.error(ERROR_MESSAGES.INVALID_STARTNUMBER);
     return defaultValue;
   }
-  
+
   return value;
 }

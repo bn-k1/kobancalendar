@@ -5,27 +5,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
-import { storeToRefs } from 'pinia';
-import dayjs from 'dayjs';
-import FullCalendar from '@fullcalendar/vue3';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { useScheduleStore } from '@/stores/schedule';
-import { useHolidayStore } from '@/stores/holiday';
-import { useCalendarStore } from '@/stores/calendar';
-import { CALENDAR_CONFIG } from '@/config/constants';
+import { ref, onMounted, watch, computed } from "vue";
+import { storeToRefs } from "pinia";
+import dayjs from "dayjs";
+import FullCalendar from "@fullcalendar/vue3";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { useScheduleStore } from "@/stores/schedule";
+import { useHolidayStore } from "@/stores/holiday";
+import { useCalendarStore } from "@/stores/calendar";
+import { CALENDAR_CONFIG } from "@/config/constants";
 
 // プロップス
 const props = defineProps({
   initialDate: {
     type: [Date, Object],
-    default: null
-  }
+    default: null,
+  },
 });
 
 // エミット
-const emit = defineEmits(['datesSet']);
+const emit = defineEmits(["datesSet"]);
 
 // ストア
 const scheduleStore = useScheduleStore();
@@ -48,55 +48,55 @@ const calendarOptions = computed(() => ({
   events: calendarEvents.value,
   aspectRatio: CALENDAR_CONFIG.DEFAULT_ASPECT_RATIO,
   height: CALENDAR_CONFIG.HEIGHT,
-  
+
   // 日付セルのクラス名をカスタマイズ
   dayCellClassNames: (arg) => {
     const date = dayjs(arg.date);
     const classNames = [];
-    
+
     if (holidayStore.isHoliday(date)) {
-      classNames.push('holiday');
+      classNames.push("holiday");
     }
     if (date.day() === 6) {
-      classNames.push('fc-day-sat');
+      classNames.push("fc-day-sat");
     }
     if (date.day() === 0) {
-      classNames.push('fc-day-sun');
+      classNames.push("fc-day-sun");
     }
-    if (date.isSame(dayjs().startOf('day'), 'day')) {
-      classNames.push('today-highlight');
+    if (date.isSame(dayjs().startOf("day"), "day")) {
+      classNames.push("today-highlight");
     }
-    
+
     return classNames;
   },
-  
+
   // イベントコンテンツをカスタマイズ
   eventContent: (arg) => {
     const { event } = arg;
-    let [title, startTime = '', endTime = ''] = event.title.split('\n');
+    let [title, startTime = "", endTime = ""] = event.title.split("\n");
     const { shiftIndex } = event.extendedProps;
     const date = dayjs(event.start);
-    
+
     const holidayName = holidayStore.getHolidayName(date);
     const metaInfo = holidayName
       ? `${shiftIndex + 1} ${holidayName}`
       : `${shiftIndex + 1}`;
-    
+
     return {
       html: `
         <div class="event-title">${title}</div>
-        ${startTime ? `<div class="event-time">${startTime}</div>` : ''}
-        ${endTime ? `<div class="event-time">${endTime}</div>` : ''}
+        ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
+        ${endTime ? `<div class="event-time">${endTime}</div>` : ""}
         <div class="event-meta">${metaInfo}</div>
-      `
+      `,
     };
   },
-  
+
   // 日付範囲が変更されたときのイベント
   datesSet: (info) => {
     const newStart = dayjs(info.start);
     const newEnd = dayjs(info.end);
-    
+
     // ビューの日付範囲が変更された場合のみ更新
     if (
       !viewStart.value ||
@@ -107,19 +107,16 @@ const calendarOptions = computed(() => ({
       viewStart.value = newStart;
       viewEnd.value = newEnd;
       updateCalendarEvents();
-      emit('datesSet', { start: newStart, end: newEnd });
+      emit("datesSet", { start: newStart, end: newEnd });
     }
-  }
+  },
 }));
 
 // カレンダーイベントの更新
 function updateCalendarEvents() {
   if (!viewStart.value || !viewEnd.value) return;
-  
-  calendarStore.generateCalendarEvents(
-    viewStart.value,
-    viewEnd.value
-  );
+
+  calendarStore.generateCalendarEvents(viewStart.value, viewEnd.value);
 }
 
 // 日付にジャンプ
@@ -131,7 +128,7 @@ function gotoDate(date) {
 
 // 外部に公開するメソッド
 defineExpose({
-  gotoDate
+  gotoDate,
 });
 
 // ウォッチャー
@@ -147,7 +144,7 @@ watch([currentBaseDate, lastBaseDate], () => {
 onMounted(() => {
   // データが読み込まれているか確認
   if (!scheduleStore.isDataLoaded) {
-    console.warn('スケジュールデータがまだ読み込まれていません');
+    console.warn("スケジュールデータがまだ読み込まれていません");
     return;
   }
 
@@ -161,7 +158,7 @@ onMounted(() => {
         viewEnd.value = dayjs(api.view.activeEnd);
         updateCalendarEvents();
       } catch (error) {
-        console.error('カレンダーAPI初期化エラー:', error);
+        console.error("カレンダーAPI初期化エラー:", error);
       }
     }
   }, 0);

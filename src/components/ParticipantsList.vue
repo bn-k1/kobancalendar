@@ -2,8 +2,8 @@
   <fieldset id="participantsSection" class="control-group" v-if="isLoaded">
     <legend>参加者(コマ位置)</legend>
     <div id="participantsList">
-      <div 
-        v-for="(participant, index) in participants" 
+      <div
+        v-for="(participant, index) in participants"
         :key="index"
         class="participant-entry"
       >
@@ -13,11 +13,7 @@
           v-model="participant.position"
         >
           <option value="" disabled>コマ位置を選択</option>
-          <option 
-            v-for="i in rotationCycleLength" 
-            :key="i"
-            :value="i"
-          >
+          <option v-for="i in rotationCycleLength" :key="i" :value="i">
             {{ i }}
           </option>
         </select>
@@ -30,40 +26,36 @@
         </button>
       </div>
     </div>
-    <button
-      id="addParticipantBtn"
-      class="primary-btn"
-      @click="addParticipant"
-    >
+    <button id="addParticipantBtn" class="primary-btn" @click="addParticipant">
       参加者を追加
     </button>
   </fieldset>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref } from "vue";
 
 // プロップス
 const props = defineProps({
   isLoaded: {
     type: Boolean,
-    default: false
+    default: false,
   },
   rotationCycleLength: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
 });
 
 // エミット
-const emit = defineEmits(['update:participants']);
+const emit = defineEmits(["update:participants"]);
 
 // ローカル状態
-const participants = ref([{ position: '' }]);
+const participants = ref([{ position: "" }]);
 
 // 参加者を追加
 function addParticipant() {
-  participants.value.push({ position: '' });
+  participants.value.push({ position: "" });
   emitParticipantsUpdate();
 }
 
@@ -75,7 +67,7 @@ function removeParticipant(index) {
 
 // 参加者情報の更新を通知
 function emitParticipantsUpdate() {
-  emit('update:participants', participants.value);
+  emit("update:participants", participants.value);
 }
 </script>
 

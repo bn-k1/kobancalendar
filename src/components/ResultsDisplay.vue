@@ -27,10 +27,7 @@
         class="tab-content"
         :class="{ active: activeTab === 'all' }"
       >
-        <div
-          class="no-results-message"
-          v-if="results.allMatches.length === 0"
-        >
+        <div class="no-results-message" v-if="results.allMatches.length === 0">
           全員が参加可能な日付は見つかりませんでした。
         </div>
         <table
@@ -47,15 +44,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="match in results.allMatches" :key="match.date.format('YYYY-MM-DD')">
-              <td>{{ match.date.format('YYYY/MM/DD') }}</td>
-              <td :class="getDayClass(match.date)">{{ getWeekday(match.date) }}</td>
+            <tr
+              v-for="match in results.allMatches"
+              :key="match.date.format('YYYY-MM-DD')"
+            >
+              <td>{{ match.date.format("YYYY/MM/DD") }}</td>
+              <td :class="getDayClass(match.date)">
+                {{ getWeekday(match.date) }}
+              </td>
               <td>{{ match.availableCount }}/{{ match.totalCount }}</td>
               <td>
-                <button
-                  class="view-details"
-                  @click="showDetails(match)"
-                >
+                <button class="view-details" @click="showDetails(match)">
                   詳細
                 </button>
               </td>
@@ -88,15 +87,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="match in results.partialMatches" :key="match.date.format('YYYY-MM-DD')">
-              <td>{{ match.date.format('YYYY/MM/DD') }}</td>
-              <td :class="getDayClass(match.date)">{{ getWeekday(match.date) }}</td>
+            <tr
+              v-for="match in results.partialMatches"
+              :key="match.date.format('YYYY-MM-DD')"
+            >
+              <td>{{ match.date.format("YYYY/MM/DD") }}</td>
+              <td :class="getDayClass(match.date)">
+                {{ getWeekday(match.date) }}
+              </td>
               <td>{{ match.availableCount }}/{{ match.totalCount }}</td>
               <td>
-                <button
-                  class="view-details"
-                  @click="showDetails(match)"
-                >
+                <button class="view-details" @click="showDetails(match)">
                   詳細
                 </button>
               </td>
@@ -106,7 +107,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- 詳細モーダル -->
   <div
     id="detailsModal"
@@ -132,8 +133,12 @@
             <td>{{ detail.position }}</td>
             <td>{{ getCurrentDayShift(detail) }}</td>
             <td>{{ getNextDayShift(detail) }}</td>
-            <td :class="detail.isAvailable ? 'availability-yes' : 'availability-no'">
-              {{ detail.isAvailable ? '○' : '×' }}
+            <td
+              :class="
+                detail.isAvailable ? 'availability-yes' : 'availability-no'
+              "
+            >
+              {{ detail.isAvailable ? "○" : "×" }}
             </td>
           </tr>
         </tbody>
@@ -143,35 +148,38 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
-import { useScheduleStore } from '@/stores/schedule';
-import { DATE_FORMATS } from '@/config/constants';
-import { getWeekdayName, getDayClass as getClassForDay } from '@/utils/date-utils';
+import { ref, defineProps, defineEmits } from "vue";
+import { useScheduleStore } from "@/stores/schedule";
+import { DATE_FORMATS } from "@/config/constants";
+import {
+  getWeekdayName,
+  getDayClass as getClassForDay,
+} from "@/utils/date-utils";
 
 // プロップス
 const props = defineProps({
   results: {
     type: Object,
     required: true,
-    default: () => ({ allMatches: [], partialMatches: [] })
+    default: () => ({ allMatches: [], partialMatches: [] }),
   },
   showResults: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 // エミット
-const emit = defineEmits(['close']);
+const emit = defineEmits(["close"]);
 
 // ストア
 const scheduleStore = useScheduleStore();
 
 // ローカル状態
-const activeTab = ref('all');
+const activeTab = ref("all");
 const showModal = ref(false);
 const currentDetails = ref({ details: [] });
-const modalTitle = ref('');
+const modalTitle = ref("");
 
 // 曜日名を取得
 function getWeekday(date) {
@@ -192,7 +200,7 @@ function showDetails(match) {
 
 // モーダル外クリックで閉じる
 function closeModalOnOutsideClick(event) {
-  if (event.target.id === 'detailsModal') {
+  if (event.target.id === "detailsModal") {
     showModal.value = false;
   }
 }
@@ -205,29 +213,29 @@ function getCurrentDayShift(detail) {
     !currentDetails.value ||
     !currentDetails.value.date
   ) {
-    return '-';
+    return "-";
   }
-  
+
   // 現在の日付を取得
   const currentDay = currentDetails.value.date;
-  
+
   // 現在の日のスケジュールを取得
   const currentDaySchedule = scheduleStore.getScheduleForDate(
     currentDay,
-    detail.position
+    detail.position,
   );
-  
+
   // 現在の日の勤務内容を整形して返す
   if (currentDaySchedule && currentDaySchedule.subject) {
     // その他の勤務の場合は開始時間と終了時間を表示
     if (currentDaySchedule.endTime) {
       return `${currentDaySchedule.subject}(~${currentDaySchedule.endTime})`;
     }
-    
+
     return currentDaySchedule.subject;
   }
-  
-  return '-';
+
+  return "-";
 }
 
 // 翌日の勤務内容を取得
@@ -238,29 +246,29 @@ function getNextDayShift(detail) {
     !currentDetails.value ||
     !currentDetails.value.date
   ) {
-    return '-';
+    return "-";
   }
-  
+
   // 翌日の日付を計算
-  const nextDay = currentDetails.value.date.add(1, 'day');
-  
+  const nextDay = currentDetails.value.date.add(1, "day");
+
   // 翌日のスケジュールを取得
   const nextDaySchedule = scheduleStore.getScheduleForDate(
     nextDay,
-    detail.position
+    detail.position,
   );
-  
+
   // 翌日の勤務内容を整形して返す
   if (nextDaySchedule && nextDaySchedule.subject) {
     // その他の勤務の場合は開始時間も表示
     if (nextDaySchedule.startTime) {
       return `${nextDaySchedule.subject}(${nextDaySchedule.startTime}~)`;
     }
-    
+
     return nextDaySchedule.subject;
   }
-  
-  return '-';
+
+  return "-";
 }
 </script>
 

@@ -31,20 +31,20 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { storeToRefs } from 'pinia';
-import dayjs from 'dayjs';
-import { useScheduleStore } from '@/stores/schedule';
-import { useCalendarStore } from '@/stores/calendar';
-import { exportICS } from '@/services/export-service';
-import { isBaseDateInPast as checkBaseDateInPast } from '@/utils/date-utils';
+import { ref, computed } from "vue";
+import { storeToRefs } from "pinia";
+import dayjs from "dayjs";
+import { useScheduleStore } from "@/stores/schedule";
+import { useCalendarStore } from "@/stores/calendar";
+import { exportICS } from "@/services/export-service";
+import { isBaseDateInPast as checkBaseDateInPast } from "@/utils/date-utils";
 
 // プロップス
 const props = defineProps({
   isLoaded: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 // ストア
@@ -65,17 +65,12 @@ const isBaseDateInPast = computed(() => {
 function handleExportICS() {
   const months = parseInt(exportMonths.value);
   const position = parseInt(startPosition.value);
-  
+
   try {
-    exportICS(
-      months,
-      position,
-      currentBaseDate.value,
-      lastBaseDate.value
-    );
+    exportICS(months, position, currentBaseDate.value, lastBaseDate.value);
   } catch (error) {
-    console.error('ICSファイルのエクスポート中にエラーが発生しました', error);
-    alert('エクスポートに失敗しました: ' + error.message);
+    console.error("ICSファイルのエクスポート中にエラーが発生しました", error);
+    alert("エクスポートに失敗しました: " + error.message);
   }
 }
 </script>

@@ -1,10 +1,6 @@
 <template>
   <header>
     <h1>{{ pageTitle }}</h1>
-    <nav>
-      <router-link to="/">交番カレンダー🚨</router-link>
-      <router-link to="/meetup">飲みに行くンダー🍻</router-link>
-    </nav>
   </header>
 
   <main>
@@ -17,6 +13,9 @@
       <a href="https://github.com/bn-k1/kobancalendar#README" target="_blank" rel="noopener noreferrer">
         GitHub
       </a>
+      - 
+      <router-link v-if="route.path === '/'" to="/meetup">🍻</router-link>
+      <router-link v-if="route.path === '/meetup'" to="/">🚨</router-link> 
     </p>
   </footer>
 </template>

@@ -1,6 +1,6 @@
-import dayjs from 'dayjs';
-import { WEEKDAYS } from '@/config/constants';
-import { useHolidayStore } from '@/stores/holiday';
+import dayjs from "dayjs";
+import { WEEKDAYS } from "@/config/constants";
+import { useHolidayStore } from "@/stores/holiday";
 
 /**
  * 曜日名を返す関数
@@ -19,16 +19,16 @@ export function getWeekdayName(date) {
 export function getDayClass(date) {
   const holidayStore = useHolidayStore();
   const day = date.day();
-  
+
   if (holidayStore.isHoliday(date)) {
-    return 'holiday';
+    return "holiday";
   }
-  
+
   // 曜日による判定
-  if (day === 0) return 'fc-day-sun';
-  if (day === 6) return 'fc-day-sat';
-  
-  return '';
+  if (day === 0) return "fc-day-sun";
+  if (day === 6) return "fc-day-sat";
+
+  return "";
 }
 
 /**
@@ -37,7 +37,7 @@ export function getDayClass(date) {
  * @returns {boolean} 過去の日付ならtrue
  */
 export function isBaseDateInPast(selectedBaseDate) {
-  const today = dayjs().startOf('day');
+  const today = dayjs().startOf("day");
   const currentBaseDate = dayjs(selectedBaseDate);
   return currentBaseDate.isBefore(today);
 }
