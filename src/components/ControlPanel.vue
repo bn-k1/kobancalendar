@@ -1,3 +1,4 @@
+// src/components/ControlPanel.vue
 <template>
   <div class="controls">
     <fieldset id="baseDateSection" class="control-group" v-if="isLoaded">
@@ -41,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import dayjs from "dayjs";
 import { useScheduleStore } from "@/stores/schedule";
@@ -67,6 +68,14 @@ const { startPosition } = storeToRefs(calendarStore);
 
 // ローカル状態
 const selectedBaseDate = ref("");
+
+// コンポーネントが作成されたときに selectedBaseDate を初期化
+if (currentBaseDate.value) {
+  selectedBaseDate.value = currentBaseDate.value.format("YYYY-MM-DD");
+} else if (baseDates.value && baseDates.value.length > 0) {
+  selectedBaseDate.value = baseDates.value[0].format("YYYY-MM-DD");
+}
+
 const rotationCycleLength = computed(() => {
   return scheduleStore.scheduleData.rotationCycleLength;
 });
@@ -89,8 +98,23 @@ function handlePositionChange() {
   emit("change", { type: "position", value: startPosition.value });
 }
 
+// currentBaseDate の変更を監視して selectedBaseDate を更新
+watch(currentBaseDate, (newBaseDate) => {
+  if (newBaseDate) {
+    selectedBaseDate.value = newBaseDate.format("YYYY-MM-DD");
+  }
+});
+
+// baseDates の変更を監視（配列の最初の要素を selectedBaseDate に設定）
+watch(baseDates, (newBaseDates) => {
+  if (newBaseDates && newBaseDates.length > 0 && !selectedBaseDate.value) {
+    selectedBaseDate.value = newBaseDates[0].format("YYYY-MM-DD");
+  }
+});
+
 // 初期化
 onMounted(() => {
+  // onMounted でも再確認
   if (currentBaseDate.value) {
     selectedBaseDate.value = currentBaseDate.value.format("YYYY-MM-DD");
   } else if (baseDates.value.length > 0) {
