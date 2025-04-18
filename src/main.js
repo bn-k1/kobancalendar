@@ -20,7 +20,7 @@ dayjs.extend(isSameOrAfter);
 dayjs.tz.setDefault("Asia/Tokyo");
 
 // グローバルCSS
-import "./assets/style.css";
+import "./style.css";
 
 // アプリケーションの作成
 const app = createApp(App);
