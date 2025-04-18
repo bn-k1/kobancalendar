@@ -12,10 +12,10 @@
           >
             <option
               v-for="date in baseDates"
-              :key="date.format('YYYY-MM-DD')"
-              :value="date.format('YYYY-MM-DD')"
+              :key="date.format(DATE_FORMATS.ISO_DATE)"
+              :value="date.format(DATE_FORMATS.ISO_DATE)"
             >
-              {{ date.format("YYYY-MM-DD") }}
+              {{ date.format(DATE_FORMATS.ISO_DATE) }}
             </option>
           </select>
         </div>
@@ -89,15 +89,11 @@ import { storeToRefs } from "pinia";
 import dayjs from "dayjs";
 import ParticipantsList from "@/components/ParticipantsList.vue";
 import ResultsDisplay from "@/components/ResultsDisplay.vue";
-// MeetupViewではCalendarViewは使用しないため、インポートを削除します
 import { useScheduleStore } from "@/stores/schedule";
-import { useHolidayStore } from "@/stores/holiday";
 import { useCalendarStore } from "@/stores/calendar";
-import {
-  findMeetupDates,
-  checkDateForPositions,
-} from "@/services/availability-service";
-import { APP_CONFIG, ERROR_MESSAGES } from "@/config/constants";
+import { findMeetupDates } from "@/services/availability-service";
+import { APP_CONFIG, ERROR_MESSAGES , DATE_FORMATS } from "@/config/constants";
+import { initializeApplication, setCurrentBaseDate } from "@/services/application-service";
 
 // CSVデータのインポート
 import holidayData from "@/data/holiday.csv?raw";
@@ -118,7 +114,6 @@ const showResults = ref(false);
 // ストア
 const scheduleStore = useScheduleStore();
 const { baseDates } = storeToRefs(scheduleStore);
-const holidayStore = useHolidayStore();
 const calendarStore = useCalendarStore();
 
 // ローカルコンピューテッド
@@ -172,47 +167,28 @@ function findDates() {
   showResults.value = true;
 }
 
-// アプリケーションの初期化
-async function initApplication() {
-  try {
-    // イベント設定
-    calendarStore.setEventConfig(eventConfig);
-
-    // 祝日設定
-    holidayStore.setHolidayYearsRange(config.holiday_years_range || 5);
-    holidayStore.setUserDefinedHolidays(config.custom_holidays || []);
-
-    // スケジュールデータの読み込み
-    scheduleStore.loadScheduleData(holidayData, saturdayData, weekdayData);
-
-    // 基準日の設定 (スケジュールデータロード後に行う)
-    const configBaseDates = config.base_dates
-      .map((dateStr) => dayjs(dateStr))
-      .sort((a, b) => a.unix() - b.unix());
-    scheduleStore.setBaseDates(configBaseDates);
-
-    const defaultBaseDate = configBaseDates[0];
-    scheduleStore.setLastBaseDate(configBaseDates[configBaseDates.length - 1]);
-    // currentBaseDate設定はプロセスの最後に行う
-    scheduleStore.updateCurrentBaseDate(defaultBaseDate);
-    selectedBaseDate.value = defaultBaseDate.format("YYYY-MM-DD");
-
-    // 祝日データの読み込み
-    holidayStore.loadHolidays();
-
-    isLoaded.value = true;
-  } catch (error) {
-    console.error("アプリケーションの初期化に失敗しました", error);
-    alert("アプリケーションの初期化に失敗しました: " + error.message);
-  }
-}
-
 // マウント時の処理
-onMounted(() => {
-  initApplication();
+onMounted(async () => {
+  // 共通初期化処理を実行
+  const result = await initializeApplication(
+    config,
+    eventConfig,
+    holidayData, 
+    saturdayData,
+    weekdayData
+  );
+  
+  if (result.success) {
+    // デフォルトの基準日を設定
+    const defaultBaseDate = result.data.baseDates[0];
+    
+    // 基準日を設定
+    setCurrentBaseDate(defaultBaseDate, result.data.baseDates);
+    
+    // 選択された基準日を更新
+    selectedBaseDate.value = defaultBaseDate.format(DATE_FORMATS.ISO_DATE);
+    
+    isLoaded.value = true;
+  }
 });
 </script>
-
-<style scoped>
-/* ビュー固有のスタイル */
-</style>

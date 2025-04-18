@@ -12,10 +12,10 @@
         >
           <option
             v-for="date in baseDates"
-            :key="date.format('YYYY-MM-DD')"
-            :value="date.format('YYYY-MM-DD')"
+            :key="date.format(DATE_FORMATS.ISO_DATE)"
+            :value="date.format(DATE_FORMATS.ISO_DATE)"
           >
-            {{ date.format("YYYY-MM-DD") }}
+            {{ date.format(DATE_FORMATS.ISO_DATE) }}
           </option>
         </select>
       </div>
@@ -48,6 +48,7 @@ import dayjs from "dayjs";
 import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
 import { updateURLParams } from "@/utils/params-utils";
+import { DATE_FORMATS } from "@/config/constants";
 
 // プロップス
 const props = defineProps({
@@ -71,9 +72,9 @@ const selectedBaseDate = ref("");
 
 // コンポーネントが作成されたときに selectedBaseDate を初期化
 if (currentBaseDate.value) {
-  selectedBaseDate.value = currentBaseDate.value.format("YYYY-MM-DD");
+  selectedBaseDate.value = currentBaseDate.value.format(DATE_FORMATS.ISO_DATE);
 } else if (baseDates.value && baseDates.value.length > 0) {
-  selectedBaseDate.value = baseDates.value[0].format("YYYY-MM-DD");
+  selectedBaseDate.value = baseDates.value[0].format(DATE_FORMATS.ISO_DATE);
 }
 
 const rotationCycleLength = computed(() => {
@@ -101,14 +102,14 @@ function handlePositionChange() {
 // currentBaseDate の変更を監視して selectedBaseDate を更新
 watch(currentBaseDate, (newBaseDate) => {
   if (newBaseDate) {
-    selectedBaseDate.value = newBaseDate.format("YYYY-MM-DD");
+    selectedBaseDate.value = newBaseDate.format(DATE_FORMATS.ISO_DATE);
   }
 });
 
 // baseDates の変更を監視（配列の最初の要素を selectedBaseDate に設定）
 watch(baseDates, (newBaseDates) => {
   if (newBaseDates && newBaseDates.length > 0 && !selectedBaseDate.value) {
-    selectedBaseDate.value = newBaseDates[0].format("YYYY-MM-DD");
+    selectedBaseDate.value = newBaseDates[0].format(DATE_FORMATS.ISO_DATE);
   }
 });
 
@@ -116,9 +117,9 @@ watch(baseDates, (newBaseDates) => {
 onMounted(() => {
   // onMounted でも再確認
   if (currentBaseDate.value) {
-    selectedBaseDate.value = currentBaseDate.value.format("YYYY-MM-DD");
+    selectedBaseDate.value = currentBaseDate.value.format(DATE_FORMATS.ISO_DATE);
   } else if (baseDates.value.length > 0) {
-    selectedBaseDate.value = baseDates.value[0].format("YYYY-MM-DD");
+    selectedBaseDate.value = baseDates.value[0].format(DATE_FORMATS.ISO_DATE);
   }
 });
 </script>

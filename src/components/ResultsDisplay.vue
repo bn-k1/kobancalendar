@@ -46,9 +46,9 @@
           <tbody>
             <tr
               v-for="match in results.allMatches"
-              :key="match.date.format('YYYY-MM-DD')"
+              :key="match.date.format(DATE_FORMATS.ISO_DATE)"
             >
-              <td>{{ match.date.format("YYYY/MM/DD") }}</td>
+              <td>{{ match.date.format(DATE_FORMATS.DISPLAY_DATE) }}</td>
               <td :class="getDayClass(match.date)">
                 {{ getWeekday(match.date) }}
               </td>
@@ -89,9 +89,9 @@
           <tbody>
             <tr
               v-for="match in results.partialMatches"
-              :key="match.date.format('YYYY-MM-DD')"
+              :key="match.date.format(DATE_FORMATS.ISO_DATE)"
             >
-              <td>{{ match.date.format("YYYY/MM/DD") }}</td>
+              <td>{{ match.date.format(DATE_FORMATS.DISPLAY_DATE) }}</td>
               <td :class="getDayClass(match.date)">
                 {{ getWeekday(match.date) }}
               </td>

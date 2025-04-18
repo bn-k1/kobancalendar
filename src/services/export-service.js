@@ -101,8 +101,8 @@ function downloadICS(icsContent, startDate, endDate) {
   const downloadLink = document.createElement("a");
 
   // ファイル名に日付範囲を含める
-  const startDateStr = startDate.format("YYYYMMDD");
-  const endDateStr = endDate.add(-1, "day").format("YYYYMMDD"); // 終了日は範囲の最後の日
+  const startDateStr = startDate.format(DATE_FORMATS.FILE_NAME_DATE);
+  const endDateStr = endDate.add(-1, "day").format(DATE_FORMATS.FILE_NAME_DATE); // 終了日は範囲の最後の日
 
   downloadLink.href = url;
   downloadLink.download = `schedule_${startDateStr}-${endDateStr}.ics`;
