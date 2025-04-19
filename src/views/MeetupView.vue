@@ -95,8 +95,15 @@ import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
 import { findMeetupDates } from "@/services/availability-service";
 import { APP_CONFIG, ERROR_MESSAGES, DATE_FORMATS } from "@/config/constants";
-import { initializeApplication, setCurrentBaseDate } from "@/services/application-service";
-import { updateURLParams, getURLParam, getNumberParam } from "@/utils/params-utils";
+import {
+  initializeApplication,
+  setCurrentBaseDate,
+} from "@/services/application-service";
+import {
+  updateURLParams,
+  getURLParam,
+  getNumberParam,
+} from "@/utils/params-utils";
 
 // CSVデータのインポート
 import holidayData from "@/data/holiday.csv?raw";
@@ -128,7 +135,7 @@ const rotationCycleLength = computed(() => {
 function handleBaseDateChange() {
   const newBaseDate = dayjs(selectedBaseDate.value);
   scheduleStore.updateCurrentBaseDate(newBaseDate);
-  
+
   // URLを更新
   updateAllURLParams();
 }
@@ -155,15 +162,15 @@ function updateParticipants(newParticipants) {
 function updateAllURLParams() {
   // 有効な参加者（positionが設定されている）のみを抽出
   const validParticipants = participants.value
-    .filter(p => p.position)
-    .map(p => p.position)
-    .join(',');
-  
+    .filter((p) => p.position)
+    .map((p) => p.position)
+    .join(",");
+
   updateURLParams({
     baseDate: selectedBaseDate.value,
     meetupStartTime: meetupStartTime.value,
     searchPeriod: searchPeriod.value,
-    participants: validParticipants
+    participants: validParticipants,
   });
 }
 
@@ -208,18 +215,24 @@ onMounted(async () => {
   const result = await initializeApplication(
     config,
     eventConfig,
-    holidayData, 
+    holidayData,
     saturdayData,
-    weekdayData
+    weekdayData,
   );
-  
+
   if (result.success) {
     // URLからパラメータを取得
     const baseDateParam = getURLParam("baseDate", "");
-    const meetupStartTimeParam = getURLParam("meetupStartTime", APP_CONFIG.DEFAULT_MEETUP_START_TIME);
-    const searchPeriodParam = getURLParam("searchPeriod", APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString());
-    const participantsParam = getURLParam('participants', '');
-    
+    const meetupStartTimeParam = getURLParam(
+      "meetupStartTime",
+      APP_CONFIG.DEFAULT_MEETUP_START_TIME,
+    );
+    const searchPeriodParam = getURLParam(
+      "searchPeriod",
+      APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString(),
+    );
+    const participantsParam = getURLParam("participants", "");
+
     // パラメータを適用
     if (baseDateParam) {
       const dateObj = dayjs(baseDateParam);
@@ -239,19 +252,22 @@ onMounted(async () => {
       setCurrentBaseDate(defaultBaseDate, result.data.baseDates);
       selectedBaseDate.value = defaultBaseDate.format(DATE_FORMATS.ISO_DATE);
     }
-    
+
     // 飲み会開始時間と検索期間を設定
     meetupStartTime.value = meetupStartTimeParam;
     searchPeriod.value = searchPeriodParam;
-    
+
     // URLから参加者情報を取得して設定
     if (participantsParam) {
-      const positionList = participantsParam.split(',').map(p => parseInt(p)).filter(p => !isNaN(p));
+      const positionList = participantsParam
+        .split(",")
+        .map((p) => parseInt(p))
+        .filter((p) => !isNaN(p));
       if (positionList.length > 0) {
-        participants.value = positionList.map(position => ({ position }));
+        participants.value = positionList.map((position) => ({ position }));
       }
     }
-    
+
     isLoaded.value = true;
   }
 });

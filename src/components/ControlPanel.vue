@@ -47,7 +47,11 @@ import { storeToRefs } from "pinia";
 import dayjs from "dayjs";
 import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
-import { updateURLParams, getURLParam, getNumberParam } from "@/utils/params-utils";
+import {
+  updateURLParams,
+  getURLParam,
+  getNumberParam,
+} from "@/utils/params-utils";
 import { DATE_FORMATS } from "@/config/constants";
 
 // プロップス
@@ -85,10 +89,10 @@ const rotationCycleLength = computed(() => {
 function handleBaseDateChange() {
   const newBaseDate = dayjs(selectedBaseDate.value);
   scheduleStore.updateCurrentBaseDate(newBaseDate);
-  
+
   // 全ての選択情報を含めてURLを更新
   updateAllURLParams();
-  
+
   emit("change", { type: "baseDate", value: newBaseDate });
 }
 
@@ -96,7 +100,7 @@ function handleBaseDateChange() {
 function handlePositionChange() {
   // 全ての選択情報を含めてURLを更新
   updateAllURLParams();
-  
+
   emit("change", { type: "position", value: startPosition.value });
 }
 
@@ -127,7 +131,7 @@ onMounted(() => {
   // URLからパラメータを取得
   const baseDateParam = getURLParam("baseDate", "");
   const startNumberParam = getNumberParam("startNumber", null);
-  
+
   // URLにパラメータがある場合は適用
   if (baseDateParam) {
     const dateObj = dayjs(baseDateParam);
@@ -136,15 +140,21 @@ onMounted(() => {
       selectedBaseDate.value = dateObj.format(DATE_FORMATS.ISO_DATE);
     }
   }
-  
-  if (startNumberParam !== null && rotationCycleLength.value >= startNumberParam && startNumberParam > 0) {
+
+  if (
+    startNumberParam !== null &&
+    rotationCycleLength.value >= startNumberParam &&
+    startNumberParam > 0
+  ) {
     // 有効なコマ位置の場合はstartPositionを更新
     calendarStore.setStartPosition(startNumberParam);
   }
-  
+
   // onMounted でも再確認
   if (currentBaseDate.value) {
-    selectedBaseDate.value = currentBaseDate.value.format(DATE_FORMATS.ISO_DATE);
+    selectedBaseDate.value = currentBaseDate.value.format(
+      DATE_FORMATS.ISO_DATE,
+    );
   } else if (baseDates.value.length > 0) {
     selectedBaseDate.value = baseDates.value[0].format(DATE_FORMATS.ISO_DATE);
   }

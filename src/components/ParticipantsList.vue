@@ -75,28 +75,31 @@ function handleParticipantChange() {
 // 参加者情報の更新を通知
 function emitParticipantsUpdate() {
   emit("update:participants", participants.value);
-  
+
   // 有効な参加者（positionが設定されている）のみを抽出
   const validParticipants = participants.value
-    .filter(p => p.position)
-    .map(p => p.position)
-    .join(',');
-  
+    .filter((p) => p.position)
+    .map((p) => p.position)
+    .join(",");
+
   // URLを更新
   updateURLParams({
-    participants: validParticipants
+    participants: validParticipants,
   });
 }
 
 // 初期化
 onMounted(() => {
   // URLから参加者情報を取得
-  const participantsParam = getURLParam('participants', '');
+  const participantsParam = getURLParam("participants", "");
   if (participantsParam) {
-    const positionList = participantsParam.split(',').map(p => parseInt(p)).filter(p => !isNaN(p));
+    const positionList = participantsParam
+      .split(",")
+      .map((p) => parseInt(p))
+      .filter((p) => !isNaN(p));
     if (positionList.length > 0) {
       // 既存の有効なpositionリストがある場合は置き換え
-      participants.value = positionList.map(position => ({ position }));
+      participants.value = positionList.map((position) => ({ position }));
     }
   }
 });

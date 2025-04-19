@@ -165,7 +165,6 @@ export const useScheduleStore = defineStore("schedule", () => {
 
   // CSV形式のデータを処理する
   function processCSVData(csvData) {
-
     // 文字列形式のCSVデータをパース
     if (typeof csvData === "string") {
       const result = Papa.parse(csvData, {
@@ -199,7 +198,6 @@ export const useScheduleStore = defineStore("schedule", () => {
   // スケジュールデータを読み込む
   function loadScheduleData(holidayData, saturdayData, weekdayData) {
     try {
-
       // インポートしたCSVデータを処理
       const processedHolidayData = processCSVData(holidayData);
       const processedSaturdayData = processCSVData(saturdayData);

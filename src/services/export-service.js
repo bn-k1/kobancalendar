@@ -20,15 +20,15 @@ export function exportICS(
       currentBaseDate.isAfter(today) || currentBaseDate.isSame(today)
         ? currentBaseDate.startOf("day")
         : today;
-    
+
     // ユーザーが指定した期間を計算
     let endDate = startDate.add(months, "month");
-    
+
     // currentBaseDateとlastBaseDateが異なる場合で、
     // lastBaseDateがendDateより前の場合は、lastBaseDateを終了日として使用
     if (
-      lastBaseDate && 
-      !currentBaseDate.isSame(lastBaseDate) && 
+      lastBaseDate &&
+      !currentBaseDate.isSame(lastBaseDate) &&
       lastBaseDate.isBefore(endDate)
     ) {
       // lastBaseDateの翌日を終了日とする（範囲には含まれない）

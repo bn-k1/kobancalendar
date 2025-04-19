@@ -23,7 +23,10 @@ import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
 import { getDateParam, getNumberParam } from "@/utils/params-utils";
 import { APP_CONFIG } from "@/config/constants";
-import { initializeApplication, setCurrentBaseDate } from "@/services/application-service";
+import {
+  initializeApplication,
+  setCurrentBaseDate,
+} from "@/services/application-service";
 
 // CSVデータのインポート
 import holidayData from "@/data/holiday.csv?raw";
@@ -77,29 +80,25 @@ onMounted(async () => {
     eventConfig,
     holidayData,
     saturdayData,
-    weekdayData
+    weekdayData,
   );
-  
+
   if (result.success) {
     // URLクエリパラメータから基準日を取得
-    const paramBaseDate = getDateParam(
-      "baseDate",
-      null,
-      result.data.baseDates
-    );
-    
+    const paramBaseDate = getDateParam("baseDate", null, result.data.baseDates);
+
     // 基準日を設定
     setCurrentBaseDate(paramBaseDate, result.data.baseDates);
-    
+
     // URLクエリパラメータからコマ位置を取得
     const position = getNumberParam(
       "startNumber",
       APP_CONFIG.DEFAULT_START_POSITION,
       1,
-      result.data.scheduleData.rotationCycleLength
+      result.data.scheduleData.rotationCycleLength,
     );
     calendarStore.setStartPosition(position);
-    
+
     isLoaded.value = true;
   }
 });

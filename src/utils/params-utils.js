@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { ERROR_MESSAGES , DATE_FORMATS } from "@/config/constants";
+import { ERROR_MESSAGES, DATE_FORMATS } from "@/config/constants";
 
 /**
  * URLクエリパラメータを更新する関数
@@ -57,7 +57,9 @@ export function getDateParam(paramName, defaultValue, validDates = []) {
   // 有効な日付リストが指定されている場合、チェックする
   if (validDates.length > 0) {
     const dateExists = validDates.some(
-      (date) => date.format(DATE_FORMATS.ISO_DATE) === dateObj.format(DATE_FORMATS.ISO_DATE),
+      (date) =>
+        date.format(DATE_FORMATS.ISO_DATE) ===
+        dateObj.format(DATE_FORMATS.ISO_DATE),
     );
 
     if (!dateExists) {
