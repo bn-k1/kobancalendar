@@ -47,7 +47,7 @@ import { storeToRefs } from "pinia";
 import dayjs from "dayjs";
 import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
-import { updateURLParams } from "@/utils/params-utils";
+import { updateURLParams, getURLParam, getNumberParam } from "@/utils/params-utils";
 import { DATE_FORMATS } from "@/config/constants";
 
 // プロップス
@@ -85,18 +85,27 @@ const rotationCycleLength = computed(() => {
 function handleBaseDateChange() {
   const newBaseDate = dayjs(selectedBaseDate.value);
   scheduleStore.updateCurrentBaseDate(newBaseDate);
-  updateURLParams({
-    baseDate: selectedBaseDate.value,
-  });
+  
+  // 全ての選択情報を含めてURLを更新
+  updateAllURLParams();
+  
   emit("change", { type: "baseDate", value: newBaseDate });
 }
 
 // コマ位置変更処理
 function handlePositionChange() {
+  // 全ての選択情報を含めてURLを更新
+  updateAllURLParams();
+  
+  emit("change", { type: "position", value: startPosition.value });
+}
+
+// 全ての選択情報を含めてURLを更新する関数
+function updateAllURLParams() {
   updateURLParams({
+    baseDate: selectedBaseDate.value,
     startNumber: startPosition.value,
   });
-  emit("change", { type: "position", value: startPosition.value });
 }
 
 // currentBaseDate の変更を監視して selectedBaseDate を更新
@@ -115,6 +124,24 @@ watch(baseDates, (newBaseDates) => {
 
 // 初期化
 onMounted(() => {
+  // URLからパラメータを取得
+  const baseDateParam = getURLParam("baseDate", "");
+  const startNumberParam = getNumberParam("startNumber", null);
+  
+  // URLにパラメータがある場合は適用
+  if (baseDateParam) {
+    const dateObj = dayjs(baseDateParam);
+    if (dateObj.isValid()) {
+      // 有効な日付の場合はselectedBaseDateを更新
+      selectedBaseDate.value = dateObj.format(DATE_FORMATS.ISO_DATE);
+    }
+  }
+  
+  if (startNumberParam !== null && rotationCycleLength.value >= startNumberParam && startNumberParam > 0) {
+    // 有効なコマ位置の場合はstartPositionを更新
+    calendarStore.setStartPosition(startNumberParam);
+  }
+  
   // onMounted でも再確認
   if (currentBaseDate.value) {
     selectedBaseDate.value = currentBaseDate.value.format(DATE_FORMATS.ISO_DATE);
@@ -123,7 +150,3 @@ onMounted(() => {
   }
 });
 </script>
-
-<style scoped>
-/* コンポーネント固有のスタイル */
-</style>

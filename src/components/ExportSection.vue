@@ -75,7 +75,3 @@ function handleExportICS() {
   }
 }
 </script>
-
-<style scoped>
-/* コンポーネント固有のスタイル */
-</style>

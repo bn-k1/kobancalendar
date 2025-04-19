@@ -33,6 +33,7 @@
             id="meetupStartTime"
             aria-label="飲み会開始時間"
             v-model="meetupStartTime"
+            @change="handleMeetupStartTimeChange"
           >
             <option value="12:00">12:00</option>
             <option value="13:00">13:00</option>
@@ -52,6 +53,7 @@
             id="searchPeriod"
             aria-label="検索期間"
             v-model="searchPeriod"
+            @change="handleSearchPeriodChange"
           >
             <option value="30">1ヶ月</option>
             <option value="60">2ヶ月</option>
@@ -92,8 +94,9 @@ import ResultsDisplay from "@/components/ResultsDisplay.vue";
 import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
 import { findMeetupDates } from "@/services/availability-service";
-import { APP_CONFIG, ERROR_MESSAGES , DATE_FORMATS } from "@/config/constants";
+import { APP_CONFIG, ERROR_MESSAGES, DATE_FORMATS } from "@/config/constants";
 import { initializeApplication, setCurrentBaseDate } from "@/services/application-service";
+import { updateURLParams, getURLParam, getNumberParam } from "@/utils/params-utils";
 
 // CSVデータのインポート
 import holidayData from "@/data/holiday.csv?raw";
@@ -125,11 +128,43 @@ const rotationCycleLength = computed(() => {
 function handleBaseDateChange() {
   const newBaseDate = dayjs(selectedBaseDate.value);
   scheduleStore.updateCurrentBaseDate(newBaseDate);
+  
+  // URLを更新
+  updateAllURLParams();
+}
+
+// 飲み会開始時間変更処理
+function handleMeetupStartTimeChange() {
+  // URLを更新
+  updateAllURLParams();
+}
+
+// 検索期間変更処理
+function handleSearchPeriodChange() {
+  // URLを更新
+  updateAllURLParams();
 }
 
 // 参加者更新処理
 function updateParticipants(newParticipants) {
   participants.value = newParticipants;
+  // ParticipantsListコンポーネント内で既にURLは更新されている
+}
+
+// 全てのパラメータをURLに反映する関数
+function updateAllURLParams() {
+  // 有効な参加者（positionが設定されている）のみを抽出
+  const validParticipants = participants.value
+    .filter(p => p.position)
+    .map(p => p.position)
+    .join(',');
+  
+  updateURLParams({
+    baseDate: selectedBaseDate.value,
+    meetupStartTime: meetupStartTime.value,
+    searchPeriod: searchPeriod.value,
+    participants: validParticipants
+  });
 }
 
 // 日程検索
@@ -179,14 +214,43 @@ onMounted(async () => {
   );
   
   if (result.success) {
-    // デフォルトの基準日を設定
-    const defaultBaseDate = result.data.baseDates[0];
+    // URLからパラメータを取得
+    const baseDateParam = getURLParam("baseDate", "");
+    const meetupStartTimeParam = getURLParam("meetupStartTime", APP_CONFIG.DEFAULT_MEETUP_START_TIME);
+    const searchPeriodParam = getURLParam("searchPeriod", APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString());
+    const participantsParam = getURLParam('participants', '');
     
-    // 基準日を設定
-    setCurrentBaseDate(defaultBaseDate, result.data.baseDates);
+    // パラメータを適用
+    if (baseDateParam) {
+      const dateObj = dayjs(baseDateParam);
+      if (dateObj.isValid()) {
+        // 有効な基準日があればそれを使用
+        setCurrentBaseDate(dateObj, result.data.baseDates);
+        selectedBaseDate.value = dateObj.format(DATE_FORMATS.ISO_DATE);
+      } else {
+        // デフォルトの基準日を設定
+        const defaultBaseDate = result.data.baseDates[0];
+        setCurrentBaseDate(defaultBaseDate, result.data.baseDates);
+        selectedBaseDate.value = defaultBaseDate.format(DATE_FORMATS.ISO_DATE);
+      }
+    } else {
+      // デフォルトの基準日を設定
+      const defaultBaseDate = result.data.baseDates[0];
+      setCurrentBaseDate(defaultBaseDate, result.data.baseDates);
+      selectedBaseDate.value = defaultBaseDate.format(DATE_FORMATS.ISO_DATE);
+    }
     
-    // 選択された基準日を更新
-    selectedBaseDate.value = defaultBaseDate.format(DATE_FORMATS.ISO_DATE);
+    // 飲み会開始時間と検索期間を設定
+    meetupStartTime.value = meetupStartTimeParam;
+    searchPeriod.value = searchPeriodParam;
+    
+    // URLから参加者情報を取得して設定
+    if (participantsParam) {
+      const positionList = participantsParam.split(',').map(p => parseInt(p)).filter(p => !isNaN(p));
+      if (positionList.length > 0) {
+        participants.value = positionList.map(position => ({ position }));
+      }
+    }
     
     isLoaded.value = true;
   }

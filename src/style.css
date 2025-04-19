@@ -66,28 +66,6 @@ footer a:visited {
   color: var(--text-light);
 }
 
-/* ナビゲーション */
-nav {
-  margin-top: var(--spacing-small);
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-nav a {
-  color: var(--text-light);
-  text-decoration: none;
-  padding: var(--spacing-small) var(--spacing-medium);
-  border-radius: var(--border-radius);
-  background-color: rgba(255, 255, 255, 0.2);
-  transition: background-color 0.3s;
-}
-
-nav a:hover,
-nav a.router-link-active {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
 /* フォームコントロール */
 legend {
   color: var(--primary-color);

@@ -271,7 +271,3 @@ function getNextDayShift(detail) {
   return "-";
 }
 </script>
-
-<style scoped>
-/* コンポーネント固有のスタイル */
-</style>
