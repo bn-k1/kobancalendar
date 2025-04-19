@@ -63,7 +63,7 @@ export function getDateParam(paramName, defaultValue, validDates = []) {
     );
 
     if (!dateExists) {
-      console.error(ERROR_MESSAGES.INVALID_BASE_DATE);
+      alert(ERROR_MESSAGES.INVALID_BASE_DATE);
       return defaultValue;
     }
   }
@@ -101,12 +101,12 @@ export function getNumberParam(
 
   // 範囲チェック
   if (min !== null && value < min) {
-    console.error(ERROR_MESSAGES.INVALID_STARTNUMBER);
+    alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
     return defaultValue;
   }
 
   if (max !== null && value > max) {
-    console.error(ERROR_MESSAGES.INVALID_STARTNUMBER);
+    alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
     return defaultValue;
   }
 
