@@ -142,12 +142,6 @@ watch([currentBaseDate, lastBaseDate], () => {
 
 // マウント時の処理
 onMounted(() => {
-  // データが読み込まれているか確認
-  if (!scheduleStore.isDataLoaded) {
-    console.warn("スケジュールデータがまだ読み込まれていません");
-    return;
-  }
-
   // nextTickを使って描画後に実行
   setTimeout(() => {
     // 初期日付範囲の取得とイベント生成

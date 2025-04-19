@@ -45,7 +45,6 @@ export const useCalendarStore = defineStore("calendar", () => {
   // イベントタイプを取得
   function getEventType(subject) {
     if (!eventConfig.value || !eventConfig.value.events) {
-      console.error("イベント設定が読み込まれていないか無効です");
       return {
         type: "default",
         config: eventConfig.value?.events?.default || {},

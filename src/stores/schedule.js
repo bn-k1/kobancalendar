@@ -165,11 +165,6 @@ export const useScheduleStore = defineStore("schedule", () => {
 
   // CSV形式のデータを処理する
   function processCSVData(csvData) {
-    console.log(
-      "CSV処理前データ:",
-      typeof csvData,
-      csvData?.substring ? csvData.substring(0, 100) : csvData,
-    );
 
     // 文字列形式のCSVデータをパース
     if (typeof csvData === "string") {
@@ -204,28 +199,11 @@ export const useScheduleStore = defineStore("schedule", () => {
   // スケジュールデータを読み込む
   function loadScheduleData(holidayData, saturdayData, weekdayData) {
     try {
-      console.log("CSV形式を確認:", {
-        holidayType: typeof holidayData,
-        saturdayType: typeof saturdayData,
-        weekdayType: typeof weekdayData,
-        holidaySample: holidayData,
-        saturdaySample: saturdayData,
-        weekdaySample: weekdayData,
-      });
 
       // インポートしたCSVデータを処理
       const processedHolidayData = processCSVData(holidayData);
       const processedSaturdayData = processCSVData(saturdayData);
       const processedWeekdayData = processCSVData(weekdayData);
-
-      console.log("処理後のデータ:", {
-        holidayLength: processedHolidayData.length,
-        saturdayLength: processedSaturdayData.length,
-        weekdayLength: processedWeekdayData.length,
-        holidaySample: processedHolidayData.slice(0, 3),
-        saturdaySample: processedSaturdayData.slice(0, 3),
-        weekdaySample: processedWeekdayData.slice(0, 3),
-      });
 
       const holidayLength = processedHolidayData.length;
       if (
