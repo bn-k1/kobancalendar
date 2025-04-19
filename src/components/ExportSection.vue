@@ -38,6 +38,7 @@ import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
 import { exportICS } from "@/services/export-service";
 import { isBaseDateInPast as checkBaseDateInPast } from "@/utils/date-utils";
+import { ERROR_MESSAGES } from "@/config/constants";
 
 // プロップス
 const props = defineProps({
@@ -69,8 +70,8 @@ function handleExportICS() {
   try {
     exportICS(months, position, currentBaseDate.value, lastBaseDate.value);
   } catch (error) {
-    console.error("ICSファイルのエクスポート中にエラーが発生しました", error);
-    alert("エクスポートに失敗しました: " + error.message);
+    console.error(ERROR_MESSAGES.ICS_EXPORT_ERROR, error);
+    alert(ERROR_MESSAGES.ICS_EXPORT_ERROR);
   }
 }
 </script>

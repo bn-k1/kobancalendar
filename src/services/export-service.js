@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import ical from "ical-generator";
-import { DATE_FORMATS } from "@/config/constants";
+import { ERROR_MESSAGES, DATE_FORMATS } from "@/config/constants";
 import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
 
@@ -20,7 +20,20 @@ export function exportICS(
       currentBaseDate.isAfter(today) || currentBaseDate.isSame(today)
         ? currentBaseDate.startOf("day")
         : today;
-    const endDate = startDate.add(months, "month");
+    
+    // ユーザーが指定した期間を計算
+    let endDate = startDate.add(months, "month");
+    
+    // currentBaseDateとlastBaseDateが異なる場合で、
+    // lastBaseDateがendDateより前の場合は、lastBaseDateを終了日として使用
+    if (
+      lastBaseDate && 
+      !currentBaseDate.isSame(lastBaseDate) && 
+      lastBaseDate.isBefore(endDate)
+    ) {
+      // lastBaseDateの翌日を終了日とする（範囲には含まれない）
+      endDate = lastBaseDate;
+    }
 
     // 日付範囲の勤務スケジュールを取得
     const scheduleRange = scheduleStore.calculateScheduleRange(
@@ -29,7 +42,6 @@ export function exportICS(
       startPosition,
       currentBaseDate,
     );
-
     // 設定から値を取得
     const icsConfig = calendarStore.icsExportConfig;
 
@@ -89,7 +101,7 @@ export function exportICS(
     downloadICS(calendar.toString(), startDate, endDate);
     return true;
   } catch (error) {
-    console.error("ICSファイルのエクスポート中にエラーが発生しました", error);
+    console.error(ERROR_MESSAGES.ICS_EXPORT_ERROR, error);
     throw error;
   }
 }

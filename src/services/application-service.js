@@ -52,7 +52,7 @@ export async function initializeApplication(configData, eventConfigData, holiday
       }
     };
   } catch (error) {
-    alert("初期化処理に失敗しました。");
+    console.error(ERROR_MESSAGES.INIT_FAILED, error);
   }
 }
 
@@ -70,8 +70,7 @@ export function setCurrentBaseDate(baseDate, baseDates) {
     scheduleStore.updateCurrentBaseDate(validBaseDate);
     return validBaseDate;
   } catch (error) {
-    alert("基準日設定");
-    // エラー時はデフォルトの基準日を返す
+    console.error(ERROR_MESSAGES.BASEDATE_CONFIGURATION_ERROR, error);
     return baseDates[0];
   }
 }

@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import dayjs from "dayjs";
 import JapaneseHolidays from "japanese-holidays";
-import { DATE_FORMATS, CUSTOM_HOLIDAY } from "@/config/constants";
+import { ERROR_MESSAGES, DATE_FORMATS, CUSTOM_HOLIDAY } from "@/config/constants";
 
 export const useHolidayStore = defineStore("holiday", () => {
   // 状態
@@ -38,7 +38,7 @@ export const useHolidayStore = defineStore("holiday", () => {
       setHolidays(holidays);
       return holidays;
     } catch (error) {
-      console.error("祝日データの取得に失敗しました", error);
+      console.error(ERROR_MESSAGES.HOLIDAYS_LOAD_ERROR, error);
       throw error;
     }
   }

@@ -146,19 +146,11 @@ onMounted(() => {
   setTimeout(() => {
     // 初期日付範囲の取得とイベント生成
     if (calendarRef.value) {
-      try {
-        const api = calendarRef.value.getApi();
-        viewStart.value = dayjs(api.view.activeStart);
-        viewEnd.value = dayjs(api.view.activeEnd);
-        updateCalendarEvents();
-      } catch (error) {
-        console.error("カレンダーAPI初期化エラー:", error);
-      }
+      const api = calendarRef.value.getApi();
+      viewStart.value = dayjs(api.view.activeStart);
+      viewEnd.value = dayjs(api.view.activeEnd);
+      updateCalendarEvents();
     }
   }, 0);
 });
 </script>
-
-<style scoped>
-/* コンポーネント固有のスタイル */
-</style>

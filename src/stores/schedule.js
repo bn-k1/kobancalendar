@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import dayjs from "dayjs";
 import Papa from "papaparse";
-import { DATE_FORMATS } from "@/config/constants";
+import { ERROR_MESSAGES, DATE_FORMATS } from "@/config/constants";
 import { useHolidayStore } from "./holiday";
 
 export const useScheduleStore = defineStore("schedule", () => {
@@ -175,7 +175,7 @@ export const useScheduleStore = defineStore("schedule", () => {
       });
 
       if (result.errors && result.errors.length > 0) {
-        console.error("CSV解析エラー:", result.errors);
+        console.error(ERROR_MESSAGES.CSV_PARSE_ERROR, result.errors);
       }
 
       // 各行をカンマ区切りの文字列に変換して返す（元のフォーマットと互換性を持たせる）
@@ -192,7 +192,7 @@ export const useScheduleStore = defineStore("schedule", () => {
       });
     }
 
-    console.error("不明なCSVデータ形式:", csvData);
+    console.error(ERROR_MESSAGES.UNKNOWN_CSV_FORMAT, csvData);
     return [];
   }
 
@@ -210,7 +210,7 @@ export const useScheduleStore = defineStore("schedule", () => {
         holidayLength !== processedSaturdayData.length ||
         holidayLength !== processedWeekdayData.length
       ) {
-        throw new Error("CSVファイルの行数が一致しません");
+        throw new Error(ERROR_MESSAGES.CSV_ROWS_MISMATCH);
       }
 
       const data = {
@@ -223,7 +223,7 @@ export const useScheduleStore = defineStore("schedule", () => {
       setScheduleData(data);
       return data;
     } catch (error) {
-      console.error("スケジュールデータの読み込みに失敗しました", error);
+      console.error(SCHEDULE_DATA_ERROR, error);
       throw error;
     }
   }
