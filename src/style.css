@@ -156,7 +156,7 @@ legend {
   color: var(--primary-color);
   font-weight: var(--font-weight-bold);
   padding: 0 var(--spacing-sm);
-  font-size: 1.05rem; 
+  font-size: 1.0rem; 
 }
 
 select,

@@ -31,7 +31,7 @@
       </fieldset>
 
       <fieldset id="startNumberSection" class="control-group">
-        <legend>{{ selectedBaseDate }}のコマ位置</legend>
+        <legend>基準日のコマ位置</legend>
         <div class="form-group">
           <select
             id="startNumber"
