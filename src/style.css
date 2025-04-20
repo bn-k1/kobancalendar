@@ -709,22 +709,50 @@ button:focus {
   background-color: var(--success-color);
 }
 
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  justify-content: center;
+}
+
+
+.horizontal-fields {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: nowrap;
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+}
+
+.horizontal-fields .control-group {
+  flex: 1;
+  min-width: 0; 
+  max-width: none;
+}
+
 
 @media screen and (max-width: 768px) {
   html {
-    font-size: 16px; 
+    font-size: 16px;
   }
-  
+
   main {
     padding: var(--spacing-md);
   }
-  
+
   .controls {
     flex-direction: column;
     align-items: stretch;
     gap: var(--spacing-md);
   }
+
   
+  .horizontal-fields {
+    flex-direction: row;
+  }
+
   .control-group {
     max-width: none;
     width: 100%;
@@ -733,69 +761,44 @@ button:focus {
 
 @media screen and (max-width: 480px) {
   html {
-    font-size: 15px; 
+    font-size: 15px;
   }
-  
-  
+
   .controls {
     padding: 0;
   }
-  
+
   .control-group {
     padding: var(--spacing-sm);
   }
+
   
+  .horizontal-fields .control-group {
+    padding: var(--spacing-sm);
+  }
+
+  .horizontal-fields legend {
+    font-size: 0.9rem;
+  }
+
+  .horizontal-fields select {
+    font-size: 0.9rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
   .form-group {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   select,
   button {
     width: 100%;
     margin-top: var(--spacing-xs);
   }
+
   
-  
-  .results-table th,
-  .results-table td {
-    padding: 8px 10px;
-    font-size: 0.9rem;
-  }
-  
-  
-  .modal-content {
-    width: 95%;
-    padding: var(--spacing-md);
-  }
-  
-  .details-table th,
-  .details-table td {
-    padding: 8px 10px;
-    font-size: 0.9rem;
-  }
-  
-  
-  .export-form-group {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .export-form-group span {
-    font-size: 0.9rem;
-  }
-  
-  .export-form-group select {
-    width: 60px;
-    padding: var(--spacing-xs) var(--spacing-sm);
-  }
-  
-  .export-form-group button {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 0.9rem;
-  }
-  
-  header h1 {
-    font-size: 1.5rem;
+  .horizontal-fields .form-group {
+    margin-bottom: 0;
   }
 }

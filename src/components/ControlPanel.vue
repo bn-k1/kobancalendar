@@ -1,48 +1,51 @@
 // src/components/ControlPanel.vue
 <template>
   <div class="controls">
-    <fieldset id="baseDateSection" class="control-group" v-if="isLoaded">
-      <legend>基準日</legend>
-      <div class="form-group">
-        <!-- 基準日が単一の場合はテキスト表示 -->
-        <span v-if="baseDates.length === 1">
-          {{ selectedBaseDate }}
-        </span>
+    <!-- 基準日とコマ位置を横並びに配置するラッパー -->
+    <div class="horizontal-fields" v-if="isLoaded">
+      <fieldset id="baseDateSection" class="control-group">
+        <legend>基準日</legend>
+        <div class="form-group">
+          <!-- 基準日が単一の場合はテキスト表示 -->
+          <span v-if="baseDates.length === 1">
+            {{ selectedBaseDate }}
+          </span>
 
-        <!-- 複数の基準日がある場合はドロップダウン表示 -->
-        <select
-          v-else
-          id="baseDate"
-          aria-label="基準日を選択"
-          v-model="selectedBaseDate"
-          @change="handleBaseDateChange"
-        >
-          <option
-            v-for="date in baseDates"
-            :key="date.format(DATE_FORMATS.ISO_DATE)"
-            :value="date.format(DATE_FORMATS.ISO_DATE)"
+          <!-- 複数の基準日がある場合はドロップダウン表示 -->
+          <select
+            v-else
+            id="baseDate"
+            aria-label="基準日を選択"
+            v-model="selectedBaseDate"
+            @change="handleBaseDateChange"
           >
-            {{ date.format(DATE_FORMATS.ISO_DATE) }}
-          </option>
-        </select>
-      </div>
-    </fieldset>
+            <option
+              v-for="date in baseDates"
+              :key="date.format(DATE_FORMATS.ISO_DATE)"
+              :value="date.format(DATE_FORMATS.ISO_DATE)"
+            >
+              {{ date.format(DATE_FORMATS.ISO_DATE) }}
+            </option>
+          </select>
+        </div>
+      </fieldset>
 
-    <fieldset id="startNumberSection" class="control-group" v-if="isLoaded">
-      <legend>{{ selectedBaseDate }}のコマ位置</legend>
-      <div class="form-group">
-        <select
-          id="startNumber"
-          aria-label="コマ位置を選択"
-          v-model="startPosition"
-          @change="handlePositionChange"
-        >
-          <option v-for="i in rotationCycleLength" :key="i" :value="i">
-            {{ i }}
-          </option>
-        </select>
-      </div>
-    </fieldset>
+      <fieldset id="startNumberSection" class="control-group">
+        <legend>{{ selectedBaseDate }}のコマ位置</legend>
+        <div class="form-group">
+          <select
+            id="startNumber"
+            aria-label="コマ位置を選択"
+            v-model="startPosition"
+            @change="handlePositionChange"
+          >
+            <option v-for="i in rotationCycleLength" :key="i" :value="i">
+              {{ i }}
+            </option>
+          </select>
+        </div>
+      </fieldset>
+    </div>
 
     <slot></slot>
   </div>
