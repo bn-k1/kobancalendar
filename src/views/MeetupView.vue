@@ -1,3 +1,4 @@
+// src/views/MeetupView.vue
 <template>
   <div id="meetup-view">
     <div class="controls">
@@ -33,7 +34,6 @@
             id="meetupStartTime"
             aria-label="飲み会開始時間"
             v-model="meetupStartTime"
-            @change="handleMeetupStartTimeChange"
           >
             <option value="12:00">12:00</option>
             <option value="13:00">13:00</option>
@@ -53,7 +53,6 @@
             id="searchPeriod"
             aria-label="検索期間"
             v-model="searchPeriod"
-            @change="handleSearchPeriodChange"
           >
             <option value="30">1ヶ月</option>
             <option value="60">2ヶ月</option>
@@ -140,18 +139,6 @@ function handleBaseDateChange() {
   updateAllURLParams();
 }
 
-// 飲み会開始時間変更処理
-function handleMeetupStartTimeChange() {
-  // URLを更新
-  updateAllURLParams();
-}
-
-// 検索期間変更処理
-function handleSearchPeriodChange() {
-  // URLを更新
-  updateAllURLParams();
-}
-
 // 参加者更新処理
 function updateParticipants(newParticipants) {
   participants.value = newParticipants;
@@ -166,10 +153,9 @@ function updateAllURLParams() {
     .map((p) => p.position)
     .join(",");
 
+  // 必要なパラメータだけを更新
   updateURLParams({
     baseDate: selectedBaseDate.value,
-    meetupStartTime: meetupStartTime.value,
-    searchPeriod: searchPeriod.value,
     participants: validParticipants,
   });
 }
@@ -221,17 +207,13 @@ onMounted(async () => {
   );
 
   if (result.success) {
-    // URLからパラメータを取得
+    // URLからパラメータを取得（必要なパラメータのみ）
     const baseDateParam = getURLParam("baseDate", "");
-    const meetupStartTimeParam = getURLParam(
-      "meetupStartTime",
-      APP_CONFIG.DEFAULT_MEETUP_START_TIME,
-    );
-    const searchPeriodParam = getURLParam(
-      "searchPeriod",
-      APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString(),
-    );
     const participantsParam = getURLParam("participants", "");
+    
+    // 常にデフォルト値を使用
+    meetupStartTime.value = APP_CONFIG.DEFAULT_MEETUP_START_TIME;
+    searchPeriod.value = APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString();
 
     // パラメータを適用
     if (baseDateParam) {
@@ -252,10 +234,6 @@ onMounted(async () => {
       setCurrentBaseDate(defaultBaseDate, result.data.baseDates);
       selectedBaseDate.value = defaultBaseDate.format(DATE_FORMATS.ISO_DATE);
     }
-
-    // 飲み会開始時間と検索期間を設定
-    meetupStartTime.value = meetupStartTimeParam;
-    searchPeriod.value = searchPeriodParam;
 
     // URLから参加者情報を取得して設定
     if (participantsParam) {

@@ -1,3 +1,4 @@
+// src/components/ParticipantsList.vue
 <template>
   <fieldset id="participantsSection" class="control-group" v-if="isLoaded">
     <legend>参加者(コマ位置)</legend>
@@ -82,7 +83,7 @@ function emitParticipantsUpdate() {
     .map((p) => p.position)
     .join(",");
 
-  // URLを更新
+  // URLを更新（baseDate以外のパラメータは残す）
   updateURLParams({
     participants: validParticipants,
   });
