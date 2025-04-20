@@ -137,8 +137,7 @@
               :class="
                 detail.isAvailable ? 'availability-yes' : 'availability-no'
               "
-            >
-            </td>
+            ></td>
           </tr>
         </tbody>
       </table>

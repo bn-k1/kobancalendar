@@ -2,7 +2,9 @@
   <fieldset id="exportSection" class="control-group" v-if="isLoaded">
     <legend>エクスポート</legend>
     <div class="form-group">
-      <label id="exportLabelPostBaseDate" v-if="isBaseDateInPast">今日から</label>
+      <label id="exportLabelPostBaseDate" v-if="isBaseDateInPast"
+        >今日から</label
+      >
       <label id="exportLabelPreBaseDate" v-else>基準日から</label>
       <select
         id="exportMonths"
