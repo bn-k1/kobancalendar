@@ -229,7 +229,7 @@ function getCurrentDayShift(detail) {
   if (currentDaySchedule && currentDaySchedule.subject) {
     // その他の勤務の場合は開始時間と終了時間を表示
     if (currentDaySchedule.endTime) {
-      return `${currentDaySchedule.subject}(~${currentDaySchedule.endTime})`;
+      return `~${currentDaySchedule.endTime}(${currentDaySchedule.subject})`;
     }
 
     return currentDaySchedule.subject;
@@ -262,7 +262,7 @@ function getNextDayShift(detail) {
   if (nextDaySchedule && nextDaySchedule.subject) {
     // その他の勤務の場合は開始時間も表示
     if (nextDaySchedule.startTime) {
-      return `${nextDaySchedule.subject}(${nextDaySchedule.startTime}~)`;
+      return `${nextDaySchedule.startTime}~(${nextDaySchedule.subject})`;
     }
 
     return nextDaySchedule.subject;
