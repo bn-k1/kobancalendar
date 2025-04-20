@@ -8,7 +8,7 @@
         <span v-if="baseDates.length === 1">
           {{ selectedBaseDate }}
         </span>
-        
+
         <!-- 複数の基準日がある場合はドロップダウン表示 -->
         <select
           v-else
@@ -96,7 +96,7 @@ const rotationCycleLength = computed(() => {
 function handleBaseDateChange() {
   // 基準日が1つだけの場合は何もしない
   if (baseDates.value.length <= 1) return;
-  
+
   const newBaseDate = dayjs(selectedBaseDate.value);
   scheduleStore.updateCurrentBaseDate(newBaseDate);
 
@@ -146,7 +146,7 @@ onMounted(() => {
   if (baseDates.value.length === 1) {
     selectedBaseDate.value = baseDates.value[0].format(DATE_FORMATS.ISO_DATE);
     scheduleStore.updateCurrentBaseDate(baseDates.value[0]);
-  } 
+  }
   // 複数の基準日がある場合はURLパラメータを適用
   else if (baseDateParam) {
     const dateObj = dayjs(baseDateParam);

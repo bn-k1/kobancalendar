@@ -9,7 +9,7 @@
           <span v-if="baseDates.length === 1">
             {{ selectedBaseDate }}
           </span>
-          
+
           <!-- 複数の基準日がある場合はドロップダウン表示 -->
           <select
             v-else
@@ -217,7 +217,7 @@ onMounted(async () => {
     // URLからパラメータを取得（必要なパラメータのみ）
     const baseDateParam = getURLParam("baseDate", "");
     const participantsParam = getURLParam("participants", "");
-    
+
     // 常にデフォルト値を使用
     meetupStartTime.value = APP_CONFIG.DEFAULT_MEETUP_START_TIME;
     searchPeriod.value = APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString();
