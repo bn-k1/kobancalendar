@@ -148,11 +148,8 @@
 <script setup>
 import { ref, defineProps, defineEmits } from "vue";
 import { useScheduleStore } from "@/stores/schedule";
-import { DATE_FORMATS } from "@/config/constants";
-import {
-  getWeekdayName,
-  getDayClass as getClassForDay,
-} from "@/utils/date-utils";
+import { useHolidayStore } from "@/stores/holiday";
+import { DATE_FORMATS, WEEKDAYS } from "@/config/constants";
 
 // プロップス
 const props = defineProps({
@@ -172,6 +169,7 @@ const emit = defineEmits(["close"]);
 
 // ストア
 const scheduleStore = useScheduleStore();
+const holidayStore = useHolidayStore();
 
 // ローカル状態
 const activeTab = ref("all");
@@ -181,12 +179,22 @@ const modalTitle = ref("");
 
 // 曜日名を取得
 function getWeekday(date) {
-  return getWeekdayName(date);
+  return WEEKDAYS[date.day()];
 }
 
 // 日付クラスを取得
 function getDayClass(date) {
-  return getClassForDay(date);
+  const day = date.day();
+
+  if (holidayStore.isHoliday(date)) {
+    return "holiday";
+  }
+
+  // 曜日による判定
+  if (day === 0) return "fc-day-sun";
+  if (day === 6) return "fc-day-sat";
+
+  return "";
 }
 
 // 詳細を表示

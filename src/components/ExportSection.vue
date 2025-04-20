@@ -36,7 +36,6 @@ import dayjs from "dayjs";
 import { useScheduleStore } from "@/stores/schedule";
 import { useCalendarStore } from "@/stores/calendar";
 import { exportICS } from "@/services/export-service";
-import { isBaseDateInPast as checkBaseDateInPast } from "@/utils/date-utils";
 import { ERROR_MESSAGES } from "@/config/constants";
 
 // プロップス
@@ -58,7 +57,9 @@ const exportMonths = ref(1); // デフォルトは1ヶ月
 
 // 基準日が過去かどうか
 const isBaseDateInPast = computed(() => {
-  return checkBaseDateInPast(currentBaseDate.value);
+  const today = dayjs().startOf("day");
+  const currentBaseDateValue = currentBaseDate.value;
+  return currentBaseDateValue ? currentBaseDateValue.isBefore(today) : false;
 });
 
 // ICSエクスポート処理
