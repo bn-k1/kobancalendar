@@ -128,7 +128,7 @@ footer {
 footer a:link,
 footer a:visited {
   color: var(--text-light);
-  text-decoration: none;
+  text-decoration: underline;
   transition: opacity var(--transition-fast);
 }
 
