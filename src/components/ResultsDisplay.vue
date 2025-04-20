@@ -138,7 +138,6 @@
                 detail.isAvailable ? 'availability-yes' : 'availability-no'
               "
             >
-              {{ detail.isAvailable ? "○" : "×" }}
             </td>
           </tr>
         </tbody>

@@ -1,6 +1,6 @@
-/* モダンなUIのためのグローバル変数 */
+
 :root {
-  /* カラーパレット - モダンで鮮やかな色調 */
+  
   --primary-color: #4361ee;
   --primary-light: #4895ef;
   --primary-dark: #3a0ca3;
@@ -9,7 +9,7 @@
   --error-color: #f72585;
   --warning-color: #fca311;
   
-  /* ニュートラルカラー */
+  
   --gray-100: #f8f9fa;
   --gray-200: #e9ecef;
   --gray-300: #dee2e6;
@@ -20,52 +20,52 @@
   --gray-800: #343a40;
   --gray-900: #212529;
   
-  /* 特殊カラー */
+  
   --background-light: #ffffff;
   --background-dark: #f8f9fa;
   --text-color: #212529;
   --text-light: #ffffff;
   --border-color: #e9ecef;
   
-  /* シフト表示用カラー */
+  
   --saturday-color: #4895ef30;
   --holiday-color: #f7258520;
   
-  /* スペーシング（モダンなUI用に調整） */
-  --spacing-xs: 0.25rem;  /* 4px */
-  --spacing-sm: 0.5rem;   /* 8px */
-  --spacing-md: 1rem;     /* 16px */
-  --spacing-lg: 1.5rem;   /* 24px */
-  --spacing-xl: 2rem;     /* 32px */
   
-  /* UI要素サイズ */
+  --spacing-xs: 0.25rem;  
+  --spacing-sm: 0.5rem;   
+  --spacing-md: 1rem;     
+  --spacing-lg: 1.5rem;   
+  --spacing-xl: 2rem;     
+  
+  
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   --border-radius-xl: 16px;
   --border-radius-pill: 9999px;
   
-  /* シャドウ & エフェクト */
+  
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.03);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.05), 0 10px 10px rgba(0, 0, 0, 0.03);
   
-  /* アニメーション */
+  
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
   --transition-slow: 0.4s ease;
   
-  /* フォント */
+  
   --font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-bold: 700;
 }
 
-/* ベーススタイル */
+
 html {
-  font-size: 16px;
+  font-size: 17px; 
   height: 100%;
 }
 
@@ -103,7 +103,7 @@ header {
 header h1 {
   margin: 0;
   font-weight: var(--font-weight-bold);
-  font-size: 1.75rem;
+  font-size: 1.85rem; 
   letter-spacing: -0.01em;
 }
 
@@ -122,7 +122,7 @@ footer {
   background-color: var(--primary-dark);
   color: var(--text-light);
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.95rem; 
 }
 
 footer a:link,
@@ -137,7 +137,7 @@ footer a:hover {
   text-decoration: underline;
 }
 
-/* フォームコントロール */
+
 fieldset {
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
@@ -156,7 +156,7 @@ legend {
   color: var(--primary-color);
   font-weight: var(--font-weight-bold);
   padding: 0 var(--spacing-sm);
-  font-size: 1rem;
+  font-size: 1.05rem; 
 }
 
 select,
@@ -165,7 +165,7 @@ button {
   border-radius: var(--border-radius-md);
   transition: all var(--transition-normal);
   padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 0.95rem;
+  font-size: 1rem; 
 }
 
 select {
@@ -226,11 +226,11 @@ button:focus {
 }
 
 .action-btn {
-  font-size: 1.1rem;
+  font-size: 1.15rem; 
   padding: var(--spacing-md) var(--spacing-xl);
   margin: var(--spacing-md) auto;
   display: block;
-  min-width: 200px;
+  min-width: 220px; 
   border-radius: var(--border-radius-lg);
   background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
   font-weight: var(--font-weight-bold);
@@ -242,7 +242,7 @@ button:focus {
   box-shadow: var(--shadow-lg);
 }
 
-/* コントロール & グループ */
+
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -269,7 +269,7 @@ button:focus {
   margin-bottom: var(--spacing-sm);
 }
 
-/* カレンダースタイル */
+
 .calendar-container {
   width: 100%;
   margin: var(--spacing-lg) auto;
@@ -287,11 +287,13 @@ button:focus {
 
 .fc .fc-toolbar-title {
   font-weight: var(--font-weight-bold);
+  font-size: 1.3rem; 
 }
 
 .fc .fc-button {
   background-color: var(--primary-dark);
   border-color: var(--primary-dark);
+  font-size: 0.95rem; 
 }
 
 .fc .fc-button:hover {
@@ -306,6 +308,7 @@ button:focus {
 .fc .fc-col-header-cell {
   background-color: var(--primary-light);
   color: var(--text-light);
+  font-size: 1rem; 
 }
 
 .fc .fc-day-today {
@@ -316,22 +319,23 @@ button:focus {
   font-weight: var(--font-weight-medium);
   color: white;
   white-space: pre-line;
+  font-size: 0.95rem; 
 }
 
 .event-title {
   color: white;
   font-weight: var(--font-weight-bold);
-  font-size: 1em;
+  font-size: 1.05em; 
 }
 
 .event-time {
   color: var(--text-color);
-  font-size: 0.85em;
+  font-size: 0.9em;
   opacity: 0.9;
 }
 
 .event-meta {
-  font-size: 0.75em;
+  font-size: 0.8em;
   color: var(--gray-700);
   margin-top: 2px;
   background-color: rgba(255, 255, 255, 0.8);
@@ -370,7 +374,7 @@ button:focus {
   border-radius: 2px;
 }
 
-/* fc-day-today スタイリング */
+
 .fc .fc-day-today.holiday {
   background-color: var(--holiday-color) !important;
 }
@@ -383,7 +387,7 @@ button:focus {
   background-color: var(--holiday-color) !important;
 }
 
-/* 参加者セクション */
+
 .participant-entry {
   display: flex;
   align-items: center;
@@ -399,14 +403,14 @@ button:focus {
 .remove-participant {
   background-color: var(--error-color);
   color: white;
-  width: 32px;
-  height: 32px;
+  width: 34px; 
+  height: 34px; 
   border-radius: 50%;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.1rem; 
   font-weight: var(--font-weight-bold);
   transition: all var(--transition-fast);
 }
@@ -422,6 +426,7 @@ button:focus {
   width: 100%;
   border-radius: var(--border-radius-md);
   transition: all var(--transition-normal);
+  font-size: 1.05rem; 
 }
 
 #addParticipantBtn:hover {
@@ -429,7 +434,7 @@ button:focus {
   box-shadow: var(--shadow-md);
 }
 
-/* 結果セクション */
+
 .results {
   background-color: var(--background-light);
   border-radius: var(--border-radius-lg);
@@ -443,6 +448,7 @@ button:focus {
   margin-bottom: var(--spacing-lg);
   color: var(--primary-dark);
   font-weight: var(--font-weight-bold);
+  font-size: 1.6rem; 
 }
 
 .results-tabs {
@@ -462,6 +468,7 @@ button:focus {
   font-weight: var(--font-weight-medium);
   transition: all var(--transition-normal);
   box-shadow: none;
+  font-size: 1.05rem; 
 }
 
 .tab-btn:hover {
@@ -506,6 +513,7 @@ button:focus {
   padding: var(--spacing-sm) var(--spacing-md);
   text-align: center;
   border-bottom: 1px solid var(--gray-200);
+  font-size: 1.02rem; 
 }
 
 .results-table th {
@@ -513,7 +521,7 @@ button:focus {
   color: var(--text-light);
   font-weight: var(--font-weight-medium);
   text-transform: uppercase;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   letter-spacing: 0.5px;
 }
 
@@ -535,7 +543,7 @@ button:focus {
   border: none;
   border-radius: var(--border-radius-pill);
   padding: var(--spacing-xs) var(--spacing-md);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all var(--transition-normal);
 }
@@ -553,9 +561,10 @@ button:focus {
   background-color: var(--gray-100);
   border-radius: var(--border-radius-md);
   margin: var(--spacing-md) 0;
+  font-size: 1.05rem; 
 }
 
-/* モーダルスタイル */
+
 .modal {
   position: fixed;
   top: 0;
@@ -600,12 +609,12 @@ button:focus {
   position: absolute;
   top: var(--spacing-md);
   right: var(--spacing-md);
-  font-size: 1.5rem;
+  font-size: 1.6rem; 
   cursor: pointer;
   color: var(--gray-500);
   transition: color var(--transition-fast);
-  width: 32px;
-  height: 32px;
+  width: 36px; 
+  height: 36px; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -631,6 +640,7 @@ button:focus {
 .details-table td {
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--gray-200);
+  font-size: 1.02rem; 
 }
 
 .details-table th {
@@ -655,8 +665,7 @@ button:focus {
 .availability-yes::before {
   content: "✓";
   display: inline-block;
-  margin-right: 4px;
-  font-size: 1.2em;
+  font-size: 1.4em; 
 }
 
 .availability-no {
@@ -669,11 +678,10 @@ button:focus {
 .availability-no::before {
   content: "✗";
   display: inline-block;
-  margin-right: 4px;
-  font-size: 1.2em;
+  font-size: 1.4em; 
 }
 
-/* エクスポートセクション改善 */
+
 .export-form-group {
   display: flex;
   flex-wrap: nowrap;
@@ -684,7 +692,7 @@ button:focus {
 
 .export-form-group select {
   width: auto;
-  min-width: 50px;
+  min-width: 60px; 
   flex-shrink: 0;
 }
 
@@ -693,16 +701,18 @@ button:focus {
   white-space: nowrap;
   flex-shrink: 0;
   background-color: var(--success-color);
+  padding: var(--spacing-sm) var(--spacing-lg); 
+  font-size: 1rem; 
 }
 
 .export-form-group button:hover {
   background-color: var(--success-color);
 }
 
-/* レスポンシブスタイル */
+
 @media screen and (max-width: 768px) {
   html {
-    font-size: 14px;
+    font-size: 16px; 
   }
   
   main {
@@ -722,7 +732,11 @@ button:focus {
 }
 
 @media screen and (max-width: 480px) {
-  /* コントロール */
+  html {
+    font-size: 15px; 
+  }
+  
+  
   .controls {
     padding: 0;
   }
@@ -742,14 +756,14 @@ button:focus {
     margin-top: var(--spacing-xs);
   }
   
-  /* 結果テーブル */
+  
   .results-table th,
   .results-table td {
-    padding: 6px 8px;
-    font-size: 0.85rem;
+    padding: 8px 10px;
+    font-size: 0.9rem;
   }
   
-  /* モーダル */
+  
   .modal-content {
     width: 95%;
     padding: var(--spacing-md);
@@ -757,18 +771,18 @@ button:focus {
   
   .details-table th,
   .details-table td {
-    padding: 6px 8px;
-    font-size: 0.85rem;
+    padding: 8px 10px;
+    font-size: 0.9rem;
   }
   
-  /* エクスポート改善 */
+  
   .export-form-group {
     width: 100%;
     justify-content: space-between;
   }
   
   .export-form-group span {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
   
   .export-form-group select {
@@ -778,10 +792,10 @@ button:focus {
   
   .export-form-group button {
     padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
   
   header h1 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
   }
 }
