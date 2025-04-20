@@ -18,8 +18,8 @@
         GitHub
       </a>
       -
-      <router-link v-if="route.path === '/'" to="/meetup">🍻</router-link>
-      <router-link v-if="route.path === '/meetup'" to="/">🚨</router-link>
+      <a v-if="isHomePage" href="/kobancalendar/#/meetup">🍻</a>
+      <a v-if="isMeetupPage" href="/kobancalendar/#/">🚨</a>
     </p>
   </footer>
 </template>
@@ -30,9 +30,13 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 
+// 現在のページを判定
+const isHomePage = computed(() => route.path === "/" || route.path === "");
+const isMeetupPage = computed(() => route.path === "/meetup");
+
 // ルートに基づいてページタイトルを動的に変更
 const pageTitle = computed(() => {
-  return route.path === "/meetup" ? "飲みに行くンダー🍻" : "交番カレンダー🚨";
+  return isMeetupPage.value ? "飲みに行くンダー🍻" : "交番カレンダー🚨";
 });
 </script>
 

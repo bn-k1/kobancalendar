@@ -5,7 +5,14 @@
       <fieldset id="baseDateSection" class="control-group" v-if="isLoaded">
         <legend>基準日</legend>
         <div class="form-group">
+          <!-- 基準日が単一の場合はテキスト表示 -->
+          <span v-if="baseDates.length === 1">
+            {{ selectedBaseDate }}
+          </span>
+          
+          <!-- 複数の基準日がある場合はドロップダウン表示 -->
           <select
+            v-else
             id="baseDate"
             aria-label="基準日を選択"
             v-model="selectedBaseDate"

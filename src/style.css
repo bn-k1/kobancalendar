@@ -153,6 +153,7 @@ button:focus {
 .form-group {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: var(--spacing-small);
 }
 

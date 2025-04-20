@@ -4,7 +4,14 @@
     <fieldset id="baseDateSection" class="control-group" v-if="isLoaded">
       <legend>基準日</legend>
       <div class="form-group">
+        <!-- 基準日が単一の場合はテキスト表示 -->
+        <span v-if="baseDates.length === 1">
+          {{ selectedBaseDate }}
+        </span>
+        
+        <!-- 複数の基準日がある場合はドロップダウン表示 -->
         <select
+          v-else
           id="baseDate"
           aria-label="基準日を選択"
           v-model="selectedBaseDate"
@@ -22,7 +29,7 @@
     </fieldset>
 
     <fieldset id="startNumberSection" class="control-group" v-if="isLoaded">
-      <legend>コマ位置</legend>
+      <legend>{{ selectedBaseDate }}のコマ位置</legend>
       <div class="form-group">
         <select
           id="startNumber"
@@ -87,6 +94,9 @@ const rotationCycleLength = computed(() => {
 
 // 基準日変更処理
 function handleBaseDateChange() {
+  // 基準日が1つだけの場合は何もしない
+  if (baseDates.value.length <= 1) return;
+  
   const newBaseDate = dayjs(selectedBaseDate.value);
   scheduleStore.updateCurrentBaseDate(newBaseDate);
 
@@ -132,8 +142,13 @@ onMounted(() => {
   const baseDateParam = getURLParam("baseDate", "");
   const startNumberParam = getNumberParam("startNumber", null);
 
-  // URLにパラメータがある場合は適用
-  if (baseDateParam) {
+  // 基準日が1つだけの場合、URLのパラメータは無視して常に使用する
+  if (baseDates.value.length === 1) {
+    selectedBaseDate.value = baseDates.value[0].format(DATE_FORMATS.ISO_DATE);
+    scheduleStore.updateCurrentBaseDate(baseDates.value[0]);
+  } 
+  // 複数の基準日がある場合はURLパラメータを適用
+  else if (baseDateParam) {
     const dateObj = dayjs(baseDateParam);
     if (dateObj.isValid()) {
       // 有効な日付の場合はselectedBaseDateを更新
