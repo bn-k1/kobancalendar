@@ -325,7 +325,7 @@ button:focus {
 .event-title {
   color: white;
   font-weight: var(--font-weight-bold);
-  font-size: 1.05em; 
+  font-size: 1.0em; 
 }
 
 .event-time {
