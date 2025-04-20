@@ -40,7 +40,7 @@ export const useScheduleStore = defineStore("schedule", () => {
     lastBaseDate.value = date;
   }
 
-  // シフトインデックスを計算（メモ化なし）
+  // シフトインデックスを計算
   function calculateShiftIndex(targetDate, startPosition, baseDate) {
     const daysDifference = targetDate.diff(baseDate, "day");
     const adjustedStartPosition = startPosition - 1;
@@ -221,7 +221,7 @@ export const useScheduleStore = defineStore("schedule", () => {
       setScheduleData(data);
       return data;
     } catch (error) {
-      console.error(SCHEDULE_DATA_ERROR, error);
+      console.error(ERROR_MESSAGES.SCHEDULE_DATA_ERROR, error);
       throw error;
     }
   }
