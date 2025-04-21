@@ -1,15 +1,15 @@
+<!-- src/components/ExportSection.vue -->
 <template>
-  <fieldset id="exportSection" class="control-group" v-if="isLoaded">
+  <fieldset id="exportSection" class="control-group">
     <legend>エクスポート</legend>
     <div class="form-group">
-      <label id="exportLabelPostBaseDate" v-if="isBaseDateInPast"
-        >今日から</label
-      >
+      <label id="exportLabelPostBaseDate" v-if="isBaseDateInPast">今日から</label>
       <label id="exportLabelPreBaseDate" v-else>基準日から</label>
       <select
         id="exportMonths"
         aria-label="エクスポート期間を選択"
-        v-model="exportMonths"
+        v-model="selectedMonths"
+        @change="handleMonthsChange"
       >
         <option value="1">1ヶ月分</option>
         <option value="2">2ヶ月分</option>
@@ -30,48 +30,58 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { storeToRefs } from "pinia";
-import dayjs from "dayjs";
-import { useScheduleStore } from "@/stores/schedule";
-import { useCalendarStore } from "@/stores/calendar";
-import { exportICS } from "@/services/export-service";
-import { ERROR_MESSAGES } from "@/config/constants";
+import { ref, computed } from 'vue';
+import dayjs from 'dayjs';
+import { useIcsExport } from '@/composables/useIcsExport';
 
-// プロップス
 const props = defineProps({
-  isLoaded: {
-    type: Boolean,
-    default: false,
+  baseDate: {
+    type: [Date, Object],
+    required: true
   },
+  lastBaseDate: {
+    type: [Date, Object],
+    required: true
+  },
+  startPosition: {
+    type: Number,
+    required: true
+  }
 });
 
-// ストア
-const scheduleStore = useScheduleStore();
-const { currentBaseDate, lastBaseDate } = storeToRefs(scheduleStore);
-const calendarStore = useCalendarStore();
-const { startPosition } = storeToRefs(calendarStore);
+const emit = defineEmits(['export']);
 
-// ローカル状態
-const exportMonths = ref(1); // デフォルトは1ヶ月
+// State
+const selectedMonths = ref(1);
+const { exportICS } = useIcsExport();
 
-// 基準日が過去かどうか
+// Computed
 const isBaseDateInPast = computed(() => {
-  const today = dayjs().startOf("day");
-  const currentBaseDateValue = currentBaseDate.value;
-  return currentBaseDateValue ? currentBaseDateValue.isBefore(today) : false;
+  const today = dayjs().startOf('day');
+  const baseDateValue = dayjs(props.baseDate);
+  return baseDateValue ? baseDateValue.isBefore(today) : false;
 });
 
-// ICSエクスポート処理
-function handleExportICS() {
-  const months = parseInt(exportMonths.value);
-  const position = parseInt(startPosition.value);
+// Handle export months change
+function handleMonthsChange() {
+  emit('export', { months: parseInt(selectedMonths.value, 10) });
+}
 
+// Handle ICS export button click
+function handleExportICS() {
+  const months = parseInt(selectedMonths.value, 10);
+  const position = props.startPosition;
+  
   try {
-    exportICS(months, position, currentBaseDate.value, lastBaseDate.value);
+    exportICS(months, position, dayjs(props.baseDate), dayjs(props.lastBaseDate));
+    emit('export-complete', { success: true });
   } catch (error) {
-    console.error(ERROR_MESSAGES.ICS_EXPORT_ERROR, error);
-    alert(ERROR_MESSAGES.ICS_EXPORT_ERROR);
+    console.error('ICS export error:', error);
+    emit('export-complete', { success: false, error });
   }
 }
 </script>
+
+<style scoped>
+/* Reuse global styles from original app */
+</style>

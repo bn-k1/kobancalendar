@@ -1,5 +1,6 @@
+<!-- src/components/ResultsDisplay.vue -->
 <template>
-  <div id="results" class="results" v-if="showResults">
+  <div id="results" class="results">
     <h2>検索結果</h2>
     <div class="results-tabs">
       <button
@@ -22,6 +23,7 @@
       </button>
     </div>
     <div id="resultsContent">
+      <!-- All matches tab content -->
       <div
         id="allMatchesContent"
         class="tab-content"
@@ -46,11 +48,11 @@
           <tbody>
             <tr
               v-for="match in results.allMatches"
-              :key="match.date.format(DATE_FORMATS.ISO_DATE)"
+              :key="formatAsISODate(match.date)"
             >
-              <td>{{ match.date.format(DATE_FORMATS.DISPLAY_DATE) }}</td>
+              <td>{{ formatAsDisplayDate(match.date) }}</td>
               <td :class="getDayClass(match.date)">
-                {{ getWeekday(match.date) }}
+                {{ getWeekdayName(match.date) }}
               </td>
               <td>{{ match.availableCount }}/{{ match.totalCount }}</td>
               <td>
@@ -62,6 +64,8 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Partial matches tab content -->
       <div
         id="partialMatchesContent"
         class="tab-content"
@@ -89,11 +93,11 @@
           <tbody>
             <tr
               v-for="match in results.partialMatches"
-              :key="match.date.format(DATE_FORMATS.ISO_DATE)"
+              :key="formatAsISODate(match.date)"
             >
-              <td>{{ match.date.format(DATE_FORMATS.DISPLAY_DATE) }}</td>
+              <td>{{ formatAsDisplayDate(match.date) }}</td>
               <td :class="getDayClass(match.date)">
-                {{ getWeekday(match.date) }}
+                {{ getWeekdayName(match.date) }}
               </td>
               <td>{{ match.availableCount }}/{{ match.totalCount }}</td>
               <td>
@@ -108,7 +112,7 @@
     </div>
   </div>
 
-  <!-- 詳細モーダル -->
+  <!-- Details modal -->
   <div
     id="detailsModal"
     class="modal"
@@ -146,72 +150,64 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from "vue";
-import { useScheduleStore } from "@/stores/schedule";
-import { useHolidayStore } from "@/stores/holiday";
-import { DATE_FORMATS, WEEKDAYS } from "@/config/constants";
+import { ref } from 'vue';
+import { 
+  formatAsISODate, 
+  formatAsDisplayDate, 
+  getDateClasses, 
+  getWeekdayName 
+} from '@/utils/date-formatters';
+import { useHolidays } from '@/composables/useHolidays';
+import { useSchedule } from '@/composables/useSchedule';
+import { DATE_FORMATS } from '@/config/constants';
 
-// プロップス
+// Props
 const props = defineProps({
   results: {
     type: Object,
     required: true,
     default: () => ({ allMatches: [], partialMatches: [] }),
-  },
-  showResults: {
-    type: Boolean,
-    default: false,
-  },
+  }
 });
 
-// エミット
-const emit = defineEmits(["close"]);
+// Composables
+const { isHoliday } = useHolidays();
+const { getScheduleForDate } = useSchedule();
 
-// ストア
-const scheduleStore = useScheduleStore();
-const holidayStore = useHolidayStore();
-
-// ローカル状態
-const activeTab = ref("all");
+// Local state
+const activeTab = ref('all');
 const showModal = ref(false);
 const currentDetails = ref({ details: [] });
-const modalTitle = ref("");
+const modalTitle = ref('');
 
-// 曜日名を取得
-function getWeekday(date) {
-  return WEEKDAYS[date.day()];
-}
-
-// 日付クラスを取得
+// Get day classes for styling
 function getDayClass(date) {
-  const day = date.day();
-
-  if (holidayStore.isHoliday(date)) {
-    return "holiday";
+  if (isHoliday(date)) {
+    return 'holiday';
   }
-
-  // 曜日による判定
-  if (day === 0) return "fc-day-sun";
-  if (day === 6) return "fc-day-sat";
-
-  return "";
+  
+  const day = date.day();
+  if (day === 0) return 'fc-day-sun';
+  if (day === 6) return 'fc-day-sat';
+  
+  return '';
 }
 
-// 詳細を表示
+// Show details for a match
 function showDetails(match) {
   currentDetails.value = match;
-  modalTitle.value = `${match.date.format(DATE_FORMATS.DISPLAY_DATE)}（${getWeekday(match.date)}）詳細`;
+  modalTitle.value = `${formatAsDisplayDate(match.date)}（${getWeekdayName(match.date)}）詳細`;
   showModal.value = true;
 }
 
-// モーダル外クリックで閉じる
+// Close modal when clicking outside
 function closeModalOnOutsideClick(event) {
-  if (event.target.id === "detailsModal") {
+  if (event.target.id === 'detailsModal') {
     showModal.value = false;
   }
 }
 
-// 現在の日の勤務内容を取得
+// Get current day shift description
 function getCurrentDayShift(detail) {
   if (
     !detail ||
@@ -219,32 +215,25 @@ function getCurrentDayShift(detail) {
     !currentDetails.value ||
     !currentDetails.value.date
   ) {
-    return "-";
+    return '-';
   }
 
-  // 現在の日付を取得
+  // Current day schedule
   const currentDay = currentDetails.value.date;
+  const currentDaySchedule = detail.schedule;
 
-  // 現在の日のスケジュールを取得
-  const currentDaySchedule = scheduleStore.getScheduleForDate(
-    currentDay,
-    detail.position,
-  );
-
-  // 現在の日の勤務内容を整形して返す
+  // Format and return shift description
   if (currentDaySchedule && currentDaySchedule.subject) {
-    // その他の勤務の場合は開始時間と終了時間を表示
     if (currentDaySchedule.endTime) {
       return `~${currentDaySchedule.endTime}(${currentDaySchedule.subject})`;
     }
-
     return currentDaySchedule.subject;
   }
 
-  return "-";
+  return '-';
 }
 
-// 翌日の勤務内容を取得
+// Get next day shift description
 function getNextDayShift(detail) {
   if (
     !detail ||
@@ -252,28 +241,28 @@ function getNextDayShift(detail) {
     !currentDetails.value ||
     !currentDetails.value.date
   ) {
-    return "-";
+    return '-';
   }
 
-  // 翌日の日付を計算
-  const nextDay = currentDetails.value.date.add(1, "day");
-
-  // 翌日のスケジュールを取得
-  const nextDaySchedule = scheduleStore.getScheduleForDate(
+  // Next day schedule
+  const nextDay = currentDetails.value.date.add(1, 'day');
+  const nextDaySchedule = getScheduleForDate(
     nextDay,
-    detail.position,
+    detail.position
   );
 
-  // 翌日の勤務内容を整形して返す
+  // Format and return shift description
   if (nextDaySchedule && nextDaySchedule.subject) {
-    // その他の勤務の場合は開始時間も表示
     if (nextDaySchedule.startTime) {
       return `${nextDaySchedule.startTime}~(${nextDaySchedule.subject})`;
     }
-
     return nextDaySchedule.subject;
   }
 
-  return "-";
+  return '-';
 }
 </script>
+
+<style scoped>
+/* Reuse global styles from original app */
+</style>

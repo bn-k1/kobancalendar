@@ -1,14 +1,15 @@
-import dayjs from "dayjs";
-import { ERROR_MESSAGES, DATE_FORMATS } from "@/config/constants";
+// src/utils/url-params.js
+import dayjs from 'dayjs';
+import { ERROR_MESSAGES, DATE_FORMATS } from '@/config/constants';
 
 /**
- * URLクエリパラメータを更新する関数
- * @param {Object} params 更新するパラメータと値のオブジェクト
+ * Update URL parameters without reloading the page
+ * @param {Object} params - Parameters to update
  */
 export function updateURLParams(params) {
   const url = new URL(window.location);
 
-  // 現在のパラメータをすべて保持しながら新しいパラメータを追加/更新
+  // Update or add each parameter
   Object.entries(params).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
       url.searchParams.set(key, value);
@@ -17,15 +18,15 @@ export function updateURLParams(params) {
     }
   });
 
-  // 履歴に追加（現在のページを置き換え）
+  // Update history without reloading
   window.history.pushState({}, "", url);
 }
 
 /**
- * URLから指定したクエリパラメータを取得する関数
- * @param {string} paramName パラメータ名
- * @param {*} defaultValue デフォルト値
- * @returns {string} パラメータ値
+ * Get a URL parameter value
+ * @param {string} paramName - Parameter name
+ * @param {*} defaultValue - Default value if parameter doesn't exist
+ * @returns {string} Parameter value or default
  */
 export function getURLParam(paramName, defaultValue = null) {
   const urlParams = new URLSearchParams(window.location.search);
@@ -33,11 +34,11 @@ export function getURLParam(paramName, defaultValue = null) {
 }
 
 /**
- * URLから日付パラメータを取得し、検証する関数
- * @param {string} paramName パラメータ名
- * @param {dayjs} defaultValue デフォルト値
- * @param {Array} validDates 有効な日付リスト
- * @returns {dayjs} 取得した日付オブジェクト
+ * Get and validate a date parameter
+ * @param {string} paramName - Parameter name
+ * @param {dayjs} defaultValue - Default date
+ * @param {Array} validDates - Array of valid dates for validation
+ * @returns {dayjs} Date object
  */
 export function getDateParam(paramName, defaultValue, validDates = []) {
   const dateStr = getURLParam(paramName);
@@ -48,18 +49,18 @@ export function getDateParam(paramName, defaultValue, validDates = []) {
 
   const dateObj = dayjs(dateStr);
 
-  // 日付形式が無効な場合
+  // Check date validity
   if (!dateObj.isValid()) {
     console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
     return defaultValue;
   }
 
-  // 有効な日付リストが指定されている場合、チェックする
+  // Validate against allowed dates if provided
   if (validDates.length > 0) {
     const dateExists = validDates.some(
       (date) =>
         date.format(DATE_FORMATS.ISO_DATE) ===
-        dateObj.format(DATE_FORMATS.ISO_DATE),
+        dateObj.format(DATE_FORMATS.ISO_DATE)
     );
 
     if (!dateExists) {
@@ -72,18 +73,18 @@ export function getDateParam(paramName, defaultValue, validDates = []) {
 }
 
 /**
- * URLから数値パラメータを取得し、検証する関数
- * @param {string} paramName パラメータ名
- * @param {number} defaultValue デフォルト値
- * @param {number} min 最小値
- * @param {number} max 最大値
- * @returns {number} 取得した数値
+ * Get and validate a number parameter
+ * @param {string} paramName - Parameter name
+ * @param {number} defaultValue - Default value
+ * @param {number} min - Minimum allowed value
+ * @param {number} max - Maximum allowed value
+ * @returns {number} Number value
  */
 export function getNumberParam(
   paramName,
   defaultValue,
   min = null,
-  max = null,
+  max = null
 ) {
   const valueStr = getURLParam(paramName);
 
@@ -93,18 +94,19 @@ export function getNumberParam(
 
   const value = parseInt(valueStr, 10);
 
-  // 数値でない場合
+  // Check if valid number
   if (isNaN(value)) {
     console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
     return defaultValue;
   }
 
-  // 範囲チェック
+  // Check min boundary
   if (min !== null && value < min) {
     alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
     return defaultValue;
   }
 
+  // Check max boundary
   if (max !== null && value > max) {
     alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
     return defaultValue;
