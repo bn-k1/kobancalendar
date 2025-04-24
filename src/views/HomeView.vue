@@ -64,7 +64,7 @@ import { getDateParam, getNumberParam, updateURLParams } from '@/utils/url-param
 import { formatAsISODate } from '@/utils/date-formatters';
 
 // Config
-import { APP_CONFIG } from '@/config/constants';
+import { APP_CONFIG, ERROR_MESSAGES } from '@/config/constants';
 import holidayData from '@/data/holiday.csv?raw';
 import saturdayData from '@/data/saturday.csv?raw';
 import weekdayData from '@/data/weekday.csv?raw';
@@ -119,7 +119,6 @@ const initialDate = computed(() => {
 
 // Event handlers
 function handleBaseDateChange(newDate) {
-  console.log('Base date changed:', newDate.format('YYYY-MM-DD'));
   updateCurrentBaseDate(newDate);
   
   // Update URL params
@@ -138,7 +137,6 @@ function handleBaseDateChange(newDate) {
 }
 
 function handlePositionChange(newPosition) {
-  console.log('Position changed:', newPosition);
   setStartPosition(newPosition);
   
   // Update URL params
@@ -158,26 +156,21 @@ function handlePositionChange(newPosition) {
 }
 
 function handleDatesSet({ start, end }) {
-  console.log('Calendar dates set:', start.format(), end.format());
   const events = generateCalendarEvents(start, end);
-  console.log(`Generated ${events.length} events`);
 }
 
 function handleExport({ months }) {
-  console.log('Export months changed:', months);
 }
 
 function handleExportComplete({ success, error }) {
   if (!success && error) {
-    console.error('Export failed:', error);
-    alert('エクスポート中にエラーが発生しました。');
+    alert(ERROR_MESSAGES.ICS_EXPORT_ERROR);
   }
 }
 
 // Initialize application
 async function initializeApp() {
   try {
-    console.log('Initializing application...');
     
     // Set holiday config
     setHolidayYearsRange(config.holiday_years_range || 5);
@@ -185,16 +178,13 @@ async function initializeApp() {
     
     // Load holidays
     loadHolidays();
-    console.log('Holidays loaded');
     
     // Set calendar config
     setEventConfig(eventConfig);
     setICSExportConfig(config.info);
-    console.log('Calendar config set');
     
     // Load schedule data
     const data = loadScheduleData(holidayData, saturdayData, weekdayData);
-    console.log('Schedule data loaded:', data.rotationCycleLength, 'rotation cycle length');
     
     // Set base dates
     const configBaseDates = config.base_dates
@@ -203,7 +193,6 @@ async function initializeApp() {
     
     setBaseDates(configBaseDates);
     setLastBaseDate(configBaseDates[configBaseDates.length - 1]);
-    console.log('Base dates set:', configBaseDates.map(d => d.format('YYYY-MM-DD')));
     
     // Get URL parameters
     const baseDateParam = getDateParam('baseDate', null, configBaseDates);
@@ -225,19 +214,17 @@ async function initializeApp() {
     }
     
     selectedBaseDate.value = formatAsISODate(validBaseDate);
-    console.log('Current base date set:', selectedBaseDate.value);
     
     // Set start position
     setStartPosition(startNumberParam);
-    console.log('Start position set:', startNumberParam);
     
     // Mark as loaded
     isLoaded.value = true;
-    console.log('Application initialized successfully');
     
     return true;
   } catch (error) {
-    console.error('Failed to initialize app:', error);
+    console.error(ERROR_MESSAGES_INIT_FAILED, error);
+    alert(ERROR_MESSAGES.INIT_FAILED);
     return false;
   }
 }

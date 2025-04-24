@@ -1,6 +1,5 @@
 // src/services/ical-service.js
 import ical from 'ical-generator';
-import dayjs from 'dayjs';
 import { DATE_FORMATS } from '@/config/constants';
 
 /**

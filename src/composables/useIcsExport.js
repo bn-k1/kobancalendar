@@ -3,8 +3,8 @@ import { ref, computed } from 'vue';
 import dayjs from 'dayjs';
 import { ERROR_MESSAGES } from '@/config/constants';
 import { createCalendar, downloadICS } from '@/services/ical-service';
-import { useScheduleStore } from '@/stores/schedule';
 import { useCalendarStore } from '@/stores/calendar';
+import { useSchedule } from '@/composables/useSchedule';
 
 /**
  * ICS Export composable
@@ -15,9 +15,9 @@ export function useIcsExport() {
   const exportMonths = ref(1);
   const exportError = ref(null);
   
-  // Stores
-  const scheduleStore = useScheduleStore();
+  // Dependencies
   const calendarStore = useCalendarStore();
+  const { calculateScheduleRange } = useSchedule();
 
   /**
    * Set the number of months to export
@@ -58,7 +58,7 @@ export function useIcsExport() {
       }
       
       // Get schedule for the date range
-      const scheduleRange = scheduleStore.calculateScheduleRange(
+      const scheduleRange = calculateScheduleRange(
         startDate,
         endDate,
         startPosition,

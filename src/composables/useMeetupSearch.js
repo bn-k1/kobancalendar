@@ -1,8 +1,8 @@
 // src/composables/useMeetupSearch.js
 import { ref } from 'vue';
 import dayjs from 'dayjs';
-import { useScheduleStore } from '@/stores/schedule';
-import { useCalendarStore } from '@/stores/calendar';
+import { useSchedule } from '@/composables/useSchedule';
+import { useCalendar } from '@/composables/useCalendar';
 
 /**
  * Meetup search composable
@@ -16,8 +16,8 @@ export function useMeetupSearch() {
   });
   
   // Dependencies
-  const scheduleStore = useScheduleStore();
-  const calendarStore = useCalendarStore();
+  const { getScheduleForDate } = useSchedule();
+  const { canAttendMeetup } = useCalendar();
 
   /**
    * Find dates where participants can attend a meetup
@@ -85,10 +85,10 @@ export function useMeetupSearch() {
 
     for (const position of positions) {
       // Get schedule for this position on this date
-      const schedule = scheduleStore.getScheduleForDate(date, position);
+      const schedule = getScheduleForDate(date, position);
 
       // Check if this participant can attend
-      const isAvailable = calendarStore.canAttendMeetup(schedule, meetupStartTime);
+      const isAvailable = canAttendMeetup(schedule, meetupStartTime);
 
       // Record details
       result.details.push({

@@ -1,5 +1,5 @@
 // src/composables/useHolidays.js
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import dayjs from 'dayjs';
 import JapaneseHolidays from 'japanese-holidays';
 import { useHolidayStore } from '@/stores/holiday';

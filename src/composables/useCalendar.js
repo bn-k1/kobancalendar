@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import { useCalendarStore } from '@/stores/calendar';
 import { useSchedule } from '@/composables/useSchedule';
 import { useHolidays } from '@/composables/useHolidays';
-import { CALENDAR_CONFIG, APP_CONFIG } from '@/config/constants';
 
 /**
  * Calendar functionality composable
