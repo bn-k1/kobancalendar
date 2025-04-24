@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import Papa from 'papaparse';
 import { useScheduleStore } from '@/stores/schedule';
 import { useHolidayStore } from '@/stores/holiday';
+import { useHolidays } from '@/composables/useHolidays';
 import { ERROR_MESSAGES, DATE_FORMATS } from '@/config/constants';
 
 /**
@@ -14,6 +15,9 @@ export function useSchedule() {
   // Get stores for state management only
   const scheduleStore = useScheduleStore();
   const holidayStore = useHolidayStore();
+
+  // Dependencies
+  const { isHoliday } = useHolidays();
   
   // Local cached references to avoid recursion
   const storeScheduleData = computed(() => scheduleStore.scheduleData);
@@ -121,18 +125,6 @@ export function useSchedule() {
       isSaturday,
       shiftIndex,
     };
-  }
-
-  /**
-   * Check if a date is a holiday
-   * @param {dayjs} date - Date to check
-   * @returns {boolean} True if holiday
-   */
-  function isHoliday(date) {
-    const dateObj = dayjs.isDayjs(date) ? date : dayjs(date);
-    const dateStr = dateObj.format(DATE_FORMATS.ISO_DATE);
-    const allHolidays = holidayStore.allHolidays;
-    return allHolidays[dateStr] !== undefined || dateObj.day() === 0;
   }
 
   /**
