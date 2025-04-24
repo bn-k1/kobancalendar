@@ -1,37 +1,37 @@
 // src/composables/useSchedule.js
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import dayjs from 'dayjs';
 import Papa from 'papaparse';
+import { useScheduleStore } from '@/stores/schedule';
 import { useHolidayStore } from '@/stores/holiday';
 import { ERROR_MESSAGES, DATE_FORMATS } from '@/config/constants';
 
 /**
  * Schedule management composable
- * Handles schedule data loading, calculation, and querying
+ * Contains all schedule-related logic
  */
 export function useSchedule() {
-  // State
-  const scheduleData = ref({
-    holiday: [],
-    saturday: [],
-    weekday: [],
-    rotationCycleLength: 0,
-  });
-  
-  const baseDates = ref([]);
-  const currentBaseDate = ref(null);
-  const lastBaseDate = ref(null);
-  
-  // Store dependencies
+  // Get stores for state management only
+  const scheduleStore = useScheduleStore();
   const holidayStore = useHolidayStore();
-
+  
+  // Local cached references to avoid recursion
+  const storeScheduleData = computed(() => scheduleStore.scheduleData);
+  const storeBaseDates = computed(() => scheduleStore.baseDates);
+  const storeCurrentBaseDate = computed(() => scheduleStore.currentBaseDate);
+  const storeLastBaseDate = computed(() => scheduleStore.lastBaseDate);
+  
   /**
    * Calculate shift index for a given date
+   * @param {dayjs} targetDate - Target date
+   * @param {number} startPosition - Starting position in rotation
+   * @param {dayjs} baseDate - Base date for calculation
+   * @returns {number} Shift index
    */
   function calculateShiftIndex(targetDate, startPosition, baseDate) {
     const daysDifference = targetDate.diff(baseDate, "day");
     const adjustedStartPosition = startPosition - 1;
-    const cycleLength = scheduleData.value.rotationCycleLength;
+    const cycleLength = storeScheduleData.value.rotationCycleLength;
 
     const shiftIndex =
       (((adjustedStartPosition + daysDifference) % cycleLength) + cycleLength) %
@@ -42,10 +42,14 @@ export function useSchedule() {
 
   /**
    * Get schedule for a specific date
+   * @param {dayjs} targetDate - Date to get schedule for
+   * @param {number} startPosition - Starting position
+   * @param {dayjs} baseDateParam - Optional override for base date
+   * @returns {Object} Schedule information
    */
   function getScheduleForDate(targetDate, startPosition, baseDateParam) {
-    // baseDateParam or currentBaseDate.value is required
-    if (!baseDateParam && !currentBaseDate.value) {
+    // baseDateParam or currentBaseDate is required
+    if (!baseDateParam && !storeCurrentBaseDate.value) {
       return {
         dateStr: targetDate.format(DATE_FORMATS.ISO_DATE),
         subject: "-",
@@ -56,13 +60,13 @@ export function useSchedule() {
       };
     }
 
-    const baseDate = baseDateParam || currentBaseDate.value;
-    const isHolidayFlag = holidayStore.isHoliday(targetDate);
+    const baseDate = baseDateParam || storeCurrentBaseDate.value;
+    const isHolidayFlag = isHoliday(targetDate);
     const isSaturday = targetDate.day() === 6;
     const dateStr = targetDate.format(DATE_FORMATS.ISO_DATE);
 
-    // Ensure lastBaseDate.value is set
-    if (!lastBaseDate.value) {
+    // Ensure lastBaseDate is set
+    if (!storeLastBaseDate.value) {
       return {
         dateStr,
         subject: "-",
@@ -75,10 +79,10 @@ export function useSchedule() {
 
     // Check if date is within valid range
     const baseStr = baseDate.format(DATE_FORMATS.ISO_DATE);
-    const lastStr = lastBaseDate.value.format(DATE_FORMATS.ISO_DATE);
+    const lastStr = storeLastBaseDate.value.format(DATE_FORMATS.ISO_DATE);
 
     if (
-      (baseDate.unix() !== lastBaseDate.value.unix() && dateStr >= lastStr) ||
+      (baseDate.unix() !== storeLastBaseDate.value.unix() && dateStr >= lastStr) ||
       dateStr < baseStr
     ) {
       return {
@@ -97,11 +101,11 @@ export function useSchedule() {
     // Get appropriate data based on date type
     let shiftData;
     if (isHolidayFlag) {
-      shiftData = scheduleData.value.holiday[shiftIndex];
+      shiftData = storeScheduleData.value.holiday[shiftIndex];
     } else if (isSaturday) {
-      shiftData = scheduleData.value.saturday[shiftIndex];
+      shiftData = storeScheduleData.value.saturday[shiftIndex];
     } else {
-      shiftData = scheduleData.value.weekday[shiftIndex];
+      shiftData = storeScheduleData.value.weekday[shiftIndex];
     }
 
     if (!shiftData) return null;
@@ -120,7 +124,24 @@ export function useSchedule() {
   }
 
   /**
+   * Check if a date is a holiday
+   * @param {dayjs} date - Date to check
+   * @returns {boolean} True if holiday
+   */
+  function isHoliday(date) {
+    const dateObj = dayjs.isDayjs(date) ? date : dayjs(date);
+    const dateStr = dateObj.format(DATE_FORMATS.ISO_DATE);
+    const allHolidays = holidayStore.allHolidays;
+    return allHolidays[dateStr] !== undefined || dateObj.day() === 0;
+  }
+
+  /**
    * Calculate schedule for a date range
+   * @param {dayjs} startDate - Range start date
+   * @param {dayjs} endDate - Range end date
+   * @param {number} startPosition - Starting position
+   * @param {dayjs} baseDateParam - Optional override for base date
+   * @returns {Array} Schedule range
    */
   function calculateScheduleRange(
     startDate,
@@ -155,6 +176,8 @@ export function useSchedule() {
 
   /**
    * Process CSV data for schedules
+   * @param {string|Array} csvData - CSV data
+   * @returns {Array} Processed data
    */
   function processCSVData(csvData) {
     // Parse string CSV data
@@ -189,6 +212,10 @@ export function useSchedule() {
 
   /**
    * Load schedule data from CSV
+   * @param {string|Array} holidayData - Holiday CSV data
+   * @param {string|Array} saturdayData - Saturday CSV data
+   * @param {string|Array} weekdayData - Weekday CSV data
+   * @returns {Object} Loaded schedule data
    */
   function loadScheduleData(holidayData, saturdayData, weekdayData) {
     try {
@@ -206,7 +233,7 @@ export function useSchedule() {
         throw new Error(ERROR_MESSAGES.CSV_ROWS_MISMATCH);
       }
 
-      // Update schedule data
+      // Create data object
       const data = {
         holiday: processedHolidayData,
         saturday: processedSaturdayData,
@@ -214,7 +241,8 @@ export function useSchedule() {
         rotationCycleLength: holidayLength,
       };
 
-      scheduleData.value = data;
+      // Update store
+      scheduleStore.setScheduleData(data);
       return data;
     } catch (error) {
       console.error(ERROR_MESSAGES.SCHEDULE_DATA_ERROR, error);
@@ -224,27 +252,33 @@ export function useSchedule() {
 
   /**
    * Set base dates
+   * @param {Array} dates - Array of base dates
    */
   function setBaseDates(dates) {
-    baseDates.value = dates;
+    scheduleStore.setBaseDates(dates);
   }
 
   /**
    * Update current base date
+   * @param {dayjs} date - New base date
    */
   function updateCurrentBaseDate(date) {
-    currentBaseDate.value = date;
+    scheduleStore.updateCurrentBaseDate(date);
   }
 
   /**
    * Set last base date
+   * @param {dayjs} date - Last base date
    */
   function setLastBaseDate(date) {
-    lastBaseDate.value = date;
+    scheduleStore.setLastBaseDate(date);
   }
 
   /**
    * Set the current base date based on parameters and configuration
+   * @param {dayjs} baseDate - Date from params
+   * @param {Array} availableBaseDates - Available base dates
+   * @returns {dayjs} Valid base date
    */
   function setCurrentBaseDate(baseDate, availableBaseDates) {
     try {
@@ -264,23 +298,23 @@ export function useSchedule() {
   }
 
   return {
-    // State
-    scheduleData: computed(() => scheduleData.value),
-    baseDates: computed(() => baseDates.value),
-    currentBaseDate: computed(() => currentBaseDate.value),
-    lastBaseDate: computed(() => lastBaseDate.value),
-    isDataLoaded: computed(() => scheduleData.value.rotationCycleLength > 0),
-    rotationCycleLength: computed(() => scheduleData.value.rotationCycleLength),
+    // Computed state from store
+    scheduleData: storeScheduleData,
+    baseDates: storeBaseDates,
+    currentBaseDate: storeCurrentBaseDate,
+    lastBaseDate: storeLastBaseDate,
+    isDataLoaded: computed(() => storeScheduleData.value.rotationCycleLength > 0),
+    rotationCycleLength: computed(() => storeScheduleData.value.rotationCycleLength),
 
-    // Methods
-    setBaseDates,
-    updateCurrentBaseDate,
-    setLastBaseDate,
-    setCurrentBaseDate,
+    // All business logic functions
     calculateShiftIndex,
     getScheduleForDate,
     calculateScheduleRange,
-    loadScheduleData,
     processCSVData,
+    loadScheduleData,
+    setBaseDates,
+    updateCurrentBaseDate,
+    setLastBaseDate,
+    setCurrentBaseDate
   };
 }

@@ -1,49 +1,59 @@
-// src/stores/schedule.js (Refactored)
+// src/stores/schedule.js
 import { defineStore } from 'pinia';
-import { useSchedule } from '@/composables/useSchedule';
+import { ref, computed } from 'vue';
 
 /**
- * Schedule store - now a thin wrapper around the useSchedule composable
- * This maintains backward compatibility while allowing transition to composable pattern
+ * Schedule store - simplified to only handle state
+ * All business logic is moved to the useSchedule composable
  */
 export const useScheduleStore = defineStore('schedule', () => {
-  // Use the schedule composable for implementation details
-  const {
-    scheduleData,
-    baseDates,
-    currentBaseDate,
-    lastBaseDate,
-    isDataLoaded,
-    rotationCycleLength,
-    setBaseDates,
-    updateCurrentBaseDate,
-    setLastBaseDate,
-    setCurrentBaseDate,
-    calculateShiftIndex,
-    getScheduleForDate,
-    calculateScheduleRange,
-    loadScheduleData
-  } = useSchedule();
+  // 状態
+  const scheduleData = ref({
+    holiday: [],
+    saturday: [],
+    weekday: [],
+    rotationCycleLength: 0,
+  });
+  const baseDates = ref([]);
+  const currentBaseDate = ref(null);
+  const lastBaseDate = ref(null);
+
+  // ゲッター
+  const isDataLoaded = computed(() => {
+    return scheduleData.value.rotationCycleLength > 0;
+  });
+
+  // アクション - シンプルな状態更新のみ
+  function setScheduleData(data) {
+    scheduleData.value = data;
+  }
+
+  function setBaseDates(dates) {
+    baseDates.value = dates;
+  }
+
+  function updateCurrentBaseDate(date) {
+    currentBaseDate.value = date;
+  }
+
+  function setLastBaseDate(date) {
+    lastBaseDate.value = date;
+  }
 
   return {
-    // Expose the same interface as the original store
-    // State
-    scheduleData,
-    baseDates,
-    currentBaseDate,
-    lastBaseDate,
+    // 状態
+    scheduleData: computed(() => scheduleData.value),
+    baseDates: computed(() => baseDates.value),
+    currentBaseDate: computed(() => currentBaseDate.value),
+    lastBaseDate: computed(() => lastBaseDate.value),
     
-    // Getters
+    // ゲッター
     isDataLoaded,
     
-    // Actions
+    // アクション
+    setScheduleData,
     setBaseDates,
     updateCurrentBaseDate,
     setLastBaseDate,
-    setCurrentBaseDate,
-    calculateShiftIndex,
-    getScheduleForDate,
-    calculateScheduleRange,
-    loadScheduleData
   };
 });

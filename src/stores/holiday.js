@@ -1,44 +1,39 @@
-// src/stores/holiday.js (Refactored)
+// src/stores/holiday.js
 import { defineStore } from 'pinia';
-import { useHolidays } from '@/composables/useHolidays';
+import { ref, computed } from 'vue';
 
 /**
- * Holiday store - now a thin wrapper around the useHolidays composable
- * This maintains backward compatibility while allowing transition to composable pattern
+ * Holiday store - simplified to only handle state
+ * All business logic is moved to the useHolidays composable
  */
 export const useHolidayStore = defineStore('holiday', () => {
-  // Use the holidays composable for implementation details
-  const {
-    allHolidays,
-    holidayYearsRange,
-    userDefinedHolidays,
-    isHolidaysLoaded,
-    setHolidays,
-    setHolidayYearsRange,
-    setUserDefinedHolidays,
-    loadHolidays,
-    fetchHolidays,
-    isHoliday,
-    getHolidayName
-  } = useHolidays();
+  // 状態
+  const allHolidays = ref({});
+  const holidayYearsRange = ref(5);
+  const userDefinedHolidays = ref([]);
+
+  // アクション - シンプルな状態更新のみ
+  function setHolidays(holidays) {
+    allHolidays.value = holidays;
+  }
+
+  function setHolidayYearsRange(range) {
+    holidayYearsRange.value = range;
+  }
+
+  function setUserDefinedHolidays(holidays) {
+    userDefinedHolidays.value = holidays;
+  }
 
   return {
-    // Expose the same interface as the original store
-    // State
-    allHolidays,
-    holidayYearsRange,
-    userDefinedHolidays,
+    // 状態
+    allHolidays: computed(() => allHolidays.value),
+    holidayYearsRange: computed(() => holidayYearsRange.value),
+    userDefinedHolidays: computed(() => userDefinedHolidays.value),
     
-    // Getters
-    isHolidaysLoaded,
-    
-    // Actions
+    // アクション
     setHolidays,
     setHolidayYearsRange,
     setUserDefinedHolidays,
-    loadHolidays,
-    fetchHolidays,
-    isHoliday,
-    getHolidayName
   };
 });

@@ -1,58 +1,86 @@
 // src/composables/useCalendar.js
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import dayjs from 'dayjs';
-import { useScheduleStore } from '@/stores/schedule';
-import { useHolidayStore } from '@/stores/holiday';
+import { useCalendarStore } from '@/stores/calendar';
+import { useSchedule } from '@/composables/useSchedule';
+import { useHolidays } from '@/composables/useHolidays';
+import { CALENDAR_CONFIG, APP_CONFIG } from '@/config/constants';
 
 /**
  * Calendar functionality composable
- * Handles calendar event generation and manipulation
+ * Contains all calendar-related logic
  */
 export function useCalendar() {
-  // Internal refs
-  const calendarEvents = ref([]);
-  const startPosition = ref(1);
-  const eventConfig = ref(null);
-  const icsExportConfig = ref({});
+  // Get store for state management only
+  const calendarStore = useCalendarStore();
   
-  // Store references
-  const scheduleStore = useScheduleStore();
-  const holidayStore = useHolidayStore();
-
+  // Use other composables for business logic
+  const { getScheduleForDate } = useSchedule();
+  const { getHolidayName } = useHolidays();
+  
+  // Local cached references to avoid recursion
+  const storeCalendarEvents = computed(() => calendarStore.calendarEvents);
+  const storeStartPosition = computed(() => calendarStore.startPosition);
+  const storeEventConfig = computed(() => calendarStore.eventConfig);
+  const storeIcsExportConfig = computed(() => calendarStore.icsExportConfig);
+  
   /**
    * Set the starting position (shift number)
+   * @param {number} position - Position in rotation
    */
   function setStartPosition(position) {
-    startPosition.value = position;
+    calendarStore.setStartPosition(position);
   }
 
   /**
-   * Set the event configuration
+   * Set the export months
+   * @param {number} months - Number of months to export
    */
-  function setEventConfig(config) {
-    eventConfig.value = config;
+  function setExportMonths(months) {
+    calendarStore.setExportMonths(months);
+  }
+
+  /**
+   * Set calendar events
+   * @param {Array} events - Calendar events
+   */
+  function setCalendarEvents(events) {
+    calendarStore.setCalendarEvents(events);
   }
 
   /**
    * Set the ICS export configuration
+   * @param {Object} config - Export configuration
    */
   function setICSExportConfig(config) {
-    icsExportConfig.value = config;
+    calendarStore.setICSExportConfig(config);
+  }
+
+  /**
+   * Set the event configuration
+   * @param {Object} config - Event configuration
+   */
+  function setEventConfig(config) {
+    calendarStore.setEventConfig(config);
   }
 
   /**
    * Determine event type and styling based on subject
+   * @param {string} subject - Event subject
+   * @returns {Object} Event type and configuration
    */
   function getEventType(subject) {
-    if (!eventConfig.value || !eventConfig.value.events) {
+    const eventConfig = storeEventConfig.value;
+    
+    if (!eventConfig || !eventConfig.events) {
       return {
         type: "default",
-        config: eventConfig.value?.events?.default || {},
+        config: eventConfig?.events?.default || {},
       };
     }
 
     // Check against all event types in config
-    for (const [type, config] of Object.entries(eventConfig.value.events)) {
+    for (const [type, config] of Object.entries(eventConfig.events)) {
       if (
         type !== "default" &&
         config.keywords &&
@@ -65,21 +93,25 @@ export function useCalendar() {
     // Default event type
     return {
       type: "default",
-      config: eventConfig.value.events.default,
+      config: eventConfig.events.default,
     };
   }
 
   /**
    * Determine if a person can attend a meetup based on their schedule
+   * @param {Object} schedule - Schedule information
+   * @param {string} meetupStartTime - Meetup start time (HH:MM)
+   * @returns {boolean} True if can attend
    */
   function canAttendMeetup(schedule, meetupStartTime) {
     if (!schedule) return false;
 
     const { subject, endTime } = schedule;
+    const eventConfig = storeEventConfig.value;
 
     // Check if this is a rest day
-    if (eventConfig.value && eventConfig.value.events) {
-      const restDayConfig = eventConfig.value.events.restDay;
+    if (eventConfig && eventConfig.events) {
+      const restDayConfig = eventConfig.events.restDay;
       if (restDayConfig && restDayConfig.keywords) {
         if (restDayConfig.keywords.some((keyword) => subject === keyword)) {
           return true;
@@ -109,15 +141,19 @@ export function useCalendar() {
 
   /**
    * Generate calendar events for the date range
+   * @param {dayjs} startDate - Range start date
+   * @param {dayjs} endDate - Range end date
+   * @returns {Array} Generated events
    */
   function generateCalendarEvents(startDate, endDate) {
     const generatedEvents = [];
+    const startPosition = storeStartPosition.value;
 
     let currentDate = dayjs(startDate);
     while (currentDate.isBefore(endDate)) {
-      const scheduleInfo = scheduleStore.getScheduleForDate(
+      const scheduleInfo = getScheduleForDate(
         currentDate,
-        startPosition.value,
+        startPosition
       );
 
       if (!scheduleInfo) {
@@ -149,27 +185,33 @@ export function useCalendar() {
           isHoliday,
           isSaturday,
           shiftIndex,
-          holidayName: holidayStore.getHolidayName(currentDate),
+          holidayName: getHolidayName(currentDate),
         },
       });
       currentDate = currentDate.add(1, "day");
     }
 
-    calendarEvents.value = generatedEvents;
+    // Update events in store
+    setCalendarEvents(generatedEvents);
     return generatedEvents;
   }
 
   return {
-    calendarEvents,
-    startPosition,
-    eventConfig: computed(() => eventConfig.value),
-    icsExportConfig: computed(() => icsExportConfig.value),
-    isConfigLoaded: computed(() => eventConfig.value !== null),
+    // Computed state from store
+    calendarEvents: storeCalendarEvents,
+    startPosition: storeStartPosition,
+    eventConfig: storeEventConfig,
+    icsExportConfig: storeIcsExportConfig,
+    isConfigLoaded: computed(() => storeEventConfig.value !== null),
     
-    // Methods
+    // Store action wrappers
     setStartPosition,
-    setEventConfig,
+    setExportMonths,
+    setCalendarEvents,
     setICSExportConfig,
+    setEventConfig,
+    
+    // Business logic functions
     getEventType,
     canAttendMeetup,
     generateCalendarEvents,

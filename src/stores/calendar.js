@@ -1,46 +1,66 @@
-// src/stores/calendar.js (Refactored)
+// src/stores/calendar.js
 import { defineStore } from 'pinia';
-import { useCalendar } from '@/composables/useCalendar';
+import { ref, computed } from 'vue';
+import { CALENDAR_CONFIG, APP_CONFIG } from '@/config/constants';
 
 /**
- * Calendar store - now a thin wrapper around the useCalendar composable
- * This maintains backward compatibility while allowing transition to composable pattern
+ * Calendar store - simplified to only handle state
+ * All business logic is moved to the useCalendar composable
  */
 export const useCalendarStore = defineStore('calendar', () => {
-  // Use the calendar composable for implementation details
-  const { 
-    calendarEvents,
-    startPosition,
-    eventConfig,
-    icsExportConfig,
-    isConfigLoaded,
-    setStartPosition,
-    setCalendarEvents,
-    setICSExportConfig,
-    setEventConfig,
-    getEventType,
-    canAttendMeetup,
-    generateCalendarEvents
-  } = useCalendar();
+  // 状態
+  const calendarConfig = ref({
+    ...CALENDAR_CONFIG,
+  });
+  const startPosition = ref(APP_CONFIG.DEFAULT_START_POSITION);
+  const exportMonths = ref(APP_CONFIG.DEFAULT_EXPORT_MONTHS);
+  const calendarEvents = ref([]);
+  const icsExportConfig = ref({});
+  const eventConfig = ref(null);
+
+  // ゲッター
+  const isConfigLoaded = computed(() => {
+    return eventConfig.value !== null;
+  });
+
+  // アクション - シンプルな状態更新のみ
+  function setStartPosition(position) {
+    startPosition.value = position;
+  }
+
+  function setExportMonths(months) {
+    exportMonths.value = months;
+  }
+
+  function setCalendarEvents(events) {
+    calendarEvents.value = events;
+  }
+
+  function setICSExportConfig(config) {
+    icsExportConfig.value = config;
+  }
+
+  function setEventConfig(config) {
+    eventConfig.value = config;
+  }
 
   return {
-    // Expose the same interface as the original store
-    // State
-    calendarEvents,
+    // 状態
+    calendarConfig,
     startPosition,
-    eventConfig,
+    exportMonths,
+    calendarEvents,
     icsExportConfig,
-    
-    // Getters
+    eventConfig,
+
+    // ゲッター
     isConfigLoaded,
-    
-    // Actions
+
+    // アクション
     setStartPosition,
+    setExportMonths,
     setCalendarEvents,
     setICSExportConfig,
     setEventConfig,
-    getEventType,
-    canAttendMeetup,
-    generateCalendarEvents
   };
 });

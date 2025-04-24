@@ -54,13 +54,14 @@ import PositionSelector from '@/components/Controls/PositionSelector.vue';
 import CalendarView from '@/components/Calendar/CalendarView.vue';
 import ExportSection from '@/components/ExportSection.vue';
 
-// Composables
-import { useSchedule } from '@/composables/useSchedule';
+// Composables - すべての状態とロジックへのアクセスにコンポーサブルを使用
 import { useCalendar } from '@/composables/useCalendar';
+import { useSchedule } from '@/composables/useSchedule';
 import { useHolidays } from '@/composables/useHolidays';
 
 // Utils
 import { getDateParam, getNumberParam, updateURLParams } from '@/utils/url-params';
+import { formatAsISODate } from '@/utils/date-formatters';
 
 // Config
 import { APP_CONFIG } from '@/config/constants';
@@ -75,40 +76,36 @@ const isLoaded = ref(false);
 const calendarRef = ref(null);
 const selectedBaseDate = ref(null);
 
-// Composables
-const scheduleComposable = useSchedule();
-const calendarComposable = useCalendar();
-const holidaysComposable = useHolidays();
-
-// Destructure needed values and methods from composables
+// Composables - すべてのストア関連の操作を提供
 const { 
+  calendarEvents, 
+  startPosition, 
+  generateCalendarEvents, 
+  setStartPosition, 
+  setEventConfig, 
+  setICSExportConfig 
+} = useCalendar();
+
+const { 
+  scheduleData, 
+  baseDates, 
+  currentBaseDate, 
+  lastBaseDate, 
   loadScheduleData, 
   setBaseDates, 
-  updateCurrentBaseDate,
-  setLastBaseDate,
-  setCurrentBaseDate
-} = scheduleComposable;
+  updateCurrentBaseDate, 
+  setLastBaseDate, 
+  setCurrentBaseDate 
+} = useSchedule();
 
-const {
-  calendarEvents,
-  startPosition,
-  setStartPosition,
-  setEventConfig,
-  setICSExportConfig,
-  generateCalendarEvents
-} = calendarComposable;
-
-const {
-  setHolidayYearsRange,
-  setUserDefinedHolidays,
-  loadHolidays
-} = holidaysComposable;
+const { 
+  setHolidayYearsRange, 
+  setUserDefinedHolidays, 
+  loadHolidays 
+} = useHolidays();
 
 // Computed values
-const currentBaseDate = computed(() => scheduleComposable.currentBaseDate.value);
-const lastBaseDate = computed(() => scheduleComposable.lastBaseDate.value);
-const baseDates = computed(() => scheduleComposable.baseDates.value);
-const rotationCycleLength = computed(() => scheduleComposable.scheduleData.value.rotationCycleLength);
+const rotationCycleLength = computed(() => scheduleData.value.rotationCycleLength);
 
 // Initial date for the calendar
 const initialDate = computed(() => {
@@ -122,11 +119,12 @@ const initialDate = computed(() => {
 
 // Event handlers
 function handleBaseDateChange(newDate) {
+  console.log('Base date changed:', newDate.format('YYYY-MM-DD'));
   updateCurrentBaseDate(newDate);
   
   // Update URL params
   updateURLParams({
-    baseDate: newDate.format('YYYY-MM-DD'),
+    baseDate: formatAsISODate(newDate),
     startNumber: startPosition.value,
   });
   
@@ -140,13 +138,16 @@ function handleBaseDateChange(newDate) {
 }
 
 function handlePositionChange(newPosition) {
+  console.log('Position changed:', newPosition);
+  setStartPosition(newPosition);
+  
   // Update URL params
   updateURLParams({
     baseDate: selectedBaseDate.value,
     startNumber: newPosition,
   });
   
-  // Regenerate calendar events
+  // Regenerate calendar events if view is available
   if (calendarRef.value) {
     const api = calendarRef.value.getApi();
     generateCalendarEvents(
@@ -157,11 +158,12 @@ function handlePositionChange(newPosition) {
 }
 
 function handleDatesSet({ start, end }) {
-  generateCalendarEvents(start, end);
+  console.log('Calendar dates set:', start.format(), end.format());
+  const events = generateCalendarEvents(start, end);
+  console.log(`Generated ${events.length} events`);
 }
 
 function handleExport({ months }) {
-  // Handle export months change
   console.log('Export months changed:', months);
 }
 
@@ -175,19 +177,24 @@ function handleExportComplete({ success, error }) {
 // Initialize application
 async function initializeApp() {
   try {
+    console.log('Initializing application...');
+    
     // Set holiday config
     setHolidayYearsRange(config.holiday_years_range || 5);
     setUserDefinedHolidays(config.custom_holidays || []);
     
     // Load holidays
     loadHolidays();
+    console.log('Holidays loaded');
     
     // Set calendar config
     setEventConfig(eventConfig);
     setICSExportConfig(config.info);
+    console.log('Calendar config set');
     
     // Load schedule data
-    const scheduleData = loadScheduleData(holidayData, saturdayData, weekdayData);
+    const data = loadScheduleData(holidayData, saturdayData, weekdayData);
+    console.log('Schedule data loaded:', data.rotationCycleLength, 'rotation cycle length');
     
     // Set base dates
     const configBaseDates = config.base_dates
@@ -196,6 +203,7 @@ async function initializeApp() {
     
     setBaseDates(configBaseDates);
     setLastBaseDate(configBaseDates[configBaseDates.length - 1]);
+    console.log('Base dates set:', configBaseDates.map(d => d.format('YYYY-MM-DD')));
     
     // Get URL parameters
     const baseDateParam = getDateParam('baseDate', null, configBaseDates);
@@ -203,18 +211,29 @@ async function initializeApp() {
       'startNumber',
       APP_CONFIG.DEFAULT_START_POSITION,
       1,
-      scheduleData.rotationCycleLength
+      data.rotationCycleLength
     );
     
     // Set current base date
-    const validBaseDate = setCurrentBaseDate(baseDateParam, configBaseDates);
-    selectedBaseDate.value = validBaseDate.format('YYYY-MM-DD');
+    let validBaseDate;
+    if (baseDateParam) {
+      validBaseDate = baseDateParam;
+      updateCurrentBaseDate(validBaseDate);
+    } else {
+      validBaseDate = configBaseDates[0];
+      updateCurrentBaseDate(validBaseDate);
+    }
+    
+    selectedBaseDate.value = formatAsISODate(validBaseDate);
+    console.log('Current base date set:', selectedBaseDate.value);
     
     // Set start position
     setStartPosition(startNumberParam);
+    console.log('Start position set:', startNumberParam);
     
     // Mark as loaded
     isLoaded.value = true;
+    console.log('Application initialized successfully');
     
     return true;
   } catch (error) {
@@ -223,10 +242,10 @@ async function initializeApp() {
   }
 }
 
-// Watch for base date changes
+// Watch for base date changes from composable
 watch(currentBaseDate, (newBaseDate) => {
   if (newBaseDate) {
-    selectedBaseDate.value = newBaseDate.format('YYYY-MM-DD');
+    selectedBaseDate.value = formatAsISODate(newBaseDate);
   }
 });
 
