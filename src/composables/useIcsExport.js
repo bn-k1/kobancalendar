@@ -1,10 +1,18 @@
 // src/composables/useIcsExport.js
 import { ref, computed } from 'vue';
-import dayjs from 'dayjs';
 import { ERROR_MESSAGES } from '@/config/constants';
 import { createCalendar, downloadICS } from '@/services/ical-service';
 import { useCalendarStore } from '@/stores/calendar';
 import { useSchedule } from '@/composables/useSchedule';
+import { 
+  createDate, 
+  today, 
+  isAfter, 
+  isSame, 
+  isBefore, 
+  addMonths, 
+  startOfDay 
+} from '@/utils/date';
 
 /**
  * ICS Export composable
@@ -38,23 +46,25 @@ export function useIcsExport() {
     try {
       exportError.value = null;
       
-      const today = dayjs().startOf('day');
+      const currentDay = startOfDay(today());
+      const base = createDate(baseDate);
+      const endBase = createDate(endBaseDate);
       
       // Determine start date (either base date or today, whichever is later)
-      const startDate = baseDate.isAfter(today) || baseDate.isSame(today)
-        ? baseDate.startOf('day')
-        : today;
+      const startDate = isAfter(base, currentDay) || isSame(base, currentDay)
+        ? startOfDay(base)
+        : currentDay;
         
       // Calculate end date based on months parameter
-      let endDate = startDate.add(months, 'month');
+      let endDate = addMonths(startDate, months);
       
       // Use end base date as limit if it comes before calculated end date
       if (
-        endBaseDate && 
-        !baseDate.isSame(endBaseDate) && 
-        endBaseDate.isBefore(endDate)
+        endBase && 
+        !isSame(base, endBase) && 
+        isBefore(endBase, endDate)
       ) {
-        endDate = endBaseDate;
+        endDate = endBase;
       }
       
       // Get schedule for the date range
@@ -62,7 +72,7 @@ export function useIcsExport() {
         startDate,
         endDate,
         startPosition,
-        baseDate
+        base
       );
       
       // Create the calendar

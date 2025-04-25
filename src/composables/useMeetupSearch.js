@@ -1,8 +1,13 @@
 // src/composables/useMeetupSearch.js
 import { ref } from 'vue';
-import dayjs from 'dayjs';
 import { useSchedule } from '@/composables/useSchedule';
 import { useCalendar } from '@/composables/useCalendar';
+import { 
+  createDate, 
+  addDays, 
+  isBefore, 
+  toUnix
+} from '@/utils/date';
 
 /**
  * Meetup search composable
@@ -29,8 +34,10 @@ export function useMeetupSearch() {
     };
 
     // Search each date in the range
-    let currentDate = dayjs(startDate);
-    while (currentDate.isBefore(endDate)) {
+    let currentDate = createDate(startDate);
+    const end = createDate(endDate);
+    
+    while (isBefore(currentDate, end)) {
       const dateResults = checkDateForPositions(
         currentDate,
         positions,
@@ -56,18 +63,18 @@ export function useMeetupSearch() {
         });
       }
 
-      currentDate = currentDate.add(1, "day");
+      currentDate = addDays(currentDate, 1);
     }
 
     // Sort results
-    result.allMatches.sort((a, b) => a.date.unix() - b.date.unix());
+    result.allMatches.sort((a, b) => toUnix(a.date) - toUnix(b.date));
     result.partialMatches.sort((a, b) => {
       // First by number of available participants (descending)
       if (b.availableCount !== a.availableCount) {
         return b.availableCount - a.availableCount;
       }
       // Then by date (ascending)
-      return a.date.unix() - b.date.unix();
+      return toUnix(a.date) - toUnix(b.date);
     });
 
     searchResults.value = result;

@@ -7,13 +7,18 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import dayjs from 'dayjs';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useCalendar } from '@/composables/useCalendar';
 import { useHolidays } from '@/composables/useHolidays';
 import { CALENDAR_CONFIG } from '@/config/constants';
+import { 
+  createDate, 
+  isSameDay, 
+  today, 
+  toDate 
+} from '@/utils/date';
 
 // Props
 const props = defineProps({
@@ -55,7 +60,7 @@ const calendarOptions = computed(() => ({
 
   // Custom day cell class names
   dayCellClassNames: (arg) => {
-    const date = dayjs(arg.date);
+    const date = createDate(arg.date);
     const classNames = [];
 
     if (isHoliday(date)) {
@@ -67,7 +72,7 @@ const calendarOptions = computed(() => ({
     if (date.day() === 0) {
       classNames.push('fc-day-sun');
     }
-    if (date.isSame(dayjs().startOf('day'), 'day')) {
+    if (isSameDay(date, today())) {
       classNames.push('today-highlight');
     }
 
@@ -79,7 +84,7 @@ const calendarOptions = computed(() => ({
     const { event } = arg;
     let [title, startTime = '', endTime = ''] = event.title.split('\n');
     const { shiftIndex } = event.extendedProps;
-    const date = dayjs(event.start);
+    const date = createDate(event.start);
 
     const holidayName = getHolidayName(date);
     const metaInfo = holidayName
@@ -98,8 +103,8 @@ const calendarOptions = computed(() => ({
 
   // Handler for date range changes
   datesSet: (info) => {
-    const newStart = dayjs(info.start);
-    const newEnd = dayjs(info.end);
+    const newStart = createDate(info.start);
+    const newEnd = createDate(info.end);
 
     // Only update if view range has changed
     if (
@@ -118,7 +123,7 @@ const calendarOptions = computed(() => ({
 // Navigate to a specific date
 function gotoDate(date) {
   if (calendarRef.value) {
-    calendarRef.value.getApi().gotoDate(date.toDate());
+    calendarRef.value.getApi().gotoDate(toDate(date));
   }
 }
 
@@ -140,8 +145,8 @@ onMounted(() => {
   setTimeout(() => {
     if (calendarRef.value) {
       const api = calendarRef.value.getApi();
-      viewStart.value = dayjs(api.view.activeStart);
-      viewEnd.value = dayjs(api.view.activeEnd);
+      viewStart.value = createDate(api.view.activeStart);
+      viewEnd.value = createDate(api.view.activeEnd);
       emit('datesSet', { start: viewStart.value, end: viewEnd.value });
     }
   }, 0);

@@ -1,6 +1,10 @@
 // src/utils/url-params.js
-import dayjs from 'dayjs';
 import { ERROR_MESSAGES, DATE_FORMATS } from '@/config/constants';
+import { 
+  createDate, 
+  formatAsISODate, 
+  isSameDay 
+} from '@/utils/date';
 
 /**
  * Update URL parameters without reloading the page
@@ -47,7 +51,7 @@ export function getDateParam(paramName, defaultValue, validDates = []) {
     return defaultValue;
   }
 
-  const dateObj = dayjs(dateStr);
+  const dateObj = createDate(dateStr);
 
   // Check date validity
   if (!dateObj.isValid()) {
@@ -58,9 +62,7 @@ export function getDateParam(paramName, defaultValue, validDates = []) {
   // Validate against allowed dates if provided
   if (validDates.length > 0) {
     const dateExists = validDates.some(
-      (date) =>
-        date.format(DATE_FORMATS.ISO_DATE) ===
-        dateObj.format(DATE_FORMATS.ISO_DATE)
+      (date) => isSameDay(date, dateObj)
     );
 
     if (!dateExists) {

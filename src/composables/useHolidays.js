@@ -1,9 +1,13 @@
 // src/composables/useHolidays.js
 import { computed } from 'vue';
-import dayjs from 'dayjs';
 import JapaneseHolidays from 'japanese-holidays';
 import { useHolidayStore } from '@/stores/holiday';
 import { DATE_FORMATS, CUSTOM_HOLIDAY } from '@/config/constants';
+import { 
+  createDate, 
+  formatAsISODate,
+  isSunday 
+} from '@/utils/date';
 
 /**
  * Holiday management composable
@@ -24,10 +28,10 @@ export function useHolidays() {
    * @returns {boolean} True if holiday
    */
   function isHoliday(date) {
-    const dateObj = dayjs.isDayjs(date) ? date : dayjs(date);
-    const dateStr = dateObj.format(DATE_FORMATS.ISO_DATE);
+    const dateObj = createDate(date);
+    const dateStr = formatAsISODate(dateObj);
     // Sunday is always treated as holiday
-    return storeHolidays.value[dateStr] !== undefined || dateObj.day() === 0;
+    return storeHolidays.value[dateStr] !== undefined || isSunday(dateObj);
   }
   
   /**
@@ -36,8 +40,8 @@ export function useHolidays() {
    * @returns {string|undefined} Holiday name if exists
    */
   function getHolidayName(date) {
-    const dateObj = dayjs.isDayjs(date) ? date : dayjs(date);
-    const dateStr = dateObj.format(DATE_FORMATS.ISO_DATE);
+    const dateObj = createDate(date);
+    const dateStr = formatAsISODate(dateObj);
     return storeHolidays.value[dateStr];
   }
   
@@ -83,17 +87,17 @@ export function useHolidays() {
    * @returns {Object} Holidays object
    */
   function fetchHolidays(yearsRange, customHolidays) {
-    const currentYear = dayjs().year();
+    const currentYear = new Date().getFullYear();
     const holidays = {};
     
     // Get official holidays from JapaneseHolidays library
     for (let year = currentYear - yearsRange; year <= currentYear + yearsRange; year++) {
       const yearHolidays = JapaneseHolidays.getHolidaysOf(year);
       yearHolidays.forEach((holiday) => {
-        const dateObj = dayjs(
+        const dateObj = createDate(
           `${year}-${String(holiday.month).padStart(2, "0")}-${String(holiday.date).padStart(2, "0")}`
         );
-        const dateStr = dateObj.format(DATE_FORMATS.ISO_DATE);
+        const dateStr = formatAsISODate(dateObj);
         holidays[dateStr] = holiday.name;
       });
     }

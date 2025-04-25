@@ -31,8 +31,12 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import dayjs from 'dayjs';
 import { useIcsExport } from '@/composables/useIcsExport';
+import { 
+  createDate, 
+  today, 
+  isBefore 
+} from '@/utils/date';
 
 const props = defineProps({
   baseDate: {
@@ -49,7 +53,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['export']);
+const emit = defineEmits(['export', 'export-complete']);
 
 // State
 const selectedMonths = ref(1);
@@ -57,9 +61,9 @@ const { exportICS } = useIcsExport();
 
 // Computed
 const isBaseDateInPast = computed(() => {
-  const today = dayjs().startOf('day');
-  const baseDateValue = dayjs(props.baseDate);
-  return baseDateValue ? baseDateValue.isBefore(today) : false;
+  const currentDay = today();
+  const baseDateValue = createDate(props.baseDate);
+  return baseDateValue ? isBefore(baseDateValue, currentDay) : false;
 });
 
 // Handle export months change
@@ -73,7 +77,7 @@ function handleExportICS() {
   const position = props.startPosition;
   
   try {
-    exportICS(months, position, dayjs(props.baseDate), dayjs(props.lastBaseDate));
+    exportICS(months, position, createDate(props.baseDate), createDate(props.lastBaseDate));
     emit('export-complete', { success: true });
   } catch (error) {
     console.error('ICS export error:', error);

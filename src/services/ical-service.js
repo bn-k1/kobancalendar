@@ -1,6 +1,12 @@
 // src/services/ical-service.js
 import ical from 'ical-generator';
-import { DATE_FORMATS } from '@/config/constants';
+import { 
+  createDate, 
+  formatAsISODate, 
+  formatAsFileName,
+  toDate,
+  addDays
+} from '@/utils/date';
 
 /**
  * Generate a unique identifier for calendar events
@@ -18,7 +24,7 @@ function generateUID(
   endTime = "",
   domain = "kobancalendar.jp"
 ) {
-  const dateStr = date.format(DATE_FORMATS.FILE_NAME_DATE);
+  const dateStr = formatAsFileName(date);
   const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);
   return `${dateStr}-${contentHash}@${domain}`;
 }
@@ -62,13 +68,13 @@ export function createCalendar(events, config) {
   // Add events to calendar
   events.forEach((event) => {
     const { subject, startTime, endTime, date } = event;
-    const eventDate = date;
+    const eventDate = createDate(date);
     
     // Create event
     const calEvent = calendar.createEvent({
       summary: subject,
       uid: generateUID(
-        date,
+        eventDate,
         subject,
         startTime,
         endTime,
@@ -98,7 +104,7 @@ export function createCalendar(events, config) {
     } else {
       // All-day event
       calEvent.allDay(true);
-      calEvent.start(eventDate.toDate());
+      calEvent.start(toDate(eventDate));
     }
   });
 
@@ -117,8 +123,8 @@ export function downloadICS(icsContent, startDate, endDate) {
   const downloadLink = document.createElement("a");
 
   // Create filename with date range
-  const startDateStr = startDate.format(DATE_FORMATS.FILE_NAME_DATE);
-  const endDateStr = endDate.add(-1, "day").format(DATE_FORMATS.FILE_NAME_DATE);
+  const startDateStr = formatAsFileName(startDate);
+  const endDateStr = formatAsFileName(addDays(endDate, -1));
 
   downloadLink.href = url;
   downloadLink.download = `schedule_${startDateStr}-${endDateStr}.ics`;

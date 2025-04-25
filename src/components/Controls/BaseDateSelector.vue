@@ -5,7 +5,7 @@
     <div class="form-group">
       <!-- Display base date as text if only one date is available -->
       <span v-if="availableDates.length === 1">
-        {{ formatAsDisplayDate(currentDate) }}
+        {{ formattedCurrentDate }}
       </span>
 
       <!-- Display dropdown if multiple dates are available -->
@@ -13,7 +13,7 @@
         v-else
         id="baseDate"
         aria-label="基準日を選択"
-        :value="formatAsISODate(currentDate)"
+        :value="formattedValue"
         @change="handleChange"
       >
         <option
@@ -30,9 +30,11 @@
 
 <script setup>
 import { computed } from 'vue';
-import dayjs from 'dayjs';
-import { formatAsISODate, formatAsDisplayDate } from '@/utils/date-formatters';
-import { DATE_FORMATS } from '@/config/constants';
+import { 
+  createDate, 
+  formatAsISODate, 
+  formatAsDisplayDate 
+} from '@/utils/date';
 
 const props = defineProps({
   modelValue: {
@@ -48,16 +50,15 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'change']);
 
 // Convert modelValue to dayjs object for internal use
-const currentDate = computed(() => {
-  if (typeof props.modelValue === 'string') {
-    return dayjs(props.modelValue);
-  }
-  return dayjs(props.modelValue);
-});
+const currentDate = computed(() => createDate(props.modelValue));
+
+// Computed formatted values
+const formattedValue = computed(() => formatAsISODate(currentDate.value));
+const formattedCurrentDate = computed(() => formatAsDisplayDate(currentDate.value));
 
 // Handle date selection change
 function handleChange(event) {
-  const newDate = dayjs(event.target.value);
+  const newDate = createDate(event.target.value);
   emit('update:modelValue', newDate);
   emit('change', newDate);
 }

@@ -110,7 +110,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import dayjs from 'dayjs';
 
 // Components
 import MeetupPageLayout from '@/layouts/MeetupPageLayout.vue';
@@ -129,9 +128,13 @@ import {
   updateURLParams 
 } from '@/utils/url-params';
 import { 
+  createDate,
   formatAsISODate, 
-  formatAsDisplayDate 
-} from '@/utils/date-formatters';
+  formatAsDisplayDate,
+  today,
+  isAfter,
+  addDays
+} from '@/utils/date';
 
 // Config
 import { APP_CONFIG, ERROR_MESSAGES, DATE_FORMATS } from '@/config/constants';
@@ -186,7 +189,7 @@ const rotationCycleLength = computed(() => scheduleComposable.scheduleData.value
 
 // Event handlers
 function handleBaseDateChange() {
-  const newBaseDate = dayjs(selectedBaseDate.value);
+  const newBaseDate = createDate(selectedBaseDate.value);
   updateCurrentBaseDate(newBaseDate);
   
   // Update URL
@@ -237,10 +240,10 @@ function findDates() {
   }
   
   // Set up date range
-  const baseDate = dayjs(selectedBaseDate.value);
-  const today = dayjs().startOf('day');
-  const startDate = baseDate.isAfter(today) ? baseDate : today;
-  const endDate = startDate.add(parseInt(searchPeriod.value), 'day');
+  const baseDate = createDate(selectedBaseDate.value);
+  const currentDay = today();
+  const startDate = isAfter(baseDate, currentDay) ? baseDate : currentDay;
+  const endDate = addDays(startDate, parseInt(searchPeriod.value));
   
   // Search for available dates
   findMeetupDates(
@@ -271,7 +274,7 @@ async function initializeApp() {
     
     // Set base dates
     const configBaseDates = config.base_dates
-      .map(dateStr => dayjs(dateStr))
+      .map(dateStr => createDate(dateStr))
       .sort((a, b) => a.unix() - b.unix());
       
     setBaseDates(configBaseDates);
@@ -283,47 +286,12 @@ async function initializeApp() {
     
     // Apply base date parameter
     if (baseDateParam) {
-      const dateObj = dayjs(baseDateParam);
+      const dateObj = createDate(baseDateParam);
       if (dateObj.isValid()) {
         updateCurrentBaseDate(dateObj);
-        selectedBaseDate.value = dateObj.format(DATE_FORMATS.ISO_DATE);
+        selectedBaseDate.value = formatAsISODate(dateObj);
       } else {
         // Use default
         const defaultBaseDate = configBaseDates[0];
         updateCurrentBaseDate(defaultBaseDate);
-        selectedBaseDate.value = defaultBaseDate.format(DATE_FORMATS.ISO_DATE);
-      }
-    } else {
-      // Use default
-      const defaultBaseDate = configBaseDates[0];
-      updateCurrentBaseDate(defaultBaseDate);
-      selectedBaseDate.value = defaultBaseDate.format(DATE_FORMATS.ISO_DATE);
-    }
-    
-    // Apply participants parameter
-    if (participantsParam) {
-      const positionList = participantsParam
-        .split(',')
-        .map(p => parseInt(p))
-        .filter(p => !isNaN(p));
-        
-      if (positionList.length > 0) {
-        participants.value = positionList.map(position => ({ position }));
-      }
-    }
-    
-    // Mark as loaded
-    isLoaded.value = true;
-    
-    return true;
-  } catch (error) {
-    console.error('Failed to initialize app:', error);
-    return false;
-  }
-}
-
-// Initialize on mount
-onMounted(async () => {
-  await initializeApp();
-});
-</script>
+        selectedBa

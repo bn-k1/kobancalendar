@@ -1,9 +1,14 @@
 // src/composables/useCalendar.js
 import { computed } from 'vue';
-import dayjs from 'dayjs';
 import { useCalendarStore } from '@/stores/calendar';
 import { useSchedule } from '@/composables/useSchedule';
 import { useHolidays } from '@/composables/useHolidays';
+import { 
+  createDate,
+  addDays,
+  isBefore, 
+  parseTime
+} from '@/utils/date';
 
 /**
  * Calendar functionality composable
@@ -124,15 +129,8 @@ export function useCalendar() {
     }
 
     // Parse times
-    const [endHour, endMinute = "00"] = endTime.split(":");
-    const endTimeObj = dayjs()
-      .hour(parseInt(endHour, 10))
-      .minute(parseInt(endMinute, 10));
-
-    const [meetupHour, meetupMinute = "00"] = meetupStartTime.split(":");
-    const meetupTimeObj = dayjs()
-      .hour(parseInt(meetupHour, 10))
-      .minute(parseInt(meetupMinute, 10));
+    const endTimeObj = parseTime(endTime);
+    const meetupTimeObj = parseTime(meetupStartTime);
 
     // Can attend if shift ends before meetup starts
     return endTimeObj.isBefore(meetupTimeObj);
@@ -148,15 +146,17 @@ export function useCalendar() {
     const generatedEvents = [];
     const startPosition = storeStartPosition.value;
 
-    let currentDate = dayjs(startDate);
-    while (currentDate.isBefore(endDate)) {
+    let currentDate = createDate(startDate);
+    const end = createDate(endDate);
+    
+    while (isBefore(currentDate, end)) {
       const scheduleInfo = getScheduleForDate(
         currentDate,
         startPosition
       );
 
       if (!scheduleInfo) {
-        currentDate = currentDate.add(1, "day");
+        currentDate = addDays(currentDate, 1);
         continue;
       }
 
@@ -187,7 +187,8 @@ export function useCalendar() {
           holidayName: getHolidayName(currentDate),
         },
       });
-      currentDate = currentDate.add(1, "day");
+      
+      currentDate = addDays(currentDate, 1);
     }
 
     // Update events in store

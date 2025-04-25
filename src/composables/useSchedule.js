@@ -1,11 +1,19 @@
 // src/composables/useSchedule.js
 import { computed } from 'vue';
-import dayjs from 'dayjs';
 import Papa from 'papaparse';
 import { useScheduleStore } from '@/stores/schedule';
 import { useHolidayStore } from '@/stores/holiday';
 import { useHolidays } from '@/composables/useHolidays';
 import { ERROR_MESSAGES, DATE_FORMATS } from '@/config/constants';
+import { 
+  createDate, 
+  formatAsISODate, 
+  isSameDay, 
+  isAfter, 
+  isBefore, 
+  addDays, 
+  toUnix 
+} from '@/utils/date';
 
 /**
  * Schedule management composable
@@ -33,7 +41,9 @@ export function useSchedule() {
    * @returns {number} Shift index
    */
   function calculateShiftIndex(targetDate, startPosition, baseDate) {
-    const daysDifference = targetDate.diff(baseDate, "day");
+    const target = createDate(targetDate);
+    const base = createDate(baseDate);
+    const daysDifference = target.diff(base, "day");
     const adjustedStartPosition = startPosition - 1;
     const cycleLength = storeScheduleData.value.rotationCycleLength;
 
@@ -52,22 +62,24 @@ export function useSchedule() {
    * @returns {Object} Schedule information
    */
   function getScheduleForDate(targetDate, startPosition, baseDateParam) {
+    const target = createDate(targetDate);
+    
     // baseDateParam or currentBaseDate is required
     if (!baseDateParam && !storeCurrentBaseDate.value) {
       return {
-        dateStr: targetDate.format(DATE_FORMATS.ISO_DATE),
+        dateStr: formatAsISODate(target),
         subject: "-",
         startTime: "",
         endTime: "",
         isHoliday: false,
-        isSaturday: targetDate.day() === 6,
+        isSaturday: target.day() === 6,
       };
     }
 
-    const baseDate = baseDateParam || storeCurrentBaseDate.value;
-    const isHolidayFlag = isHoliday(targetDate);
-    const isSaturday = targetDate.day() === 6;
-    const dateStr = targetDate.format(DATE_FORMATS.ISO_DATE);
+    const baseDate = baseDateParam ? createDate(baseDateParam) : storeCurrentBaseDate.value;
+    const isHolidayFlag = isHoliday(target);
+    const isSaturday = target.day() === 6;
+    const dateStr = formatAsISODate(target);
 
     // Ensure lastBaseDate is set
     if (!storeLastBaseDate.value) {
@@ -82,11 +94,11 @@ export function useSchedule() {
     }
 
     // Check if date is within valid range
-    const baseStr = baseDate.format(DATE_FORMATS.ISO_DATE);
-    const lastStr = storeLastBaseDate.value.format(DATE_FORMATS.ISO_DATE);
+    const baseStr = formatAsISODate(baseDate);
+    const lastStr = formatAsISODate(storeLastBaseDate.value);
 
     if (
-      (baseDate.unix() !== storeLastBaseDate.value.unix() && dateStr >= lastStr) ||
+      (toUnix(baseDate) !== toUnix(storeLastBaseDate.value) && dateStr >= lastStr) ||
       dateStr < baseStr
     ) {
       return {
@@ -100,7 +112,7 @@ export function useSchedule() {
     }
 
     // Calculate shift index
-    const shiftIndex = calculateShiftIndex(targetDate, startPosition, baseDate);
+    const shiftIndex = calculateShiftIndex(target, startPosition, baseDate);
 
     // Get appropriate data based on date type
     let shiftData;
@@ -142,11 +154,10 @@ export function useSchedule() {
     baseDateParam
   ) {
     const scheduleRange = [];
+    let currentDate = createDate(startDate);
+    const finalEndDate = createDate(endDate);
 
-    let currentDate = dayjs(startDate);
-    const finalEndDate = dayjs(endDate);
-
-    while (currentDate.isBefore(finalEndDate)) {
+    while (isBefore(currentDate, finalEndDate)) {
       const scheduleInfo = getScheduleForDate(
         currentDate,
         startPosition,
@@ -160,7 +171,7 @@ export function useSchedule() {
         });
       }
 
-      currentDate = currentDate.add(1, "day");
+      currentDate = addDays(currentDate, 1);
     }
 
     return scheduleRange;
@@ -255,7 +266,7 @@ export function useSchedule() {
    * @param {dayjs} date - New base date
    */
   function updateCurrentBaseDate(date) {
-    scheduleStore.updateCurrentBaseDate(date);
+    scheduleStore.updateCurrentBaseDate(createDate(date));
   }
 
   /**
@@ -263,7 +274,7 @@ export function useSchedule() {
    * @param {dayjs} date - Last base date
    */
   function setLastBaseDate(date) {
-    scheduleStore.setLastBaseDate(date);
+    scheduleStore.setLastBaseDate(createDate(date));
   }
 
   /**
@@ -274,11 +285,11 @@ export function useSchedule() {
    */
   function setCurrentBaseDate(baseDate, availableBaseDates) {
     try {
+      const formattedBaseDate = baseDate ? formatAsISODate(baseDate) : null;
+      
       const validBaseDate =
         availableBaseDates.find(
-          (date) =>
-            date.format(DATE_FORMATS.ISO_DATE) ===
-            baseDate?.format(DATE_FORMATS.ISO_DATE)
+          (date) => formatAsISODate(date) === formattedBaseDate
         ) || availableBaseDates[0];
 
       updateCurrentBaseDate(validBaseDate);
