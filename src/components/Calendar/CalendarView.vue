@@ -10,7 +10,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { useCalendar } from '@/composables/useCalendar';
 import { useHolidays } from '@/composables/useHolidays';
 import { CALENDAR_CONFIG } from '@/config/constants';
 import { 
@@ -41,7 +40,6 @@ const emit = defineEmits(['datesSet']);
 
 // Composables
 const { isHoliday, getHolidayName } = useHolidays();
-const { generateCalendarEvents } = useCalendar();
 
 // Local state
 const calendarRef = ref(null);

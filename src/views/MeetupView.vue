@@ -109,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 // Components
 import MeetupPageLayout from '@/layouts/MeetupPageLayout.vue';
@@ -137,7 +137,7 @@ import {
 } from '@/utils/date';
 
 // Config
-import { APP_CONFIG, ERROR_MESSAGES, DATE_FORMATS } from '@/config/constants';
+import { APP_CONFIG, ERROR_MESSAGES } from '@/config/constants';
 import holidayData from '@/data/holiday.csv?raw';
 import saturdayData from '@/data/saturday.csv?raw';
 import weekdayData from '@/data/weekday.csv?raw';
@@ -183,7 +183,6 @@ const {
 } = meetupSearchComposable;
 
 // Computed values
-const currentBaseDate = computed(() => scheduleComposable.currentBaseDate.value);
 const baseDates = computed(() => scheduleComposable.baseDates.value);
 const rotationCycleLength = computed(() => scheduleComposable.scheduleData.value.rotationCycleLength);
 
@@ -269,9 +268,6 @@ async function initializeApp() {
     setEventConfig(eventConfig);
     setICSExportConfig(config.info);
     
-    // Load schedule data
-    const scheduleData = loadScheduleData(holidayData, saturdayData, weekdayData);
-    
     // Set base dates
     const configBaseDates = config.base_dates
       .map(dateStr => createDate(dateStr))
@@ -294,4 +290,39 @@ async function initializeApp() {
         // Use default
         const defaultBaseDate = configBaseDates[0];
         updateCurrentBaseDate(defaultBaseDate);
-        selectedBa
+        selectedBaseDate.value = formatAsISODate(defaultBaseDate);
+      }
+    } else {
+      // Use default
+      const defaultBaseDate = configBaseDates[0];
+      updateCurrentBaseDate(defaultBaseDate);
+      selectedBaseDate.value = formatAsISODate(defaultBaseDate);
+    }
+    
+    // Apply participants parameter
+    if (participantsParam) {
+      const positionList = participantsParam
+        .split(',')
+        .map(p => parseInt(p))
+        .filter(p => !isNaN(p));
+        
+      if (positionList.length > 0) {
+        participants.value = positionList.map(position => ({ position }));
+      }
+    }
+    
+    // Mark as loaded
+    isLoaded.value = true;
+    
+    return true;
+  } catch (error) {
+    console.error(ERROR_MESSAGES.INIT_FAILED, error);
+    return false;
+  }
+}
+
+// Initialize on mount
+onMounted(async () => {
+  await initializeApp();
+});
+</script>

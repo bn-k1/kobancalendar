@@ -154,12 +154,10 @@ import { ref } from 'vue';
 import { 
   formatAsISODate, 
   formatAsDisplayDate, 
-  getDateClasses, 
   getWeekdayName 
-} from '@/utils/date-formatters';
+} from '@/utils/date';
 import { useHolidays } from '@/composables/useHolidays';
 import { useSchedule } from '@/composables/useSchedule';
-import { DATE_FORMATS } from '@/config/constants';
 
 // Props
 const props = defineProps({
@@ -219,7 +217,6 @@ function getCurrentDayShift(detail) {
   }
 
   // Current day schedule
-  const currentDay = currentDetails.value.date;
   const currentDaySchedule = detail.schedule;
 
   // Format and return shift description

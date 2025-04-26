@@ -2,7 +2,6 @@
 import ical from 'ical-generator';
 import { 
   createDate, 
-  formatAsISODate, 
   formatAsFileName,
   toDate,
   addDays
@@ -22,7 +21,7 @@ function generateUID(
   subject = "",
   startTime = "",
   endTime = "",
-  domain = "kobancalendar.jp"
+  domain = ""
 ) {
   const dateStr = formatAsFileName(date);
   const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);

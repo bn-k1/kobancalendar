@@ -1,7 +1,7 @@
 // src/composables/useIcsExport.js
 import { ref, computed } from 'vue';
 import { ERROR_MESSAGES } from '@/config/constants';
-import { createCalendar, downloadICS } from '@/services/ical-service';
+import { createCalendar, downloadICS } from '@/utils/ical';
 import { useCalendarStore } from '@/stores/calendar';
 import { useSchedule } from '@/composables/useSchedule';
 import { 

@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import JapaneseHolidays from 'japanese-holidays';
 import { useHolidayStore } from '@/stores/holiday';
-import { DATE_FORMATS, CUSTOM_HOLIDAY } from '@/config/constants';
+import { CUSTOM_HOLIDAY } from '@/config/constants';
 import { 
   createDate, 
   formatAsISODate,

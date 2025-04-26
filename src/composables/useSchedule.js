@@ -2,14 +2,11 @@
 import { computed } from 'vue';
 import Papa from 'papaparse';
 import { useScheduleStore } from '@/stores/schedule';
-import { useHolidayStore } from '@/stores/holiday';
 import { useHolidays } from '@/composables/useHolidays';
-import { ERROR_MESSAGES, DATE_FORMATS } from '@/config/constants';
+import { ERROR_MESSAGES } from '@/config/constants';
 import { 
   createDate, 
   formatAsISODate, 
-  isSameDay, 
-  isAfter, 
   isBefore, 
   addDays, 
   toUnix 
@@ -22,7 +19,6 @@ import {
 export function useSchedule() {
   // Get stores for state management only
   const scheduleStore = useScheduleStore();
-  const holidayStore = useHolidayStore();
 
   // Dependencies
   const { isHoliday } = useHolidays();
