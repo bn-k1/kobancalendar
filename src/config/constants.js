@@ -25,6 +25,7 @@ export const CUSTOM_HOLIDAY = "設定祝日";
 
 export const ERROR_MESSAGES = {
   INIT_FAILED: "アプリケーションの初期化に失敗しました",
+  CALENDAR_IS_NOT_INITIALIZED_YET: "カレンダーがまだ初期化されていません",
   CSV_ROWS_MISMATCH: "CSVファイルの行数が一致しません",
   CSV_PARSE_ERROR: "CSV解析失敗",
   UNKNOWN_CSV_FORMAT: "不明な形式のCSVです",

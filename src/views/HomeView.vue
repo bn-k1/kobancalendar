@@ -10,11 +10,12 @@
           @change="handleBaseDateChange"
         />
         
-        <PositionSelector
-          v-model="startPosition"
-          :max-positions="rotationCycleLength"
-          @change="handlePositionChange"
-        />
+       	<PositionSelector
+	  :modelValue="startPosition"
+	  :max-positions="rotationCycleLength"
+	  @update:modelValue="setStartPosition"
+	  @change="handlePositionChange"
+	/>
       </div>
     </template>
     
@@ -53,7 +54,7 @@ import PositionSelector from '@/components/Controls/PositionSelector.vue';
 import CalendarView from '@/components/Calendar/CalendarView.vue';
 import ExportSection from '@/components/ExportSection.vue';
 
-// Composables - すべての状態とロジックへのアクセスにコンポーサブルを使用
+// Composables
 import { useCalendar } from '@/composables/useCalendar';
 import { useSchedule } from '@/composables/useSchedule';
 import { useHolidays } from '@/composables/useHolidays';
@@ -153,12 +154,12 @@ function handlePositionChange(newPosition) {
   });
   
   // Regenerate calendar events if view is available
-  if (calendarRef.value) {
-    const api = calendarRef.value.getApi();
-    generateCalendarEvents(
-      createDate(api.view.activeStart),
-      createDate(api.view.activeEnd)
-    );
+  if (calendarRef.value && calendarRef.value.getApi) {
+      const api = calendarRef.value.getApi();
+      generateCalendarEvents(
+        createDate(api.view.activeStart),
+        createDate(api.view.activeEnd)
+      );
   }
 }
 
