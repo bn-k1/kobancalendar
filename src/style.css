@@ -767,7 +767,7 @@ button:focus {
 .horizontal-fields {
   display: flex;
   gap: var(--spacing-md);
-  flex-wrap: wrap;
+  flex-direction: row;
   width: 100%;
   margin-bottom: var(--spacing-md);
 }

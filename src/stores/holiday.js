@@ -7,12 +7,10 @@ import { ref, computed } from 'vue';
  * All business logic is moved to the useHolidays composable
  */
 export const useHolidayStore = defineStore('holiday', () => {
-  // 状態
   const allHolidays = ref({});
   const holidayYearsRange = ref(5);
   const userDefinedHolidays = ref([]);
 
-  // アクション - シンプルな状態更新のみ
   function setHolidays(holidays) {
     allHolidays.value = holidays;
   }
@@ -26,12 +24,10 @@ export const useHolidayStore = defineStore('holiday', () => {
   }
 
   return {
-    // 状態
     allHolidays: computed(() => allHolidays.value),
     holidayYearsRange: computed(() => holidayYearsRange.value),
     userDefinedHolidays: computed(() => userDefinedHolidays.value),
     
-    // アクション
     setHolidays,
     setHolidayYearsRange,
     setUserDefinedHolidays,

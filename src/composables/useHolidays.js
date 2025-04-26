@@ -87,7 +87,7 @@ export function useHolidays() {
    * @returns {Object} Holidays object
    */
   function fetchHolidays(yearsRange, customHolidays) {
-    const currentYear = new Date().getFullYear();
+    const currentYear = createDate().year();
     const holidays = {};
     
     // Get official holidays from JapaneseHolidays library

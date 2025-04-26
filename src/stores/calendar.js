@@ -8,7 +8,6 @@ import { CALENDAR_CONFIG, APP_CONFIG } from '@/config/constants';
  * All business logic is moved to the useCalendar composable
  */
 export const useCalendarStore = defineStore('calendar', () => {
-  // 状態
   const calendarConfig = ref({
     ...CALENDAR_CONFIG,
   });
@@ -18,12 +17,10 @@ export const useCalendarStore = defineStore('calendar', () => {
   const icsExportConfig = ref({});
   const eventConfig = ref(null);
 
-  // ゲッター
   const isConfigLoaded = computed(() => {
     return eventConfig.value !== null;
   });
 
-  // アクション - シンプルな状態更新のみ
   function setStartPosition(position) {
     startPosition.value = position;
   }
@@ -45,7 +42,6 @@ export const useCalendarStore = defineStore('calendar', () => {
   }
 
   return {
-    // 状態
     calendarConfig,
     startPosition,
     exportMonths,
@@ -53,10 +49,8 @@ export const useCalendarStore = defineStore('calendar', () => {
     icsExportConfig,
     eventConfig,
 
-    // ゲッター
     isConfigLoaded,
 
-    // アクション
     setStartPosition,
     setExportMonths,
     setCalendarEvents,

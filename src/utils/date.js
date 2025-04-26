@@ -1,7 +1,18 @@
 // src/utils/date.js
 // Centralized date utility for all date-related operations
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import isSameOrBeforePlugin from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfterPlugin from 'dayjs/plugin/isSameOrAfter';
 import { DATE_FORMATS, WEEKDAYS } from '@/config/constants';
+
+// プラグインの設定 - 順序が重要
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(isSameOrBeforePlugin);
+dayjs.extend(isSameOrAfterPlugin);
+dayjs.tz.setDefault('Asia/Tokyo');
 
 /**
  * Create a dayjs object for a date

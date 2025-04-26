@@ -7,7 +7,6 @@ import { ref, computed } from 'vue';
  * All business logic is moved to the useSchedule composable
  */
 export const useScheduleStore = defineStore('schedule', () => {
-  // 状態
   const scheduleData = ref({
     holiday: [],
     saturday: [],
@@ -18,17 +17,13 @@ export const useScheduleStore = defineStore('schedule', () => {
   const currentBaseDate = ref(null);
   const lastBaseDate = ref(null);
 
-  // ゲッター
   const isDataLoaded = computed(() => {
     return scheduleData.value.rotationCycleLength > 0;
   });
 
-  // アクション - シンプルな状態更新のみ
   function setScheduleData(data) {
     scheduleData.value = data;
-  }
-
-  function setBaseDates(dates) {
+  } function setBaseDates(dates) {
     baseDates.value = dates;
   }
 
@@ -41,16 +36,13 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   return {
-    // 状態
     scheduleData: computed(() => scheduleData.value),
     baseDates: computed(() => baseDates.value),
     currentBaseDate: computed(() => currentBaseDate.value),
     lastBaseDate: computed(() => lastBaseDate.value),
     
-    // ゲッター
     isDataLoaded,
     
-    // アクション
     setScheduleData,
     setBaseDates,
     updateCurrentBaseDate,
