@@ -282,27 +282,3 @@ export function toDate(date) {
 export function toUnix(date) {
   return createDate(date).unix();
 }
-
-/**
- * Compare two dates for sorting (ascending)
- * @param {dayjs|Date|string} date1 - First date
- * @param {dayjs|Date|string} date2 - Second date
- * @returns {number} Comparison result (-1, 0, 1)
- */
-export function compareAsc(date1, date2) {
-  const a = toUnix(date1);
-  const b = toUnix(date2);
-  return a - b;
-}
-
-/**
- * Compare two dates for sorting (descending)
- * @param {dayjs|Date|string} date1 - First date
- * @param {dayjs|Date|string} date2 - Second date
- * @returns {number} Comparison result (-1, 0, 1)
- */
-export function compareDesc(date1, date2) {
-  const a = toUnix(date1);
-  const b = toUnix(date2);
-  return b - a;
-}

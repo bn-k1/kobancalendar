@@ -138,9 +138,6 @@ import {
 
 // Config
 import { APP_CONFIG, ERROR_MESSAGES } from '@/config/constants';
-import holidayData from '@/data/holiday.csv?raw';
-import saturdayData from '@/data/saturday.csv?raw';
-import weekdayData from '@/data/weekday.csv?raw';
 import eventConfig from '@/config/event.json';
 import config from '@/config/config.json';
 
@@ -160,7 +157,6 @@ const meetupSearchComposable = useMeetupSearch();
 
 // Extract values and methods from composables
 const { 
-  loadScheduleData, 
   setBaseDates, 
   updateCurrentBaseDate,
   setLastBaseDate

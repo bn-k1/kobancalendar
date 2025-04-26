@@ -59,7 +59,7 @@ import { useSchedule } from '@/composables/useSchedule';
 import { useHolidays } from '@/composables/useHolidays';
 
 // Utils
-import { getURLParam, getDateParam, getNumberParam, updateURLParams } from '@/utils/url-params';
+import { getURLParam, getNumberParam, updateURLParams } from '@/utils/url-params';
 import { 
   createDate,
   formatAsISODate, 
@@ -103,7 +103,6 @@ const {
   setBaseDates, 
   updateCurrentBaseDate, 
   setLastBaseDate, 
-  setCurrentBaseDate 
 } = useSchedule();
 
 const { 
@@ -373,9 +372,6 @@ async function initializeApp() {
     // Attempt to output relevant state for debugging
     try {
       console.log("Current state dump for debugging:");
-      console.log("- Holiday store state:", holidayStore);
-      console.log("- Schedule store state:", scheduleStore);
-      console.log("- Calendar store state:", calendarStore);
     } catch (stateError) {
       console.error("Failed to dump state:", stateError);
     }

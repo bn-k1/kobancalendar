@@ -11,13 +11,14 @@
         v-model="selectedMonths"
         @change="handleMonthsChange"
       >
-        <option value="1">1ヶ月分</option>
-        <option value="2">2ヶ月分</option>
-        <option value="3">3ヶ月分</option>
-        <option value="4">4ヶ月分</option>
-        <option value="5">5ヶ月分</option>
-        <option value="6">6ヶ月分</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
       </select>
+      <span>ヶ月分</span>
       <button
         id="exportButton"
         aria-label="ICSをダウンロード"
