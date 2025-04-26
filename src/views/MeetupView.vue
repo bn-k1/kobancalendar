@@ -109,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 // Components
 import MeetupPageLayout from '@/layouts/MeetupPageLayout.vue';
@@ -138,6 +138,9 @@ import {
 
 // Config
 import { APP_CONFIG, ERROR_MESSAGES } from '@/config/constants';
+import holidayData from '@/data/holiday.csv?raw';
+import saturdayData from '@/data/saturday.csv?raw';
+import weekdayData from '@/data/weekday.csv?raw';
 import eventConfig from '@/config/event.json';
 import config from '@/config/config.json';
 
@@ -157,6 +160,7 @@ const meetupSearchComposable = useMeetupSearch();
 
 // Extract values and methods from composables
 const { 
+  loadScheduleData, 
   setBaseDates, 
   updateCurrentBaseDate,
   setLastBaseDate
@@ -179,6 +183,7 @@ const {
 } = meetupSearchComposable;
 
 // Computed values
+const currentBaseDate = computed(() => scheduleComposable.currentBaseDate.value);
 const baseDates = computed(() => scheduleComposable.baseDates.value);
 const rotationCycleLength = computed(() => scheduleComposable.scheduleData.value.rotationCycleLength);
 
@@ -264,6 +269,9 @@ async function initializeApp() {
     setEventConfig(eventConfig);
     setICSExportConfig(config.info);
     
+    // Load schedule data
+    const scheduleData = loadScheduleData(holidayData, saturdayData, weekdayData);
+    
     // Set base dates
     const configBaseDates = config.base_dates
       .map(dateStr => createDate(dateStr))
@@ -312,7 +320,7 @@ async function initializeApp() {
     
     return true;
   } catch (error) {
-    console.error(ERROR_MESSAGES.INIT_FAILED, error);
+    console.error('Failed to initialize app:', error);
     return false;
   }
 }
