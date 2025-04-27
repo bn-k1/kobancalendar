@@ -1,6 +1,6 @@
 // src/composables/useIcsExport.js
 import { ref, computed } from 'vue';
-import { ERROR_MESSAGES } from '@/config/constants';
+import { ERROR_MESSAGES } from '@/utils/constants';
 import { createCalendar, downloadICS } from '@/utils/ical';
 import { useCalendarStore } from '@/stores/calendar';
 import { useSchedule } from '@/composables/useSchedule';

@@ -1,5 +1,5 @@
 // src/utils/url-params.js
-import { ERROR_MESSAGES } from '@/config/constants';
+import { ERROR_MESSAGES } from '@/utils/constants';
 import { 
   createDate, 
   isSameDay 

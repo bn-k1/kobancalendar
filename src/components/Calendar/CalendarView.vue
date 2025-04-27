@@ -11,7 +11,7 @@ import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useHolidays } from '@/composables/useHolidays';
-import { CALENDAR_CONFIG } from '@/config/constants';
+import { CALENDAR_CONFIG } from '@/utils/constants';
 import { 
   createDate, 
   isSameDay, 

@@ -137,12 +137,12 @@ import {
 } from '@/utils/date';
 
 // Config
-import { APP_CONFIG, ERROR_MESSAGES } from '@/config/constants';
-import holidayData from '@/data/holiday.csv?raw';
-import saturdayData from '@/data/saturday.csv?raw';
-import weekdayData from '@/data/weekday.csv?raw';
-import eventConfig from '@/config/event.json';
-import config from '@/config/config.json';
+import { APP_CONFIG, ERROR_MESSAGES } from '@/utils/constants';
+import holidayData from '@data/holiday.csv?raw';
+import saturdayData from '@data/saturday.csv?raw';
+import weekdayData from '@data/weekday.csv?raw';
+import eventConfig from '@config/event.json';
+import config from '@config/config.json';
 
 // Local state
 const isLoaded = ref(false);

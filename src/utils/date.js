@@ -5,7 +5,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import isSameOrBeforePlugin from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfterPlugin from 'dayjs/plugin/isSameOrAfter';
-import { DATE_FORMATS, WEEKDAYS } from '@/config/constants';
+import { DATE_FORMATS, WEEKDAYS } from '@/utils/constants';
 
 // プラグインの設定 - 順序が重要
 dayjs.extend(utc);

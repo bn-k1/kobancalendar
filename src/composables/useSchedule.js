@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import Papa from 'papaparse';
 import { useScheduleStore } from '@/stores/schedule';
 import { useHolidays } from '@/composables/useHolidays';
-import { ERROR_MESSAGES } from '@/config/constants';
+import { ERROR_MESSAGES } from '@/utils/constants';
 import { 
   createDate, 
   formatAsISODate, 

@@ -1,7 +1,7 @@
 // src/stores/calendar.js
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { CALENDAR_CONFIG, APP_CONFIG } from '@/config/constants';
+import { CALENDAR_CONFIG, APP_CONFIG } from '@/utils/constants';
 
 /**
  * Calendar store - simplified to only handle state
