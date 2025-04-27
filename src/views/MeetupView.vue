@@ -101,55 +101,50 @@
 
     <!-- Results section -->
     <template #results>
-      <ResultsDisplay
-        :results="searchResults"
-      />
+      <ResultsDisplay :results="searchResults" />
     </template>
   </MeetupPageLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from "vue";
 
 // Components
-import MeetupPageLayout from '@/layouts/MeetupPageLayout.vue';
-import ParticipantsList from '@/components/Controls/ParticipantsList.vue';
-import ResultsDisplay from '@/components/ResultsDisplay.vue';
+import MeetupPageLayout from "@/layouts/MeetupPageLayout.vue";
+import ParticipantsList from "@/components/Controls/ParticipantsList.vue";
+import ResultsDisplay from "@/components/ResultsDisplay.vue";
 
 // Composables
-import { useSchedule } from '@/composables/useSchedule';
-import { useCalendar } from '@/composables/useCalendar';
-import { useHolidays } from '@/composables/useHolidays';
-import { useMeetupSearch } from '@/composables/useMeetupSearch';
+import { useSchedule } from "@/composables/useSchedule";
+import { useCalendar } from "@/composables/useCalendar";
+import { useHolidays } from "@/composables/useHolidays";
+import { useMeetupSearch } from "@/composables/useMeetupSearch";
 
 // Utils
-import { 
-  getURLParam, 
-  updateURLParams 
-} from '@/utils/url-params';
-import { 
+import { getURLParam, updateURLParams } from "@/utils/url-params";
+import {
   createDate,
-  formatAsISODate, 
+  formatAsISODate,
   formatAsDisplayDate,
   today,
   isAfter,
-  addDays
-} from '@/utils/date';
+  addDays,
+} from "@/utils/date";
 
 // Config
-import { APP_CONFIG, ERROR_MESSAGES } from '@/utils/constants';
-import holidayData from '@data/holiday.csv?raw';
-import saturdayData from '@data/saturday.csv?raw';
-import weekdayData from '@data/weekday.csv?raw';
-import eventConfig from '@config/event.json';
-import config from '@config/config.json';
+import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
+import holidayData from "@data/holiday.csv?raw";
+import saturdayData from "@data/saturday.csv?raw";
+import weekdayData from "@data/weekday.csv?raw";
+import eventConfig from "@config/event.json";
+import config from "@config/config.json";
 
 // Local state
 const isLoaded = ref(false);
-const selectedBaseDate = ref('');
+const selectedBaseDate = ref("");
 const meetupStartTime = ref(APP_CONFIG.DEFAULT_MEETUP_START_TIME);
 const searchPeriod = ref(APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString());
-const participants = ref([{ position: '' }]);
+const participants = ref([{ position: "" }]);
 const showResults = ref(false);
 
 // Composables
@@ -159,49 +154,42 @@ const holidaysComposable = useHolidays();
 const meetupSearchComposable = useMeetupSearch();
 
 // Extract values and methods from composables
-const { 
-  loadScheduleData, 
-  setBaseDates, 
+const {
+  loadScheduleData,
+  setBaseDates,
   updateCurrentBaseDate,
-  setLastBaseDate
+  setLastBaseDate,
 } = scheduleComposable;
 
-const {
-  setEventConfig,
-  setICSExportConfig
-} = calendarComposable;
+const { setEventConfig, setICSExportConfig } = calendarComposable;
 
-const {
-  setHolidayYearsRange,
-  setUserDefinedHolidays,
-  loadHolidays
-} = holidaysComposable;
+const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
+  holidaysComposable;
 
-const {
-  searchResults,
-  findMeetupDates
-} = meetupSearchComposable;
+const { searchResults, findMeetupDates } = meetupSearchComposable;
 
 // Computed values
-const currentBaseDate = computed(() => scheduleComposable.currentBaseDate.value);
+const currentBaseDate = computed(
+  () => scheduleComposable.currentBaseDate.value,
+);
 const baseDates = computed(() => scheduleComposable.baseDates.value);
-const rotationCycleLength = computed(() => scheduleComposable.scheduleData.value.rotationCycleLength);
+const rotationCycleLength = computed(
+  () => scheduleComposable.scheduleData.value.rotationCycleLength,
+);
 
 // Event handlers
 function handleBaseDateChange() {
   const newBaseDate = createDate(selectedBaseDate.value);
   updateCurrentBaseDate(newBaseDate);
-  
+
   // Update URL
   updateAllURLParams();
 }
 
 function handleParticipantsChange(validParticipants) {
   // Update URL with participants
-  const participantsParam = validParticipants
-    .map(p => p.position)
-    .join(',');
-    
+  const participantsParam = validParticipants.map((p) => p.position).join(",");
+
   updateURLParams({ participants: participantsParam });
 }
 
@@ -209,14 +197,14 @@ function handleParticipantsChange(validParticipants) {
 function updateAllURLParams() {
   // Extract valid participants
   const validParticipants = participants.value
-    .filter(p => p.position)
-    .map(p => p.position)
-    .join(',');
-  
+    .filter((p) => p.position)
+    .map((p) => p.position)
+    .join(",");
+
   // Update URL
   updateURLParams({
     baseDate: selectedBaseDate.value,
-    participants: validParticipants
+    participants: validParticipants,
   });
 }
 
@@ -224,35 +212,30 @@ function updateAllURLParams() {
 function findDates() {
   // Get valid participant positions
   const positions = participants.value
-    .map(p => parseInt(p.position))
-    .filter(p => !isNaN(p));
-  
+    .map((p) => parseInt(p.position))
+    .filter((p) => !isNaN(p));
+
   // Validate
   if (positions.length === 0) {
     alert(ERROR_MESSAGES.NO_PARTICIPANTS);
     return;
   }
-  
+
   // Confirm if only one participant
   if (positions.length === 1) {
     alert(ERROR_MESSAGES.GOAHEAD);
     return;
   }
-  
+
   // Set up date range
   const baseDate = createDate(selectedBaseDate.value);
   const currentDay = today();
   const startDate = isAfter(baseDate, currentDay) ? baseDate : currentDay;
   const endDate = addDays(startDate, parseInt(searchPeriod.value));
-  
+
   // Search for available dates
-  findMeetupDates(
-    positions,
-    meetupStartTime.value,
-    startDate,
-    endDate
-  );
-  
+  findMeetupDates(positions, meetupStartTime.value, startDate, endDate);
+
   // Show results
   showResults.value = true;
 }
@@ -264,26 +247,30 @@ async function initializeApp() {
     setHolidayYearsRange(APP_CONFIG.DEFAULT_HOLIDAY_YEARS);
     setUserDefinedHolidays(config.custom_holidays || []);
     loadHolidays();
-    
+
     // Calendar configuration
     setEventConfig(eventConfig);
     setICSExportConfig(config.info);
-    
+
     // Load schedule data
-    const scheduleData = loadScheduleData(holidayData, saturdayData, weekdayData);
-    
+    const scheduleData = loadScheduleData(
+      holidayData,
+      saturdayData,
+      weekdayData,
+    );
+
     // Set base dates
     const configBaseDates = config.base_dates
-      .map(dateStr => createDate(dateStr))
+      .map((dateStr) => createDate(dateStr))
       .sort((a, b) => a.unix() - b.unix());
-      
+
     setBaseDates(configBaseDates);
     setLastBaseDate(configBaseDates[configBaseDates.length - 1]);
-    
+
     // Get URL parameters
-    const baseDateParam = getURLParam('baseDate', '');
-    const participantsParam = getURLParam('participants', '');
-    
+    const baseDateParam = getURLParam("baseDate", "");
+    const participantsParam = getURLParam("participants", "");
+
     // Apply base date parameter
     if (baseDateParam) {
       const dateObj = createDate(baseDateParam);
@@ -302,25 +289,25 @@ async function initializeApp() {
       updateCurrentBaseDate(defaultBaseDate);
       selectedBaseDate.value = formatAsISODate(defaultBaseDate);
     }
-    
+
     // Apply participants parameter
     if (participantsParam) {
       const positionList = participantsParam
-        .split(',')
-        .map(p => parseInt(p))
-        .filter(p => !isNaN(p));
-        
+        .split(",")
+        .map((p) => parseInt(p))
+        .filter((p) => !isNaN(p));
+
       if (positionList.length > 0) {
-        participants.value = positionList.map(position => ({ position }));
+        participants.value = positionList.map((position) => ({ position }));
       }
     }
-    
+
     // Mark as loaded
     isLoaded.value = true;
-    
+
     return true;
   } catch (error) {
-    console.error('Failed to initialize app:', error);
+    console.error("Failed to initialize app:", error);
     return false;
   }
 }

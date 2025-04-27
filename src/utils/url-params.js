@@ -1,9 +1,6 @@
 // src/utils/url-params.js
-import { ERROR_MESSAGES } from '@/utils/constants';
-import { 
-  createDate, 
-  isSameDay 
-} from '@/utils/date';
+import { ERROR_MESSAGES } from "@/utils/constants";
+import { createDate, isSameDay } from "@/utils/date";
 
 /**
  * Update URL parameters without reloading the page
@@ -60,9 +57,7 @@ export function getDateParam(paramName, defaultValue, validDates = []) {
 
   // Validate against allowed dates if provided
   if (validDates.length > 0) {
-    const dateExists = validDates.some(
-      (date) => isSameDay(date, dateObj)
-    );
+    const dateExists = validDates.some((date) => isSameDay(date, dateObj));
 
     if (!dateExists) {
       alert(ERROR_MESSAGES.INVALID_BASE_DATE);
@@ -85,7 +80,7 @@ export function getNumberParam(
   paramName,
   defaultValue,
   min = null,
-  max = null
+  max = null,
 ) {
   const valueStr = getURLParam(paramName);
 

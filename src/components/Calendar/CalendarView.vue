@@ -6,18 +6,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import FullCalendar from '@fullcalendar/vue3';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { useHolidays } from '@/composables/useHolidays';
-import { CALENDAR_CONFIG } from '@/utils/constants';
-import { 
-  createDate, 
-  isSameDay, 
-  today, 
-  toDate 
-} from '@/utils/date';
+import { ref, computed, onMounted, watch } from "vue";
+import FullCalendar from "@fullcalendar/vue3";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { useHolidays } from "@/composables/useHolidays";
+import { CALENDAR_CONFIG } from "@/utils/constants";
+import { createDate, isSameDay, today, toDate } from "@/utils/date";
 
 // Props
 const props = defineProps({
@@ -36,7 +31,7 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['datesSet']);
+const emit = defineEmits(["datesSet"]);
 
 // Composables
 const { isHoliday, getHolidayName } = useHolidays();
@@ -62,16 +57,16 @@ const calendarOptions = computed(() => ({
     const classNames = [];
 
     if (isHoliday(date)) {
-      classNames.push('holiday');
+      classNames.push("holiday");
     }
     if (date.day() === 6) {
-      classNames.push('fc-day-sat');
+      classNames.push("fc-day-sat");
     }
     if (date.day() === 0) {
-      classNames.push('fc-day-sun');
+      classNames.push("fc-day-sun");
     }
     if (isSameDay(date, today())) {
-      classNames.push('today-highlight');
+      classNames.push("today-highlight");
     }
 
     return classNames;
@@ -80,7 +75,7 @@ const calendarOptions = computed(() => ({
   // Custom event content rendering
   eventContent: (arg) => {
     const { event } = arg;
-    let [title, startTime = '', endTime = ''] = event.title.split('\n');
+    let [title, startTime = "", endTime = ""] = event.title.split("\n");
     const { shiftIndex } = event.extendedProps;
     const date = createDate(event.start);
 
@@ -92,8 +87,8 @@ const calendarOptions = computed(() => ({
     return {
       html: `
         <div class="event-title">${title}</div>
-        ${startTime ? `<div class="event-time">${startTime}</div>` : ''}
-        ${endTime ? `<div class="event-time">${endTime}</div>` : ''}
+        ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
+        ${endTime ? `<div class="event-time">${endTime}</div>` : ""}
         <div class="event-meta">${metaInfo}</div>
       `,
     };
@@ -113,7 +108,7 @@ const calendarOptions = computed(() => ({
     ) {
       viewStart.value = newStart;
       viewEnd.value = newEnd;
-      emit('datesSet', { start: newStart, end: newEnd });
+      emit("datesSet", { start: newStart, end: newEnd });
     }
   },
 }));
@@ -131,11 +126,14 @@ defineExpose({
 });
 
 // Watch for changes to start position
-watch(() => props.startPosition, () => {
-  if (viewStart.value && viewEnd.value) {
-    emit('datesSet', { start: viewStart.value, end: viewEnd.value });
-  }
-});
+watch(
+  () => props.startPosition,
+  () => {
+    if (viewStart.value && viewEnd.value) {
+      emit("datesSet", { start: viewStart.value, end: viewEnd.value });
+    }
+  },
+);
 
 // Initialize
 onMounted(() => {
@@ -145,7 +143,7 @@ onMounted(() => {
       const api = calendarRef.value.getApi();
       viewStart.value = createDate(api.view.activeStart);
       viewEnd.value = createDate(api.view.activeEnd);
-      emit('datesSet', { start: viewStart.value, end: viewEnd.value });
+      emit("datesSet", { start: viewStart.value, end: viewEnd.value });
     }
   }, 0);
 });

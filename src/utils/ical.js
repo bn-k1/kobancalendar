@@ -1,11 +1,6 @@
 // src/services/ical-service.js
-import ical from 'ical-generator';
-import { 
-  createDate, 
-  formatAsFileName,
-  toDate,
-  addDays
-} from '@/utils/date';
+import ical from "ical-generator";
+import { createDate, formatAsFileName, toDate, addDays } from "@/utils/date";
 
 /**
  * Generate a unique identifier for calendar events
@@ -21,7 +16,7 @@ function generateUID(
   subject = "",
   startTime = "",
   endTime = "",
-  domain = ""
+  domain = "",
 ) {
   const dateStr = formatAsFileName(date);
   const contentHash = simpleHash(`${subject}-${startTime}-${endTime}`);
@@ -68,7 +63,7 @@ export function createCalendar(events, config) {
   events.forEach((event) => {
     const { subject, startTime, endTime, date } = event;
     const eventDate = createDate(date);
-    
+
     // Create event
     const calEvent = calendar.createEvent({
       summary: subject,
@@ -77,7 +72,7 @@ export function createCalendar(events, config) {
         subject,
         startTime,
         endTime,
-        config.uid_domain
+        config.uid_domain,
       ),
     });
 

@@ -1,18 +1,18 @@
 // src/utils/date.js
 // Centralized date utility for all date-related operations
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import isSameOrBeforePlugin from 'dayjs/plugin/isSameOrBefore';
-import isSameOrAfterPlugin from 'dayjs/plugin/isSameOrAfter';
-import { DATE_FORMATS, WEEKDAYS } from '@/utils/constants';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import isSameOrBeforePlugin from "dayjs/plugin/isSameOrBefore";
+import isSameOrAfterPlugin from "dayjs/plugin/isSameOrAfter";
+import { DATE_FORMATS, WEEKDAYS } from "@/utils/constants";
 
 // プラグインの設定 - 順序が重要
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(isSameOrBeforePlugin);
 dayjs.extend(isSameOrAfterPlugin);
-dayjs.tz.setDefault('Asia/Tokyo');
+dayjs.tz.setDefault("Asia/Tokyo");
 
 /**
  * Create a dayjs object for a date
@@ -69,25 +69,25 @@ export function getDateClasses(date, isHolidayFn) {
   const dateObj = createDate(date);
   const day = dateObj.day();
   const classes = [];
-  
+
   // Check for holiday
   if (isHolidayFn && isHolidayFn(dateObj)) {
-    classes.push('holiday');
+    classes.push("holiday");
   }
-  
+
   // Check for weekend
   if (day === 0) {
-    classes.push('fc-day-sun');
+    classes.push("fc-day-sun");
   } else if (day === 6) {
-    classes.push('fc-day-sat');
+    classes.push("fc-day-sat");
   }
-  
+
   // Check for today
-  if (dateObj.isSame(dayjs().startOf('day'), 'day')) {
-    classes.push('today-highlight');
+  if (dateObj.isSame(dayjs().startOf("day"), "day")) {
+    classes.push("today-highlight");
   }
-  
-  return classes.join(' ');
+
+  return classes.join(" ");
 }
 
 /**
@@ -110,10 +110,10 @@ export function isDateInRange(date, startDate, endDate) {
  * @returns {string} Formatted time
  */
 export function formatTime(timeStr) {
-  if (!timeStr) return '';
-  
-  const [hours, minutes = '00'] = timeStr.split(':');
-  return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+  if (!timeStr) return "";
+
+  const [hours, minutes = "00"] = timeStr.split(":");
+  return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
 }
 
 /**
@@ -123,7 +123,7 @@ export function formatTime(timeStr) {
  * @returns {number} Number of days
  */
 export function daysBetween(startDate, endDate) {
-  return createDate(endDate).diff(createDate(startDate), 'day');
+  return createDate(endDate).diff(createDate(startDate), "day");
 }
 
 /**
@@ -133,8 +133,8 @@ export function daysBetween(startDate, endDate) {
  */
 export function parseTime(timeStr) {
   if (!timeStr) return null;
-  
-  const [hours, minutes = '00'] = timeStr.split(':');
+
+  const [hours, minutes = "00"] = timeStr.split(":");
   return dayjs()
     .hour(parseInt(hours, 10))
     .minute(parseInt(minutes, 10))
@@ -148,7 +148,7 @@ export function parseTime(timeStr) {
  * @returns {boolean} True if dates are the same day
  */
 export function isSameDay(date1, date2) {
-  return createDate(date1).isSame(createDate(date2), 'day');
+  return createDate(date1).isSame(createDate(date2), "day");
 }
 
 /**
@@ -158,7 +158,7 @@ export function isSameDay(date1, date2) {
  * @returns {boolean} True if date1 is before date2
  */
 export function isBefore(date1, date2) {
-  return createDate(date1).isBefore(createDate(date2), 'day');
+  return createDate(date1).isBefore(createDate(date2), "day");
 }
 
 /**
@@ -168,7 +168,7 @@ export function isBefore(date1, date2) {
  * @returns {boolean} True if date1 is after date2
  */
 export function isAfter(date1, date2) {
-  return createDate(date1).isAfter(createDate(date2), 'day');
+  return createDate(date1).isAfter(createDate(date2), "day");
 }
 
 /**
@@ -178,7 +178,7 @@ export function isAfter(date1, date2) {
  * @returns {boolean} True if date1 is same as or before date2
  */
 export function isSameOrBefore(date1, date2) {
-  return createDate(date1).isSameOrBefore(createDate(date2), 'day');
+  return createDate(date1).isSameOrBefore(createDate(date2), "day");
 }
 
 /**
@@ -188,7 +188,7 @@ export function isSameOrBefore(date1, date2) {
  * @returns {boolean} True if date1 is same as or after date2
  */
 export function isSameOrAfter(date1, date2) {
-  return createDate(date1).isSameOrAfter(createDate(date2), 'day');
+  return createDate(date1).isSameOrAfter(createDate(date2), "day");
 }
 
 /**
@@ -198,7 +198,7 @@ export function isSameOrAfter(date1, date2) {
  * @param {string} unit - Unit of precision (e.g., 'day', 'month', 'year')
  * @returns {boolean} True if dates are the same at specified precision
  */
-export function isSame(date1, date2, unit = 'day') {
+export function isSame(date1, date2, unit = "day") {
   return createDate(date1).isSame(createDate(date2), unit);
 }
 
@@ -207,7 +207,7 @@ export function isSame(date1, date2, unit = 'day') {
  * @returns {dayjs} Today at start of day
  */
 export function today() {
-  return dayjs().startOf('day');
+  return dayjs().startOf("day");
 }
 
 /**
@@ -217,7 +217,7 @@ export function today() {
  * @returns {dayjs} New date
  */
 export function addDays(date, days) {
-  return createDate(date).add(days, 'day');
+  return createDate(date).add(days, "day");
 }
 
 /**
@@ -227,7 +227,7 @@ export function addDays(date, days) {
  * @returns {dayjs} New date
  */
 export function addMonths(date, months) {
-  return createDate(date).add(months, 'month');
+  return createDate(date).add(months, "month");
 }
 
 /**
@@ -236,7 +236,7 @@ export function addMonths(date, months) {
  * @returns {dayjs} Date set to start of day
  */
 export function startOfDay(date) {
-  return createDate(date).startOf('day');
+  return createDate(date).startOf("day");
 }
 
 /**

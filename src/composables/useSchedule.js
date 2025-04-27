@@ -1,16 +1,16 @@
 // src/composables/useSchedule.js
-import { computed } from 'vue';
-import Papa from 'papaparse';
-import { useScheduleStore } from '@/stores/schedule';
-import { useHolidays } from '@/composables/useHolidays';
-import { ERROR_MESSAGES } from '@/utils/constants';
-import { 
-  createDate, 
-  formatAsISODate, 
-  isBefore, 
-  addDays, 
-  toUnix 
-} from '@/utils/date';
+import { computed } from "vue";
+import Papa from "papaparse";
+import { useScheduleStore } from "@/stores/schedule";
+import { useHolidays } from "@/composables/useHolidays";
+import { ERROR_MESSAGES } from "@/utils/constants";
+import {
+  createDate,
+  formatAsISODate,
+  isBefore,
+  addDays,
+  toUnix,
+} from "@/utils/date";
 
 /**
  * Schedule management composable
@@ -22,13 +22,13 @@ export function useSchedule() {
 
   // Dependencies
   const { isHoliday } = useHolidays();
-  
+
   // Local cached references to avoid recursion
   const storeScheduleData = computed(() => scheduleStore.scheduleData);
   const storeBaseDates = computed(() => scheduleStore.baseDates);
   const storeCurrentBaseDate = computed(() => scheduleStore.currentBaseDate);
   const storeLastBaseDate = computed(() => scheduleStore.lastBaseDate);
-  
+
   /**
    * Calculate shift index for a given date
    * @param {dayjs} targetDate - Target date
@@ -59,7 +59,7 @@ export function useSchedule() {
    */
   function getScheduleForDate(targetDate, startPosition, baseDateParam) {
     const target = createDate(targetDate);
-    
+
     // baseDateParam or currentBaseDate is required
     if (!baseDateParam && !storeCurrentBaseDate.value) {
       return {
@@ -72,7 +72,9 @@ export function useSchedule() {
       };
     }
 
-    const baseDate = baseDateParam ? createDate(baseDateParam) : storeCurrentBaseDate.value;
+    const baseDate = baseDateParam
+      ? createDate(baseDateParam)
+      : storeCurrentBaseDate.value;
     const isHolidayFlag = isHoliday(target);
     const isSaturday = target.day() === 6;
     const dateStr = formatAsISODate(target);
@@ -94,7 +96,8 @@ export function useSchedule() {
     const lastStr = formatAsISODate(storeLastBaseDate.value);
 
     if (
-      (toUnix(baseDate) !== toUnix(storeLastBaseDate.value) && dateStr >= lastStr) ||
+      (toUnix(baseDate) !== toUnix(storeLastBaseDate.value) &&
+        dateStr >= lastStr) ||
       dateStr < baseStr
     ) {
       return {
@@ -147,7 +150,7 @@ export function useSchedule() {
     startDate,
     endDate,
     startPosition,
-    baseDateParam
+    baseDateParam,
   ) {
     const scheduleRange = [];
     let currentDate = createDate(startDate);
@@ -157,7 +160,7 @@ export function useSchedule() {
       const scheduleInfo = getScheduleForDate(
         currentDate,
         startPosition,
-        baseDateParam
+        baseDateParam,
       );
 
       if (scheduleInfo) {
@@ -282,10 +285,10 @@ export function useSchedule() {
   function setCurrentBaseDate(baseDate, availableBaseDates) {
     try {
       const formattedBaseDate = baseDate ? formatAsISODate(baseDate) : null;
-      
+
       const validBaseDate =
         availableBaseDates.find(
-          (date) => formatAsISODate(date) === formattedBaseDate
+          (date) => formatAsISODate(date) === formattedBaseDate,
         ) || availableBaseDates[0];
 
       updateCurrentBaseDate(validBaseDate);
@@ -302,8 +305,12 @@ export function useSchedule() {
     baseDates: storeBaseDates,
     currentBaseDate: storeCurrentBaseDate,
     lastBaseDate: storeLastBaseDate,
-    isDataLoaded: computed(() => storeScheduleData.value.rotationCycleLength > 0),
-    rotationCycleLength: computed(() => storeScheduleData.value.rotationCycleLength),
+    isDataLoaded: computed(
+      () => storeScheduleData.value.rotationCycleLength > 0,
+    ),
+    rotationCycleLength: computed(
+      () => storeScheduleData.value.rotationCycleLength,
+    ),
 
     // All business logic functions
     calculateShiftIndex,
@@ -314,6 +321,6 @@ export function useSchedule() {
     setBaseDates,
     updateCurrentBaseDate,
     setLastBaseDate,
-    setCurrentBaseDate
+    setCurrentBaseDate,
   };
 }

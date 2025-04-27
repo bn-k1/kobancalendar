@@ -10,5 +10,5 @@
 
 <style>
 /* Import the global styles (keep the original imports) */
-@import './style.css';
+@import "./style.css";
 </style>

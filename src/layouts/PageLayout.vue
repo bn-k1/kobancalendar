@@ -28,21 +28,21 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 
 const props = defineProps({
   title: {
     type: String,
-    default: '',
+    default: "",
   },
 });
 
 const route = useRoute();
 
 // Detect current page
-const isHomePage = computed(() => route.path === '/' || route.path === '');
-const isMeetupPage = computed(() => route.path === '/meetup');
+const isHomePage = computed(() => route.path === "/" || route.path === "");
+const isMeetupPage = computed(() => route.path === "/meetup");
 
 // Page title based on route
 const pageTitle = computed(() => {
@@ -50,9 +50,9 @@ const pageTitle = computed(() => {
   if (props.title) {
     return props.title;
   }
-  
+
   // Otherwise determine based on route
-  return isMeetupPage.value ? '飲みに行くンダー🍻' : '交番カレンダー🚨';
+  return isMeetupPage.value ? "飲みに行くンダー🍻" : "交番カレンダー🚨";
 });
 </script>
 

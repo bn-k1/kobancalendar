@@ -5,15 +5,15 @@
       <section class="search-controls-section">
         <slot name="search-controls"></slot>
       </section>
-      
+
       <section class="participants-section">
         <slot name="participants"></slot>
       </section>
-      
+
       <section class="search-button-section">
         <slot name="search-button"></slot>
       </section>
-      
+
       <section class="results-section" v-if="showResults">
         <slot name="results"></slot>
       </section>
@@ -22,13 +22,13 @@
 </template>
 
 <script setup>
-import PageLayout from './PageLayout.vue';
+import PageLayout from "./PageLayout.vue";
 
 defineProps({
   showResults: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 </script>
 

@@ -21,21 +21,21 @@
 const props = defineProps({
   modelValue: {
     type: Number,
-    required: true
+    required: true,
   },
   maxPositions: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(["update:modelValue", "change"]);
 
 // Handle position selection change
 function handleChange(event) {
   const newPosition = parseInt(event.target.value, 10);
-  emit('update:modelValue', newPosition);
-  emit('change', newPosition);
+  emit("update:modelValue", newPosition);
+  emit("change", newPosition);
 }
 </script>
 

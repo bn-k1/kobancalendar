@@ -5,11 +5,11 @@
       <section class="control-section">
         <slot name="controls"></slot>
       </section>
-      
+
       <section class="calendar-section">
         <slot name="calendar"></slot>
       </section>
-      
+
       <section class="export-section">
         <slot name="export"></slot>
       </section>
@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import PageLayout from './PageLayout.vue';
+import PageLayout from "./PageLayout.vue";
 </script>
 
 <style scoped>

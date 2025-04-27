@@ -150,14 +150,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { 
-  formatAsISODate, 
-  formatAsDisplayDate, 
-  getWeekdayName 
-} from '@/utils/date';
-import { useHolidays } from '@/composables/useHolidays';
-import { useSchedule } from '@/composables/useSchedule';
+import { ref } from "vue";
+import {
+  formatAsISODate,
+  formatAsDisplayDate,
+  getWeekdayName,
+} from "@/utils/date";
+import { useHolidays } from "@/composables/useHolidays";
+import { useSchedule } from "@/composables/useSchedule";
 
 // Props
 const props = defineProps({
@@ -165,7 +165,7 @@ const props = defineProps({
     type: Object,
     required: true,
     default: () => ({ allMatches: [], partialMatches: [] }),
-  }
+  },
 });
 
 // Composables
@@ -173,22 +173,22 @@ const { isHoliday } = useHolidays();
 const { getScheduleForDate } = useSchedule();
 
 // Local state
-const activeTab = ref('all');
+const activeTab = ref("all");
 const showModal = ref(false);
 const currentDetails = ref({ details: [] });
-const modalTitle = ref('');
+const modalTitle = ref("");
 
 // Get day classes for styling
 function getDayClass(date) {
   if (isHoliday(date)) {
-    return 'holiday';
+    return "holiday";
   }
-  
+
   const day = date.day();
-  if (day === 0) return 'fc-day-sun';
-  if (day === 6) return 'fc-day-sat';
-  
-  return '';
+  if (day === 0) return "fc-day-sun";
+  if (day === 6) return "fc-day-sat";
+
+  return "";
 }
 
 // Show details for a match
@@ -200,7 +200,7 @@ function showDetails(match) {
 
 // Close modal when clicking outside
 function closeModalOnOutsideClick(event) {
-  if (event.target.id === 'detailsModal') {
+  if (event.target.id === "detailsModal") {
     showModal.value = false;
   }
 }
@@ -213,7 +213,7 @@ function getCurrentDayShift(detail) {
     !currentDetails.value ||
     !currentDetails.value.date
   ) {
-    return '-';
+    return "-";
   }
 
   // Current day schedule
@@ -227,7 +227,7 @@ function getCurrentDayShift(detail) {
     return currentDaySchedule.subject;
   }
 
-  return '-';
+  return "-";
 }
 
 // Get next day shift description
@@ -238,15 +238,12 @@ function getNextDayShift(detail) {
     !currentDetails.value ||
     !currentDetails.value.date
   ) {
-    return '-';
+    return "-";
   }
 
   // Next day schedule
-  const nextDay = currentDetails.value.date.add(1, 'day');
-  const nextDaySchedule = getScheduleForDate(
-    nextDay,
-    detail.position
-  );
+  const nextDay = currentDetails.value.date.add(1, "day");
+  const nextDaySchedule = getScheduleForDate(nextDay, detail.position);
 
   // Format and return shift description
   if (nextDaySchedule && nextDaySchedule.subject) {
@@ -256,7 +253,7 @@ function getNextDayShift(detail) {
     return nextDaySchedule.subject;
   }
 
-  return '-';
+  return "-";
 }
 </script>
 

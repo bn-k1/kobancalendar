@@ -1,13 +1,8 @@
 // src/composables/useMeetupSearch.js
-import { ref } from 'vue';
-import { useSchedule } from '@/composables/useSchedule';
-import { useCalendar } from '@/composables/useCalendar';
-import { 
-  createDate, 
-  addDays, 
-  isBefore, 
-  toUnix
-} from '@/utils/date';
+import { ref } from "vue";
+import { useSchedule } from "@/composables/useSchedule";
+import { useCalendar } from "@/composables/useCalendar";
+import { createDate, addDays, isBefore, toUnix } from "@/utils/date";
 
 /**
  * Meetup search composable
@@ -19,7 +14,7 @@ export function useMeetupSearch() {
     allMatches: [],
     partialMatches: [],
   });
-  
+
   // Dependencies
   const { getScheduleForDate } = useSchedule();
   const { canAttendMeetup } = useCalendar();
@@ -36,12 +31,12 @@ export function useMeetupSearch() {
     // Search each date in the range
     let currentDate = createDate(startDate);
     const end = createDate(endDate);
-    
+
     while (isBefore(currentDate, end)) {
       const dateResults = checkDateForPositions(
         currentDate,
         positions,
-        meetupStartTime
+        meetupStartTime,
       );
 
       // All participants can attend

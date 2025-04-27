@@ -29,38 +29,36 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { 
-  createDate, 
-  formatAsISODate, 
-  formatAsDisplayDate 
-} from '@/utils/date';
+import { computed } from "vue";
+import { createDate, formatAsISODate, formatAsDisplayDate } from "@/utils/date";
 
 const props = defineProps({
   modelValue: {
     type: [Date, Object, String],
-    required: true
+    required: true,
   },
   availableDates: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(["update:modelValue", "change"]);
 
 // Convert modelValue to dayjs object for internal use
 const currentDate = computed(() => createDate(props.modelValue));
 
 // Computed formatted values
 const formattedValue = computed(() => formatAsISODate(currentDate.value));
-const formattedCurrentDate = computed(() => formatAsDisplayDate(currentDate.value));
+const formattedCurrentDate = computed(() =>
+  formatAsDisplayDate(currentDate.value),
+);
 
 // Handle date selection change
 function handleChange(event) {
   const newDate = createDate(event.target.value);
-  emit('update:modelValue', newDate);
-  emit('change', newDate);
+  emit("update:modelValue", newDate);
+  emit("change", newDate);
 }
 </script>
 

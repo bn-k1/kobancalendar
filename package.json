@@ -9,17 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fullcalendar/core": "^6.1.9",
     "@fullcalendar/daygrid": "^6.1.9",
     "@fullcalendar/interaction": "^6.1.9",
     "@fullcalendar/vue3": "^6.1.9",
     "dayjs": "^1.11.10",
-    "eslint-plugin-import": "^2.31.0",
     "ical-generator": "^6.0.0",
     "japanese-holidays": "^1.0.10",
     "papaparse": "^5.4.1",
     "pinia": "^2.1.7",
-    "prettier": "^3.5.3",
     "vue": "^3.3.7",
     "vue-router": "^4.2.5"
   },
@@ -29,6 +26,7 @@
     "eslint": "^9.25.1",
     "eslint-plugin-vue": "^10.0.0",
     "globals": "^16.0.0",
+    "prettier": "^3.5.3",
     "vite": "^6.3.2",
     "vite-plugin-pwa": "^1.0.0"
   }

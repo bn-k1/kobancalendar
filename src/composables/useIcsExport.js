@@ -1,18 +1,18 @@
 // src/composables/useIcsExport.js
-import { ref, computed } from 'vue';
-import { ERROR_MESSAGES } from '@/utils/constants';
-import { createCalendar, downloadICS } from '@/utils/ical';
-import { useCalendarStore } from '@/stores/calendar';
-import { useSchedule } from '@/composables/useSchedule';
-import { 
-  createDate, 
-  today, 
-  isAfter, 
-  isSame, 
-  isBefore, 
-  addMonths, 
-  startOfDay 
-} from '@/utils/date';
+import { ref, computed } from "vue";
+import { ERROR_MESSAGES } from "@/utils/constants";
+import { createCalendar, downloadICS } from "@/utils/ical";
+import { useCalendarStore } from "@/stores/calendar";
+import { useSchedule } from "@/composables/useSchedule";
+import {
+  createDate,
+  today,
+  isAfter,
+  isSame,
+  isBefore,
+  addMonths,
+  startOfDay,
+} from "@/utils/date";
 
 /**
  * ICS Export composable
@@ -22,7 +22,7 @@ export function useIcsExport() {
   // State
   const exportMonths = ref(1);
   const exportError = ref(null);
-  
+
   // Dependencies
   const calendarStore = useCalendarStore();
   const { calculateScheduleRange } = useSchedule();
@@ -45,39 +45,39 @@ export function useIcsExport() {
   function exportICS(months, startPosition, baseDate, endBaseDate) {
     try {
       exportError.value = null;
-      
+
       const currentDay = startOfDay(today());
       const base = createDate(baseDate);
       const endBase = createDate(endBaseDate);
-      
+
       // Determine start date (either base date or today, whichever is later)
-      const startDate = isAfter(base, currentDay) || isSame(base, currentDay)
-        ? startOfDay(base)
-        : currentDay;
-        
+      const startDate =
+        isAfter(base, currentDay) || isSame(base, currentDay)
+          ? startOfDay(base)
+          : currentDay;
+
       // Calculate end date based on months parameter
       let endDate = addMonths(startDate, months);
-      
+
       // Use end base date as limit if it comes before calculated end date
-      if (
-        endBase && 
-        !isSame(base, endBase) && 
-        isBefore(endBase, endDate)
-      ) {
+      if (endBase && !isSame(base, endBase) && isBefore(endBase, endDate)) {
         endDate = endBase;
       }
-      
+
       // Get schedule for the date range
       const scheduleRange = calculateScheduleRange(
         startDate,
         endDate,
         startPosition,
-        base
+        base,
       );
-      
+
       // Create the calendar
-      const calendar = createCalendar(scheduleRange, calendarStore.icsExportConfig);
-      
+      const calendar = createCalendar(
+        scheduleRange,
+        calendarStore.icsExportConfig,
+      );
+
       // Download the ICS file
       downloadICS(calendar.toString(), startDate, endDate);
       return true;
@@ -92,9 +92,9 @@ export function useIcsExport() {
     exportMonths,
     exportError: computed(() => exportError.value),
     hasError: computed(() => exportError.value !== null),
-    
+
     // Methods
     setExportMonths,
-    exportICS
+    exportICS,
   };
 }

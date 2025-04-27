@@ -1,12 +1,12 @@
 // src/stores/schedule.js
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
 
 /**
  * Schedule store - simplified to only handle state
  * All business logic is moved to the useSchedule composable
  */
-export const useScheduleStore = defineStore('schedule', () => {
+export const useScheduleStore = defineStore("schedule", () => {
   const scheduleData = ref({
     holiday: [],
     saturday: [],
@@ -23,7 +23,8 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   function setScheduleData(data) {
     scheduleData.value = data;
-  } function setBaseDates(dates) {
+  }
+  function setBaseDates(dates) {
     baseDates.value = dates;
   }
 
@@ -40,9 +41,9 @@ export const useScheduleStore = defineStore('schedule', () => {
     baseDates: computed(() => baseDates.value),
     currentBaseDate: computed(() => currentBaseDate.value),
     lastBaseDate: computed(() => lastBaseDate.value),
-    
+
     isDataLoaded,
-    
+
     setScheduleData,
     setBaseDates,
     updateCurrentBaseDate,

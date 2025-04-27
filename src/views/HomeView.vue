@@ -9,16 +9,16 @@
           :available-dates="baseDates"
           @change="handleBaseDateChange"
         />
-        
-       	<PositionSelector
-	  :modelValue="startPosition"
-	  :max-positions="rotationCycleLength"
-	  @update:modelValue="setStartPosition"
-	  @change="handlePositionChange"
-	/>
+
+        <PositionSelector
+          :modelValue="startPosition"
+          :max-positions="rotationCycleLength"
+          @update:modelValue="setStartPosition"
+          @change="handlePositionChange"
+        />
       </div>
     </template>
-    
+
     <!-- Calendar section -->
     <template #calendar>
       <CalendarView
@@ -29,7 +29,7 @@
         @dates-set="handleDatesSet"
       />
     </template>
-    
+
     <!-- Export section -->
     <template #export>
       <ExportSection
@@ -45,38 +45,42 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from "vue";
 
 // Components
-import CalendarPageLayout from '@/layouts/CalendarPageLayout.vue';
-import BaseDateSelector from '@/components/Controls/BaseDateSelector.vue';
-import PositionSelector from '@/components/Controls/PositionSelector.vue';
-import CalendarView from '@/components/Calendar/CalendarView.vue';
-import ExportSection from '@/components/ExportSection.vue';
+import CalendarPageLayout from "@/layouts/CalendarPageLayout.vue";
+import BaseDateSelector from "@/components/Controls/BaseDateSelector.vue";
+import PositionSelector from "@/components/Controls/PositionSelector.vue";
+import CalendarView from "@/components/Calendar/CalendarView.vue";
+import ExportSection from "@/components/ExportSection.vue";
 
 // Composables
-import { useCalendar } from '@/composables/useCalendar';
-import { useSchedule } from '@/composables/useSchedule';
-import { useHolidays } from '@/composables/useHolidays';
+import { useCalendar } from "@/composables/useCalendar";
+import { useSchedule } from "@/composables/useSchedule";
+import { useHolidays } from "@/composables/useHolidays";
 
 // Utils
-import { getDateParam, getNumberParam, updateURLParams } from '@/utils/url-params';
-import { 
+import {
+  getDateParam,
+  getNumberParam,
+  updateURLParams,
+} from "@/utils/url-params";
+import {
   createDate,
   formatAsISODate,
-  formatAsDisplayDate, 
-  today, 
-  isSameOrAfter, 
-  toDate, 
-} from '@/utils/date';
+  formatAsDisplayDate,
+  today,
+  isSameOrAfter,
+  toDate,
+} from "@/utils/date";
 
 // Config
-import { APP_CONFIG, ERROR_MESSAGES } from '@/utils/constants';
-import holidayData from '@data/holiday.csv?raw';
-import saturdayData from '@data/saturday.csv?raw';
-import weekdayData from '@data/weekday.csv?raw';
-import eventConfig from '@config/event.json';
-import config from '@config/config.json';
+import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
+import holidayData from "@data/holiday.csv?raw";
+import saturdayData from "@data/saturday.csv?raw";
+import weekdayData from "@data/weekday.csv?raw";
+import eventConfig from "@config/event.json";
+import config from "@config/config.json";
 
 // Local state
 const isLoaded = ref(false);
@@ -84,34 +88,33 @@ const calendarRef = ref(null);
 const selectedBaseDate = ref(null);
 
 // Composables
-const { 
-  calendarEvents, 
-  startPosition, 
-  generateCalendarEvents, 
-  setStartPosition, 
-  setEventConfig, 
-  setICSExportConfig 
+const {
+  calendarEvents,
+  startPosition,
+  generateCalendarEvents,
+  setStartPosition,
+  setEventConfig,
+  setICSExportConfig,
 } = useCalendar();
 
-const { 
-  scheduleData, 
-  baseDates, 
-  currentBaseDate, 
-  lastBaseDate, 
-  loadScheduleData, 
-  setBaseDates, 
-  updateCurrentBaseDate, 
-  setLastBaseDate, 
+const {
+  scheduleData,
+  baseDates,
+  currentBaseDate,
+  lastBaseDate,
+  loadScheduleData,
+  setBaseDates,
+  updateCurrentBaseDate,
+  setLastBaseDate,
 } = useSchedule();
 
-const { 
-  setHolidayYearsRange, 
-  setUserDefinedHolidays, 
-  loadHolidays 
-} = useHolidays();
+const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
+  useHolidays();
 
 // Computed values
-const rotationCycleLength = computed(() => scheduleData.value.rotationCycleLength);
+const rotationCycleLength = computed(
+  () => scheduleData.value.rotationCycleLength,
+);
 
 // Initial date for the calendar
 const initialDate = computed(() => {
@@ -126,13 +129,13 @@ const initialDate = computed(() => {
 // Event handlers
 function handleBaseDateChange(newDate) {
   updateCurrentBaseDate(newDate);
-  
+
   // Update URL params
   updateURLParams({
     baseDate: formatAsISODate(newDate),
     startNumber: startPosition.value,
   });
-  
+
   // Navigate calendar if needed
   const currentDay = today();
   if (isSameOrAfter(newDate, currentDay)) {
@@ -144,20 +147,20 @@ function handleBaseDateChange(newDate) {
 
 function handlePositionChange(newPosition) {
   setStartPosition(newPosition);
-  
+
   // Update URL params
   updateURLParams({
     baseDate: selectedBaseDate.value,
     startNumber: newPosition,
   });
-  
+
   // Regenerate calendar events if view is available
   if (calendarRef.value && calendarRef.value.getApi) {
-      const api = calendarRef.value.getApi();
-      generateCalendarEvents(
-        createDate(api.view.activeStart),
-        createDate(api.view.activeEnd)
-      );
+    const api = calendarRef.value.getApi();
+    generateCalendarEvents(
+      createDate(api.view.activeStart),
+      createDate(api.view.activeEnd),
+    );
   }
 }
 
@@ -178,38 +181,37 @@ function handleExportComplete({ success, error }) {
 // Initialize application
 async function initializeApp() {
   try {
-    
     // Set holiday config
     setHolidayYearsRange(APP_CONFIG.DEFAULT_HOLIDAY_YEARS);
     setUserDefinedHolidays(config.custom_holidays || []);
-    
+
     // Load holidays
     loadHolidays();
-    
+
     // Set calendar config
     setEventConfig(eventConfig);
     setICSExportConfig(config.info);
-    
+
     // Load schedule data
     const data = loadScheduleData(holidayData, saturdayData, weekdayData);
-    
+
     // Set base dates
     const configBaseDates = config.base_dates
       .map((dateStr) => createDate(dateStr))
       .sort((a, b) => a.unix() - b.unix());
-    
+
     setBaseDates(configBaseDates);
     setLastBaseDate(configBaseDates[configBaseDates.length - 1]);
-    
+
     // Get URL parameters
-    const baseDateParam = getDateParam('baseDate', null, configBaseDates);
+    const baseDateParam = getDateParam("baseDate", null, configBaseDates);
     const startNumberParam = getNumberParam(
-      'startNumber',
+      "startNumber",
       APP_CONFIG.DEFAULT_START_POSITION,
       1,
-      data.rotationCycleLength
+      data.rotationCycleLength,
     );
-    
+
     // Set current base date
     let validBaseDate;
     if (baseDateParam) {
@@ -219,15 +221,15 @@ async function initializeApp() {
       validBaseDate = configBaseDates[0];
       updateCurrentBaseDate(validBaseDate);
     }
-    
+
     selectedBaseDate.value = formatAsISODate(validBaseDate);
-    
+
     // Set start position
     setStartPosition(startNumberParam);
-    
+
     // Mark as loaded
     isLoaded.value = true;
-    
+
     return true;
   } catch (error) {
     console.error(ERROR_MESSAGES.INIT_FAILED, error);

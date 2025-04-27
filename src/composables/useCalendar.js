@@ -1,14 +1,9 @@
 // src/composables/useCalendar.js
-import { computed } from 'vue';
-import { useCalendarStore } from '@/stores/calendar';
-import { useSchedule } from '@/composables/useSchedule';
-import { useHolidays } from '@/composables/useHolidays';
-import { 
-  createDate,
-  addDays,
-  isBefore, 
-  parseTime
-} from '@/utils/date';
+import { computed } from "vue";
+import { useCalendarStore } from "@/stores/calendar";
+import { useSchedule } from "@/composables/useSchedule";
+import { useHolidays } from "@/composables/useHolidays";
+import { createDate, addDays, isBefore, parseTime } from "@/utils/date";
 
 /**
  * Calendar functionality composable
@@ -17,17 +12,17 @@ import {
 export function useCalendar() {
   // Get store for state management only
   const calendarStore = useCalendarStore();
-  
+
   // Use other composables for business logic
   const { getScheduleForDate } = useSchedule();
   const { getHolidayName } = useHolidays();
-  
+
   // Local cached references to avoid recursion
   const storeCalendarEvents = computed(() => calendarStore.calendarEvents);
   const storeStartPosition = computed(() => calendarStore.startPosition);
   const storeEventConfig = computed(() => calendarStore.eventConfig);
   const storeIcsExportConfig = computed(() => calendarStore.icsExportConfig);
-  
+
   /**
    * Set the starting position (shift number)
    * @param {number} position - Position in rotation
@@ -75,7 +70,7 @@ export function useCalendar() {
    */
   function getEventType(subject) {
     const eventConfig = storeEventConfig.value;
-    
+
     if (!eventConfig || !eventConfig.events) {
       return {
         type: "default",
@@ -148,12 +143,9 @@ export function useCalendar() {
 
     let currentDate = createDate(startDate);
     const end = createDate(endDate);
-    
+
     while (isBefore(currentDate, end)) {
-      const scheduleInfo = getScheduleForDate(
-        currentDate,
-        startPosition
-      );
+      const scheduleInfo = getScheduleForDate(currentDate, startPosition);
 
       if (!scheduleInfo) {
         currentDate = addDays(currentDate, 1);
@@ -187,7 +179,7 @@ export function useCalendar() {
           holidayName: getHolidayName(currentDate),
         },
       });
-      
+
       currentDate = addDays(currentDate, 1);
     }
 
@@ -203,14 +195,14 @@ export function useCalendar() {
     eventConfig: storeEventConfig,
     icsExportConfig: storeIcsExportConfig,
     isConfigLoaded: computed(() => storeEventConfig.value !== null),
-    
+
     // Store action wrappers
     setStartPosition,
     setExportMonths,
     setCalendarEvents,
     setICSExportConfig,
     setEventConfig,
-    
+
     // Business logic functions
     getEventType,
     canAttendMeetup,

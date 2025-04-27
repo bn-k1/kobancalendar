@@ -1,13 +1,13 @@
 // src/stores/calendar.js
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import { CALENDAR_CONFIG, APP_CONFIG } from '@/utils/constants';
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import { CALENDAR_CONFIG, APP_CONFIG } from "@/utils/constants";
 
 /**
  * Calendar store - simplified to only handle state
  * All business logic is moved to the useCalendar composable
  */
-export const useCalendarStore = defineStore('calendar', () => {
+export const useCalendarStore = defineStore("calendar", () => {
   const calendarConfig = ref({
     ...CALENDAR_CONFIG,
   });
