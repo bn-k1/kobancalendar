@@ -180,7 +180,7 @@ async function initializeApp() {
   try {
     
     // Set holiday config
-    setHolidayYearsRange(config.holiday_years_range);
+    setHolidayYearsRange(APP_CONFIG.DEFAULT_HOLIDAY_YEARS);
     setUserDefinedHolidays(config.custom_holidays || []);
     
     // Load holidays

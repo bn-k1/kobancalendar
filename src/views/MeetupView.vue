@@ -261,7 +261,7 @@ function findDates() {
 async function initializeApp() {
   try {
     // Holiday configuration
-    setHolidayYearsRange(config.holiday_years_range || 5);
+    setHolidayYearsRange(APP_CONFIG.DEFAULT_HOLIDAY_YEARS);
     setUserDefinedHolidays(config.custom_holidays || []);
     loadHolidays();
     

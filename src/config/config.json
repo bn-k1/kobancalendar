@@ -11,7 +11,6 @@
     "01-02",
     "01-03"
   ],
-  "holiday_years_range": 5,
   "info": {
     "calendar_name": "KobanCalendar",
     "timezone": "Asia/Tokyo",
