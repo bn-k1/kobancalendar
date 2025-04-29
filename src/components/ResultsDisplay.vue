@@ -51,7 +51,7 @@
               :key="formatAsISODate(match.date)"
             >
               <td>{{ formatAsDisplayDate(match.date) }}</td>
-              <td :class="getDayClass(match.date)">
+              <td>
                 {{ getWeekdayName(match.date) }}
               </td>
               <td>{{ match.availableCount }}/{{ match.totalCount }}</td>
@@ -96,7 +96,7 @@
               :key="formatAsISODate(match.date)"
             >
               <td>{{ formatAsDisplayDate(match.date) }}</td>
-              <td :class="getDayClass(match.date)">
+              <td>
                 {{ getWeekdayName(match.date) }}
               </td>
               <td>{{ match.availableCount }}/{{ match.totalCount }}</td>
@@ -113,40 +113,13 @@
   </div>
 
   <!-- Details modal -->
-  <div
-    id="detailsModal"
-    class="modal"
-    :class="{ hidden: !showModal }"
-    @click="closeModalOnOutsideClick"
+  <DetailsModal
     v-if="showModal"
-  >
-    <div class="modal-content">
-      <span class="close-modal" @click="showModal = false">&times;</span>
-      <h3 id="modalDate">{{ modalTitle }}</h3>
-      <table id="detailsTable" class="details-table">
-        <thead>
-          <tr>
-            <th>コマ位置</th>
-            <th>当日</th>
-            <th>翌日</th>
-            <th>参加可否</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="detail in currentDetails.details" :key="detail.position">
-            <td>{{ detail.position }}</td>
-            <td>{{ getCurrentDayShift(detail) }}</td>
-            <td>{{ getNextDayShift(detail) }}</td>
-            <td
-              :class="
-                detail.isAvailable ? 'availability-yes' : 'availability-no'
-              "
-            ></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    :show="showModal"
+    :title="modalTitle"
+    :details="currentDetails"
+    @close="showModal = false"
+  />
 </template>
 
 <script setup>
@@ -157,7 +130,7 @@ import {
   getWeekdayName,
 } from "@/utils/date";
 import { useHolidays } from "@/composables/useHolidays";
-import { useSchedule } from "@/composables/useSchedule";
+import DetailsModal from "@/components/DetailsModal.vue";
 
 // Props
 const props = defineProps({
@@ -170,7 +143,6 @@ const props = defineProps({
 
 // Composables
 const { isHoliday } = useHolidays();
-const { getScheduleForDate } = useSchedule();
 
 // Local state
 const activeTab = ref("all");
@@ -178,82 +150,11 @@ const showModal = ref(false);
 const currentDetails = ref({ details: [] });
 const modalTitle = ref("");
 
-// Get day classes for styling
-function getDayClass(date) {
-  if (isHoliday(date)) {
-    return "holiday";
-  }
-
-  const day = date.day();
-  if (day === 0) return "fc-day-sun";
-  if (day === 6) return "fc-day-sat";
-
-  return "";
-}
-
 // Show details for a match
 function showDetails(match) {
   currentDetails.value = match;
   modalTitle.value = `${formatAsDisplayDate(match.date)}（${getWeekdayName(match.date)}）詳細`;
   showModal.value = true;
-}
-
-// Close modal when clicking outside
-function closeModalOnOutsideClick(event) {
-  if (event.target.id === "detailsModal") {
-    showModal.value = false;
-  }
-}
-
-// Get current day shift description
-function getCurrentDayShift(detail) {
-  if (
-    !detail ||
-    !detail.position ||
-    !currentDetails.value ||
-    !currentDetails.value.date
-  ) {
-    return "-";
-  }
-
-  // Current day schedule
-  const currentDaySchedule = detail.schedule;
-
-  // Format and return shift description
-  if (currentDaySchedule && currentDaySchedule.subject) {
-    if (currentDaySchedule.endTime) {
-      return `~${currentDaySchedule.endTime}(${currentDaySchedule.subject})`;
-    }
-    return currentDaySchedule.subject;
-  }
-
-  return "-";
-}
-
-// Get next day shift description
-function getNextDayShift(detail) {
-  if (
-    !detail ||
-    !detail.position ||
-    !currentDetails.value ||
-    !currentDetails.value.date
-  ) {
-    return "-";
-  }
-
-  // Next day schedule
-  const nextDay = currentDetails.value.date.add(1, "day");
-  const nextDaySchedule = getScheduleForDate(nextDay, detail.position);
-
-  // Format and return shift description
-  if (nextDaySchedule && nextDaySchedule.subject) {
-    if (nextDaySchedule.startTime) {
-      return `${nextDaySchedule.startTime}~(${nextDaySchedule.subject})`;
-    }
-    return nextDaySchedule.subject;
-  }
-
-  return "-";
 }
 </script>
 
@@ -394,135 +295,11 @@ function getNextDayShift(detail) {
   font-size: 1.05rem;
 }
 
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease;
-  overflow-x: hidden;
-}
-
-.modal-content {
-  background-color: var(--background-light);
-  padding: var(--spacing-xl);
-  border-radius: var(--border-radius-lg);
-  max-width: 90%;
-  width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  position: relative;
-  box-shadow: var(--shadow-xl);
-  animation: slideIn 0.3s ease;
-  border: 1px solid var(--gray-200);
-}
-
-.close-modal {
-  position: absolute;
-  top: var(--spacing-md);
-  right: var(--spacing-md);
-  font-size: 1.6rem;
-  cursor: pointer;
-  color: var(--gray-500);
-  transition: color var(--transition-fast);
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-}
-
-.close-modal:hover {
-  color: var(--error-color);
-  background-color: var(--gray-100);
-}
-
-.details-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.details-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-top: var(--spacing-lg);
-  border-radius: var(--border-radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.details-table th,
-.details-table td {
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--gray-200);
-  font-size: 1.02rem;
-}
-
-.details-table th {
-  background-color: var(--primary-light);
-  color: var(--text-light);
-  font-weight: var(--font-weight-medium);
-  text-align: left;
-  white-space: nowrap;
-}
-
-.details-table tr:last-child td {
-  border-bottom: none;
-}
-
-.availability-yes {
-  color: var(--success-color);
-  font-weight: var(--font-weight-bold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.availability-yes::before {
-  content: "✓";
-  display: inline-block;
-  font-size: 1.4em;
-}
-
-.availability-no {
-  color: var(--error-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.availability-no::before {
-  content: "✗";
-  display: inline-block;
-  font-size: 1.4em;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
   to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
     opacity: 1;
   }
 }

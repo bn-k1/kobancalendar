@@ -192,10 +192,6 @@ onMounted(() => {
   font-size: 1rem;
 }
 
-:deep(.fc .fc-day-today) {
-  background-color: rgba(76, 201, 240, 0.1) !important;
-}
-
 :deep(.fc-daygrid-event .fc-event-title) {
   font-weight: var(--font-weight-medium);
   color: white;
