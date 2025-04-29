@@ -140,7 +140,7 @@ export function useUrlParams() {
       .map((p) => p.position)
       .join(",");
 
-    updateParams({
+    updateURLParams({
       baseDate: formatAsISODate(baseDate),
       participants: validParticipants,
       ...otherParams,

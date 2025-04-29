@@ -54,9 +54,7 @@ export function useAppInitializer() {
         .sort((a, b) => a.unix() - b.unix());
 
       setBaseDates(configBaseDates);
-      console.log(configBaseDates);
       setLastBaseDate(configBaseDates[configBaseDates.length - 1]);
-      console.log(configBaseDates[configBaseDates.length - 1]);
 
       isLoaded.value = true;
 

@@ -222,7 +222,7 @@ async function initialize() {
 
     // Set start position
     if (!startNumberParam || !baseDateParam) {
-      setStartPosition();
+      setStartPosition(null);
       return false;
     }
     setStartPosition(startNumberParam);
