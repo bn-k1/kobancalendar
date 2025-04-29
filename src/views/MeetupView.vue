@@ -1,43 +1,23 @@
 <!-- src/views/MeetupView.vue -->
 <template>
-  <MeetupPageLayout :show-results="showResults">
+  <UnifiedPageLayout layout="meetup" :show-results="showResults">
     <!-- Search controls section -->
     <template #search-controls>
       <div class="search-controls">
         <!-- Base date selector -->
-        <fieldset id="baseDateSection" class="control-group" v-if="isLoaded">
-          <legend>基準日</legend>
-          <div class="form-group">
-            <!-- For single base date -->
-            <span v-if="baseDates.length === 1">
-              {{ selectedBaseDate }}
-            </span>
-
-            <!-- For multiple base dates -->
-            <select
-              v-else
-              id="baseDate"
-              aria-label="基準日を選択"
-              v-model="selectedBaseDate"
-              @change="handleBaseDateChange"
-            >
-              <option
-                v-for="date in baseDates"
-                :key="formatAsISODate(date)"
-                :value="formatAsISODate(date)"
-              >
-                {{ formatAsDisplayDate(date) }}
-              </option>
-            </select>
-          </div>
-        </fieldset>
+        <BaseSelector
+          id="baseDate"
+          legend="基準日"
+          aria-label="基準日を選択"
+          v-model="selectedBaseDate"
+          :options="formattedBaseDates"
+          :formatter="formatAsDisplayDate"
+          @change="handleBaseDateChange"
+          v-if="isLoaded"
+        />
 
         <!-- Meetup settings -->
-        <fieldset
-          id="meetupSettingsSection"
-          class="control-group"
-          v-if="isLoaded"
-        >
+        <fieldset id="meetupSettingsSection" class="control-group" v-if="isLoaded">
           <legend>検索条件</legend>
           <div class="form-group">
             <label for="meetupStartTime">飲会開始:</label>
@@ -46,16 +26,7 @@
               aria-label="飲み会開始時間"
               v-model="meetupStartTime"
             >
-              <option value="12:00">12:00</option>
-              <option value="13:00">13:00</option>
-              <option value="14:00">14:00</option>
-              <option value="15:00">15:00</option>
-              <option value="16:00">16:00</option>
-              <option value="17:00">17:00</option>
-              <option value="18:00">18:00</option>
-              <option value="19:00">19:00</option>
-              <option value="20:00">20:00</option>
-              <option value="21:00">21:00</option>
+              <option v-for="time in timeOptions" :key="time" :value="time">{{ time }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -65,12 +36,9 @@
               aria-label="検索期間"
               v-model="searchPeriod"
             >
-              <option value="30">1ヶ月</option>
-              <option value="60">2ヶ月</option>
-              <option value="90">3ヶ月</option>
-              <option value="120">4ヶ月</option>
-              <option value="150">5ヶ月</option>
-              <option value="180">6ヶ月</option>
+              <option v-for="period in periodOptions" :key="period.value" :value="period.value">
+                {{ period.text }}
+              </option>
             </select>
           </div>
         </fieldset>
@@ -103,14 +71,15 @@
     <template #results>
       <ResultsDisplay :results="searchResults" />
     </template>
-  </MeetupPageLayout>
+  </UnifiedPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 
 // Components
-import MeetupPageLayout from "@/layouts/MeetupPageLayout.vue";
+import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
+import BaseSelector from "@/components/Controls/BaseSelector.vue";
 import ParticipantsList from "@/components/Controls/ParticipantsList.vue";
 import ResultsDisplay from "@/components/ResultsDisplay.vue";
 
@@ -118,10 +87,11 @@ import ResultsDisplay from "@/components/ResultsDisplay.vue";
 import { useSchedule } from "@/composables/useSchedule";
 import { useCalendar } from "@/composables/useCalendar";
 import { useHolidays } from "@/composables/useHolidays";
+import { useAppInitializer } from "@/composables/useAppInitializer";
+import { useUrlParams } from "@/composables/useUrlParams";
 import { useMeetupSearch } from "@/composables/useMeetupSearch";
 
 // Utils
-import { getURLParam, updateURLParams } from "@/utils/url-params";
 import {
   createDate,
   formatAsISODate,
@@ -140,80 +110,68 @@ import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
 // Local state
-const isLoaded = ref(false);
+const showResults = ref(false);
 const selectedBaseDate = ref("");
 const meetupStartTime = ref(APP_CONFIG.DEFAULT_MEETUP_START_TIME);
 const searchPeriod = ref(APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString());
 const participants = ref([{ position: "" }]);
-const showResults = ref(false);
 
-// Composables
-const scheduleComposable = useSchedule();
-const calendarComposable = useCalendar();
-const holidaysComposable = useHolidays();
-const meetupSearchComposable = useMeetupSearch();
+// Composables initialization
+const { isLoaded, initializeApp } = useAppInitializer();
+const { getDateParam, getParticipantsFromParams, updateMeetupParams } = useUrlParams();
+const { searchResults, findMeetupDates } = useMeetupSearch();
 
-// Extract values and methods from composables
+// Schedule composable
 const {
-  loadScheduleData,
-  setBaseDates,
-  updateCurrentBaseDate,
-  setLastBaseDate,
-} = scheduleComposable;
-
-const { setEventConfig, setICSExportConfig } = calendarComposable;
-
-const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
-  holidaysComposable;
-
-const { searchResults, findMeetupDates } = meetupSearchComposable;
+  baseDates,
+  currentBaseDate,
+  rotationCycleLength,
+  updateCurrentBaseDate
+} = useSchedule();
 
 // Computed values
-const currentBaseDate = computed(
-  () => scheduleComposable.currentBaseDate.value,
-);
-const baseDates = computed(() => scheduleComposable.baseDates.value);
-const rotationCycleLength = computed(
-  () => scheduleComposable.scheduleData.value.rotationCycleLength,
-);
+const formattedBaseDates = computed(() => {
+  return baseDates.value.map(date => ({
+    value: formatAsISODate(date),
+    text: formatAsDisplayDate(date)
+  }));
+});
+
+// Options for time and period selectors
+const timeOptions = [
+  "12:00", "13:00", "14:00", "15:00", "16:00", 
+  "17:00", "18:00", "19:00", "20:00", "21:00"
+];
+
+const periodOptions = [
+  { value: "30", text: "1ヶ月" },
+  { value: "60", text: "2ヶ月" },
+  { value: "90", text: "3ヶ月" },
+  { value: "120", text: "4ヶ月" },
+  { value: "150", text: "5ヶ月" },
+  { value: "180", text: "6ヶ月" }
+];
 
 // Event handlers
-function handleBaseDateChange() {
-  const newBaseDate = createDate(selectedBaseDate.value);
-  updateCurrentBaseDate(newBaseDate);
+function handleBaseDateChange(newDateStr) {
+  const newDate = createDate(newDateStr);
+  updateCurrentBaseDate(newDate);
 
-  // Update URL
-  updateAllURLParams();
+  // Update URL params
+  updateMeetupParams(newDate, participants.value);
 }
 
 function handleParticipantsChange(validParticipants) {
   // Update URL with participants
-  const participantsParam = validParticipants.map((p) => p.position).join(",");
-
-  updateURLParams({ participants: participantsParam });
-}
-
-// Update all URL parameters
-function updateAllURLParams() {
-  // Extract valid participants
-  const validParticipants = participants.value
-    .filter((p) => p.position)
-    .map((p) => p.position)
-    .join(",");
-
-  // Update URL
-  updateURLParams({
-    baseDate: selectedBaseDate.value,
-    participants: validParticipants,
-  });
+  updateMeetupParams(selectedBaseDate.value, validParticipants);
 }
 
 // Find available dates
 function findDates() {
   // Get valid participant positions
   const positions = participants.value
-    .map((p) => parseInt(p.position))
-    .filter((p) => !isNaN(p));
+    .map(p => parseInt(p.position, 10))
+    .filter(p => !isNaN(p));
 
   // Validate
   if (positions.length === 0) {
@@ -231,45 +189,43 @@ function findDates() {
   const baseDate = createDate(selectedBaseDate.value);
   const currentDay = today();
   const startDate = isAfter(baseDate, currentDay) ? baseDate : currentDay;
-  const endDate = addDays(startDate, parseInt(searchPeriod.value));
+  const endDate = addDays(startDate, parseInt(searchPeriod.value, 10));
 
   // Search for available dates
   findMeetupDates(positions, meetupStartTime.value, startDate, endDate);
 
   // Show results
   showResults.value = true;
+  
+  // Update URL with all parameters
+  updateMeetupParams(selectedBaseDate.value, participants.value, {
+    startTime: meetupStartTime.value,
+    period: searchPeriod.value
+  });
 }
 
 // Initialize application
-async function initializeApp() {
+async function initialize() {
   try {
-    // Holiday configuration
-    setHolidayYearsRange(APP_CONFIG.DEFAULT_HOLIDAY_YEARS);
-    setUserDefinedHolidays(config.custom_holidays || []);
-    loadHolidays();
-
-    // Calendar configuration
-    setEventConfig(eventConfig);
-    setICSExportConfig(config.info);
-
-    // Load schedule data
-    const scheduleData = loadScheduleData(
+    // Initialize app with shared logic
+    const result = await initializeApp({
       holidayData,
       saturdayData,
       weekdayData,
-    );
+      config,
+      eventConfig
+    });
 
-    // Set base dates
-    const configBaseDates = config.base_dates
-      .map((dateStr) => createDate(dateStr))
-      .sort((a, b) => a.unix() - b.unix());
-
-    setBaseDates(configBaseDates);
-    setLastBaseDate(configBaseDates[configBaseDates.length - 1]);
+    if (!result) {
+      alert(ERROR_MESSAGES.INIT_FAILED);
+      return;
+    }
 
     // Get URL parameters
-    const baseDateParam = getURLParam("baseDate", "");
-    const participantsParam = getURLParam("participants", "");
+    const baseDateParam = getDateParam("baseDate", "");
+    const participantsFromUrl = getParticipantsFromParams();
+    const startTimeParam = getDateParam("startTime", meetupStartTime.value);
+    const periodParam = getDateParam("period", searchPeriod.value);
 
     // Apply base date parameter
     if (baseDateParam) {
@@ -279,31 +235,25 @@ async function initializeApp() {
         selectedBaseDate.value = formatAsISODate(dateObj);
       } else {
         // Use default
-        const defaultBaseDate = configBaseDates[0];
+        const defaultBaseDate = baseDates.value[0];
         updateCurrentBaseDate(defaultBaseDate);
         selectedBaseDate.value = formatAsISODate(defaultBaseDate);
       }
     } else {
       // Use default
-      const defaultBaseDate = configBaseDates[0];
+      const defaultBaseDate = baseDates.value[0];
       updateCurrentBaseDate(defaultBaseDate);
       selectedBaseDate.value = formatAsISODate(defaultBaseDate);
     }
 
     // Apply participants parameter
-    if (participantsParam) {
-      const positionList = participantsParam
-        .split(",")
-        .map((p) => parseInt(p))
-        .filter((p) => !isNaN(p));
-
-      if (positionList.length > 0) {
-        participants.value = positionList.map((position) => ({ position }));
-      }
+    if (participantsFromUrl.length > 0) {
+      participants.value = participantsFromUrl;
     }
-
-    // Mark as loaded
-    isLoaded.value = true;
+    
+    // Apply other parameters
+    if (startTimeParam) meetupStartTime.value = startTimeParam;
+    if (periodParam) searchPeriod.value = periodParam;
 
     return true;
   } catch (error) {
@@ -312,8 +262,15 @@ async function initializeApp() {
   }
 }
 
+// Watch for base date changes from composable
+watch(currentBaseDate, (newBaseDate) => {
+  if (newBaseDate) {
+    selectedBaseDate.value = formatAsISODate(newBaseDate);
+  }
+});
+
 // Initialize on mount
 onMounted(async () => {
-  await initializeApp();
+  await initialize();
 });
 </script>

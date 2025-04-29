@@ -1,0 +1,98 @@
+<!-- src/components/Controls/BaseSelector.vue -->
+<template>
+  <fieldset :id="id" class="control-group">
+    <legend>{{ legend }}</legend>
+    <div class="form-group">
+      <!-- Display as text if specified or only one option -->
+      <span v-if="displayAsText || options.length === 1">
+        {{ displayValue || formatOption(options[0]) }}
+      </span>
+
+      <!-- Display as dropdown -->
+      <select
+        v-else
+        :id="id"
+        :aria-label="ariaLabel"
+        :value="modelValue"
+        @change="handleChange"
+      >
+        <option
+          v-for="option in options"
+          :key="option.value || option"
+          :value="option.value || option"
+          :disabled="option.disabled"
+        >
+          {{ option.text || formatOption(option) }}
+        </option>
+      </select>
+      
+      <slot></slot>
+    </div>
+  </fieldset>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+
+const props = defineProps({
+  id: {
+    type: String,
+    default: 'baseSelector'
+  },
+  legend: {
+    type: String,
+    required: true
+  },
+  ariaLabel: {
+    type: String,
+    default: ''
+  },
+  modelValue: {
+    type: [String, Number, Date, Object],
+    required: true
+  },
+  options: {
+    type: Array,
+    default: () => []
+  },
+  displayValue: {
+    type: String,
+    default: ''
+  },
+  displayAsText: {
+    type: Boolean,
+    default: false
+  },
+  formatter: {
+    type: Function,
+    default: null
+  }
+});
+
+const emit = defineEmits(['update:modelValue', 'change']);
+
+// Format option for display
+function formatOption(option) {
+  if (props.formatter) {
+    return props.formatter(option);
+  }
+  
+  // Default formatting for different types
+  if (option === null || option === undefined) {
+    return '';
+  }
+  
+  if (typeof option === 'object') {
+    return option.toString ? option.toString() : JSON.stringify(option);
+  }
+  
+  return String(option);
+}
+
+// Handle selection change
+function handleChange(event) {
+  const newValue = event.target.value;
+  emit('update:modelValue', newValue);
+  emit('change', newValue);
+}
+</script>
