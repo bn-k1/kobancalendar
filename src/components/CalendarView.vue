@@ -150,6 +150,112 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Calendar-specific styles could go here,
-   but most styles are in global CSS */
+/* Calendar-specific styles with :deep() selector */
+.calendar-container {
+  width: 100%;
+  margin: var(--spacing-lg) auto;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  background-color: var(--background-light);
+  box-shadow: var(--shadow-lg);
+}
+
+:deep(.fc .fc-toolbar) {
+  padding: var(--spacing-md);
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  flex-wrap: wrap;
+}
+
+:deep(.fc .fc-toolbar-title) {
+  font-weight: var(--font-weight-bold);
+  font-size: 1.3rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.fc .fc-button) {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  font-size: 0.95rem;
+}
+
+:deep(.fc .fc-button:hover) {
+  background-color: var(--primary-light);
+  border-color: var(--primary-light);
+}
+
+:deep(.fc .fc-col-header-cell) {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+  font-size: 1rem;
+}
+
+:deep(.fc .fc-day-today) {
+  background-color: rgba(76, 201, 240, 0.1) !important;
+}
+
+:deep(.fc-daygrid-event .fc-event-title) {
+  font-weight: var(--font-weight-medium);
+  color: white;
+  white-space: pre-line;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:deep(.event-title) {
+  color: white;
+  font-weight: var(--font-weight-bold);
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:deep(.event-time) {
+  color: var(--text-color);
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+:deep(.event-meta) {
+  font-size: 0.8em;
+  color: var(--gray-700);
+  margin-top: 2px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+:deep(.fc-day-sat) {
+  background-color: var(--saturday-color);
+}
+
+:deep(.fc-day-sun),
+:deep(.holiday) {
+  background-color: var(--holiday-color);
+}
+
+:deep(.today-highlight) {
+  position: relative;
+  z-index: 1;
+}
+
+:deep(.today-highlight::after) {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid var(--accent-color);
+  pointer-events: none;
+  z-index: 2;
+  border-radius: 2px;
+}
 </style>

@@ -258,5 +258,272 @@ function getNextDayShift(detail) {
 </script>
 
 <style scoped>
-/* Reuse global styles from original app */
+/* Results display specific styles */
+.results {
+  background-color: var(--background-light);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  overflow-x: auto;
+}
+
+.results h2 {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  color: var(--primary-dark);
+  font-weight: var(--font-weight-bold);
+  font-size: 1.6rem;
+}
+
+.results-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--gray-200);
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  color: var(--gray-600);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-normal);
+  box-shadow: none;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--primary-color);
+  background: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.tab-btn.active {
+  border-bottom-color: var(--primary-color);
+  color: var(--primary-color);
+  font-weight: var(--font-weight-bold);
+}
+
+.tab-content {
+  display: none;
+  width: 100%;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn var(--transition-normal);
+}
+
+.results-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.results-table th,
+.results-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: center;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 1.02rem;
+  white-space: nowrap;
+}
+
+.results-table th {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.results-table tr:last-child td {
+  border-bottom: none;
+}
+
+.results-table tr:nth-child(even) {
+  background-color: var(--gray-100);
+}
+
+.results-table tr:hover {
+  background-color: rgba(67, 97, 238, 0.1);
+}
+
+.results-table .view-details {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-pill);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.results-table .view-details:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.no-results-message {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--gray-600);
+  font-style: italic;
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius-md);
+  margin: var(--spacing-md) 0;
+  font-size: 1.05rem;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+  overflow-x: hidden;
+}
+
+.modal-content {
+  background-color: var(--background-light);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  max-width: 90%;
+  width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  box-shadow: var(--shadow-xl);
+  animation: slideIn 0.3s ease;
+  border: 1px solid var(--gray-200);
+}
+
+.close-modal {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: var(--gray-500);
+  transition: color var(--transition-fast);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-modal:hover {
+  color: var(--error-color);
+  background-color: var(--gray-100);
+}
+
+.details-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.details-table th,
+.details-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 1.02rem;
+}
+
+.details-table th {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+  font-weight: var(--font-weight-medium);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.details-table tr:last-child td {
+  border-bottom: none;
+}
+
+.availability-yes {
+  color: var(--success-color);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.availability-yes::before {
+  content: "✓";
+  display: inline-block;
+  font-size: 1.4em;
+}
+
+.availability-no {
+  color: var(--error-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.availability-no::before {
+  content: "✗";
+  display: inline-block;
+  font-size: 1.4em;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 </style>

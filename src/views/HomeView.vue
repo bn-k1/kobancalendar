@@ -3,7 +3,7 @@
   <UnifiedPageLayout layout="calendar">
     <!-- Controls section -->
     <template #controls>
-      <div class="horizontal-fields" v-if="isLoaded">
+      <div class="horizontal-fields" v-if="isLoaded && selectedBaseDate">
         <BaseSelector
           id="baseDate"
           legend="基準日"
@@ -39,7 +39,7 @@
     <!-- Export section -->
     <template #export>
       <ExportSection
-        v-if="isLoaded"
+        v-if="isLoaded && currentBaseDate"
         :base-date="currentBaseDate"
         :last-base-date="lastBaseDate"
         :start-position="startPosition"
@@ -88,7 +88,7 @@ import config from "@config/config.json";
 const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
 const { isLoaded, initializeApp } = useAppInitializer();
 const calendarRef = ref(null);
-const selectedBaseDate = ref(null);
+const selectedBaseDate = ref('');
 
 // Calendar composable
 const {
@@ -210,8 +210,11 @@ async function initialize() {
     if (baseDateParam) {
       validBaseDate = baseDateParam;
       updateCurrentBaseDate(validBaseDate);
-    } else {
+    } else if (baseDates.value && baseDates.value.length > 0) {
       validBaseDate = baseDates.value[0];
+      updateCurrentBaseDate(validBaseDate);
+    } else {
+      validBaseDate = today();
       updateCurrentBaseDate(validBaseDate);
     }
 

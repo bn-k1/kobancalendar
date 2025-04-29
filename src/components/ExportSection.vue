@@ -91,5 +91,30 @@ function handleExportICS() {
 </script>
 
 <style scoped>
-/* Reuse global styles from original app */
+/* Export section specific styles */
+.export-form-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.export-form-group select {
+  width: auto;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.export-form-group button {
+  margin-left: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background-color: var(--success-color);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 1rem;
+}
+
+.export-form-group button:hover {
+  background-color: var(--success-color);
+}
 </style>

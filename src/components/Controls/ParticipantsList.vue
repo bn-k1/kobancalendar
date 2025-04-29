@@ -97,5 +97,54 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Reuse global styles from original app */
+/* Participants list specific styles */
+.participant-entry {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  width: 100%;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.participant-position {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.remove-participant {
+  background-color: var(--error-color);
+  color: white;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-bold);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.remove-participant:hover {
+  background-color: var(--error-color);
+  transform: scale(1.1);
+}
+
+#addParticipantBtn {
+  background-color: var(--success-color);
+  margin-top: var(--spacing-sm);
+  width: 100%;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+  font-size: 1.05rem;
+}
+
+#addParticipantBtn:hover {
+  background-color: var(--success-color);
+  box-shadow: var(--shadow-md);
+}
 </style>
