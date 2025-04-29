@@ -1,8 +1,4 @@
 // src/composables/useUrlParams.js
-import {
-  getURLParam,
-  updateURLParams as updateParams,
-} from "@/utils/url-params";
 import { createDate, formatAsISODate, isSameDay } from "@/utils/date";
 import { ERROR_MESSAGES } from "@/utils/constants";
 
@@ -11,25 +7,64 @@ import { ERROR_MESSAGES } from "@/utils/constants";
  * Handles retrieving and updating URL parameters for both views
  */
 export function useUrlParams() {
+
+  /**
+   * Update URL parameters without reloading the page
+   * @param {Object} params - Parameters to update
+   */
+  function updateURLParams(params) {
+    const url = new URL(window.location);
+
+    // Update or add each parameter
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+	url.searchParams.set(key, value);
+      } else {
+	url.searchParams.delete(key);
+      }
+    });
+
+    // Update history without reloading
+    window.history.pushState({}, "", url);
+  }
+
+  /**
+   * Get a URL parameter value
+   * @param {string} paramName - Parameter name
+   * @param {*} defaultValue - Default value if parameter doesn't exist
+   * @returns {string} Parameter value or default
+   */
+  function getURLParam(paramName, defaultValue = null) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.has(paramName) ? urlParams.get(paramName) : defaultValue;
+  }
+
   /**
    * Get and validate a date parameter from URL
    */
-  function getDateParam(paramName, defaultDate, validDates = []) {
-    const dateParam = getURLParam(paramName, null);
-    if (!dateParam) return defaultDate;
 
-    const dateObj = createDate(dateParam);
+  function getDateParam(paramName, defaultValue, validDates = []) {
+    const dateStr = getURLParam(paramName);
+
+    if (!dateStr) {
+      return defaultValue;
+    }
+
+    const dateObj = createDate(dateStr);
+
+    // Check date validity
     if (!dateObj.isValid()) {
       console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
-      return defaultDate;
+      return defaultValue;
     }
 
     // Validate against allowed dates if provided
     if (validDates.length > 0) {
-      const isValid = validDates.some((date) => isSameDay(date, dateObj));
-      if (!isValid) {
-        console.error(ERROR_MESSAGES.INVALID_BASE_DATE);
-        return defaultDate;
+      const dateExists = validDates.some((date) => isSameDay(date, dateObj));
+
+      if (!dateExists) {
+	alert(ERROR_MESSAGES.INVALID_BASE_DATE);
+	return defaultValue;
       }
     }
 
@@ -90,7 +125,7 @@ export function useUrlParams() {
    * Update URL parameters for calendar view
    */
   function updateCalendarParams(baseDate, startNumber) {
-    updateParams({
+    updateURLParams({
       baseDate: formatAsISODate(baseDate),
       startNumber,
     });

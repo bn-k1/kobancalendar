@@ -214,14 +214,14 @@ async function initialize() {
       validBaseDate = baseDates.value[0];
       updateCurrentBaseDate(validBaseDate);
     } else {
-      validBaseDate = today();
+      validBaseDate = baseDates.value[0];
       updateCurrentBaseDate(validBaseDate);
     }
 
     selectedBaseDate.value = formatAsISODate(validBaseDate);
 
     // Set start position
-    if (!startNumberParam) {
+    if (!startNumberParam || !baseDateParam) {
       setStartPosition();
       return false;
     }

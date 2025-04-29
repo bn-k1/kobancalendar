@@ -257,7 +257,7 @@ export function useSchedule() {
    * @param {Array} dates - Array of base dates
    */
   function setBaseDates(dates) {
-    scheduleStore.setBaseDates(dates);
+    scheduleStore.setBaseDates(date);
   }
 
   /**

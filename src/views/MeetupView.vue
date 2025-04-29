@@ -249,7 +249,7 @@ async function initialize() {
     }
 
     // Get URL parameters
-    const baseDateParam = getDateParam("baseDate", "");
+    const baseDateParam = getDateParam("baseDate", null, baseDates.value);
     const participantsFromUrl = getParticipantsFromParams();
     // Fix: Use getStringParam for startTime instead of getDateParam
     const startTimeParam = getStringParam("startTime", meetupStartTime.value);
