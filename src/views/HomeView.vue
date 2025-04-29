@@ -43,7 +43,6 @@
         :base-date="currentBaseDate"
         :last-base-date="lastBaseDate"
         :start-position="startPosition"
-        @export="handleExport"
         @export-complete="handleExportComplete"
       />
     </template>
@@ -139,14 +138,6 @@ function handleBaseDateChange(newDateStr) {
 
   // Update URL params
   updateCalendarParams(newDate, startPosition.value);
-
-  // Navigate calendar if needed
-  const currentDay = today();
-  if (isSameOrAfter(newDate, currentDay)) {
-    calendarRef.value?.gotoDate(newDate);
-  } else {
-    calendarRef.value?.gotoDate(currentDay);
-  }
 }
 
 function handlePositionChange(newPosition) {
@@ -154,28 +145,25 @@ function handlePositionChange(newPosition) {
 
   // Update URL params
   updateCalendarParams(selectedBaseDate.value, parseInt(newPosition, 10));
-
-  // Regenerate calendar events if view is available
-  if (calendarRef.value?.getApi) {
-    const api = calendarRef.value.getApi();
-    generateCalendarEvents(
-      createDate(api.view.activeStart),
-      createDate(api.view.activeEnd),
-    );
-  }
 }
 
 function handleDatesSet({ start, end }) {
   generateCalendarEvents(start, end);
 }
 
-function handleExport({ months }) {
-  // Implementation remains the same
-}
-
 function handleExportComplete({ success, error }) {
   if (!success && error) {
     alert(ERROR_MESSAGES.ICS_EXPORT_ERROR);
+  }
+}
+
+function regenerateCalendar(){
+  if (calendarRef.value?.getApi) {
+    const api = calendarRef.value.getApi();
+    generateCalendarEvents(
+      createDate(api.view.activeStart),
+      createDate(api.view.activeEnd),
+    );
   }
 }
 
@@ -222,12 +210,12 @@ async function initialize() {
 
     // Set start position
     if (!startNumberParam || !baseDateParam) {
-      setStartPosition(null);
+      setStartPosition();
       return false;
     }
     setStartPosition(startNumberParam);
-
     return true;
+
   } catch (error) {
     console.error(ERROR_MESSAGES.INIT_FAILED, error);
     alert(ERROR_MESSAGES.INIT_FAILED);

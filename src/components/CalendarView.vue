@@ -1,4 +1,4 @@
-<!-- src/components/Calendar/CalendarView.vue -->
+<!-- src/components/CalendarView.vue -->
 <template>
   <div class="calendar-container">
     <FullCalendar ref="calendarRef" :options="calendarOptions" />
@@ -22,7 +22,7 @@ const props = defineProps({
   },
   startPosition: {
     type: Number,
-    required: true,
+    required: false,
   },
   events: {
     type: Array,
@@ -112,18 +112,6 @@ const calendarOptions = computed(() => ({
     }
   },
 }));
-
-// Navigate to a specific date
-function gotoDate(date) {
-  if (calendarRef.value) {
-    calendarRef.value.getApi().gotoDate(toDate(date));
-  }
-}
-
-// Expose methods to parent component
-defineExpose({
-  gotoDate,
-});
 
 // Watch for changes to start position
 watch(

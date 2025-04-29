@@ -276,29 +276,6 @@ export function useSchedule() {
     scheduleStore.setLastBaseDate(createDate(date));
   }
 
-  /**
-   * Set the current base date based on parameters and configuration
-   * @param {dayjs} baseDate - Date from params
-   * @param {Array} availableBaseDates - Available base dates
-   * @returns {dayjs} Valid base date
-   */
-  function setCurrentBaseDate(baseDate, availableBaseDates) {
-    try {
-      const formattedBaseDate = baseDate ? formatAsISODate(baseDate) : null;
-
-      const validBaseDate =
-        availableBaseDates.find(
-          (date) => formatAsISODate(date) === formattedBaseDate,
-        ) || availableBaseDates[0];
-
-      updateCurrentBaseDate(validBaseDate);
-      return validBaseDate;
-    } catch (error) {
-      console.error(ERROR_MESSAGES.BASEDATE_CONFIGURATION_ERROR, error);
-      return availableBaseDates[0];
-    }
-  }
-
   return {
     // Computed state from store
     scheduleData: storeScheduleData,
@@ -321,6 +298,5 @@ export function useSchedule() {
     setBaseDates,
     updateCurrentBaseDate,
     setLastBaseDate,
-    setCurrentBaseDate,
   };
 }
