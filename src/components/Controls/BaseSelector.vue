@@ -25,74 +25,74 @@
           {{ option.text || formatOption(option) }}
         </option>
       </select>
-      
+
       <slot></slot>
     </div>
   </fieldset>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed } from "vue";
 
 const props = defineProps({
   id: {
     type: String,
-    default: 'baseSelector'
+    default: "baseSelector",
   },
   legend: {
     type: String,
-    required: true
+    required: true,
   },
   ariaLabel: {
     type: String,
-    default: ''
+    default: "",
   },
   modelValue: {
     type: [String, Number, Date, Object],
-    required: true
+    required: true,
   },
   options: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   displayValue: {
     type: String,
-    default: ''
+    default: "",
   },
   displayAsText: {
     type: Boolean,
-    default: false
+    default: false,
   },
   formatter: {
     type: Function,
-    default: null
-  }
+    default: null,
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(["update:modelValue", "change"]);
 
 // Format option for display
 function formatOption(option) {
   if (props.formatter) {
     return props.formatter(option);
   }
-  
+
   // Default formatting for different types
   if (option === null || option === undefined) {
-    return '';
+    return "";
   }
-  
-  if (typeof option === 'object') {
+
+  if (typeof option === "object") {
     return option.toString ? option.toString() : JSON.stringify(option);
   }
-  
+
   return String(option);
 }
 
 // Handle selection change
 function handleChange(event) {
   const newValue = event.target.value;
-  emit('update:modelValue', newValue);
-  emit('change', newValue);
+  emit("update:modelValue", newValue);
+  emit("change", newValue);
 }
 </script>

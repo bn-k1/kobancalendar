@@ -17,7 +17,11 @@
         />
 
         <!-- Meetup settings -->
-        <fieldset id="meetupSettingsSection" class="control-group" v-if="isLoaded">
+        <fieldset
+          id="meetupSettingsSection"
+          class="control-group"
+          v-if="isLoaded"
+        >
           <legend>検索条件</legend>
           <div class="form-group">
             <label for="meetupStartTime">飲会開始:</label>
@@ -25,8 +29,11 @@
               id="meetupStartTime"
               aria-label="飲み会開始時間"
               v-model="meetupStartTime"
+              @change="updateURL"
             >
-              <option v-for="time in timeOptions" :key="time" :value="time">{{ time }}</option>
+              <option v-for="time in timeOptions" :key="time" :value="time">
+                {{ time }}
+              </option>
             </select>
           </div>
           <div class="form-group">
@@ -35,8 +42,13 @@
               id="searchPeriod"
               aria-label="検索期間"
               v-model="searchPeriod"
+              @change="updateURL"
             >
-              <option v-for="period in periodOptions" :key="period.value" :value="period.value">
+              <option
+                v-for="period in periodOptions"
+                :key="period.value"
+                :value="period.value"
+              >
                 {{ period.text }}
               </option>
             </select>
@@ -51,7 +63,7 @@
         v-if="isLoaded"
         v-model="participants"
         :rotation-cycle-length="rotationCycleLength"
-        @change="handleParticipantsChange"
+        @change="updateURL"
       />
     </template>
 
@@ -118,7 +130,13 @@ const participants = ref([{ position: "" }]);
 
 // Composables initialization
 const { isLoaded, initializeApp } = useAppInitializer();
-const { getDateParam, getParticipantsFromParams, updateMeetupParams } = useUrlParams();
+const {
+  getDateParam,
+  getNumberParam,
+  getStringParam,
+  getParticipantsFromParams,
+  updateMeetupParams,
+} = useUrlParams();
 const { searchResults, findMeetupDates } = useMeetupSearch();
 
 // Schedule composable
@@ -126,21 +144,29 @@ const {
   baseDates,
   currentBaseDate,
   rotationCycleLength,
-  updateCurrentBaseDate
+  updateCurrentBaseDate,
 } = useSchedule();
 
 // Computed values
 const formattedBaseDates = computed(() => {
-  return baseDates.value.map(date => ({
+  return baseDates.value.map((date) => ({
     value: formatAsISODate(date),
-    text: formatAsDisplayDate(date)
+    text: formatAsDisplayDate(date),
   }));
 });
 
 // Options for time and period selectors
 const timeOptions = [
-  "12:00", "13:00", "14:00", "15:00", "16:00", 
-  "17:00", "18:00", "19:00", "20:00", "21:00"
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00",
+  "21:00",
 ];
 
 const periodOptions = [
@@ -149,29 +175,30 @@ const periodOptions = [
   { value: "90", text: "3ヶ月" },
   { value: "120", text: "4ヶ月" },
   { value: "150", text: "5ヶ月" },
-  { value: "180", text: "6ヶ月" }
+  { value: "180", text: "6ヶ月" },
 ];
+
+function updateURL() {
+  updateMeetupParams(selectedBaseDate.value, participants.value, {
+    startTime: meetupStartTime.value,
+    period: searchPeriod.value,
+  });
+}
 
 // Event handlers
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
   updateCurrentBaseDate(newDate);
 
-  // Update URL params
-  updateMeetupParams(newDate, participants.value);
-}
-
-function handleParticipantsChange(validParticipants) {
-  // Update URL with participants
-  updateMeetupParams(selectedBaseDate.value, validParticipants);
+  updateURL();
 }
 
 // Find available dates
 function findDates() {
   // Get valid participant positions
   const positions = participants.value
-    .map(p => parseInt(p.position, 10))
-    .filter(p => !isNaN(p));
+    .map((p) => parseInt(p.position, 10))
+    .filter((p) => !isNaN(p));
 
   // Validate
   if (positions.length === 0) {
@@ -196,11 +223,11 @@ function findDates() {
 
   // Show results
   showResults.value = true;
-  
+
   // Update URL with all parameters
   updateMeetupParams(selectedBaseDate.value, participants.value, {
     startTime: meetupStartTime.value,
-    period: searchPeriod.value
+    period: searchPeriod.value,
   });
 }
 
@@ -213,7 +240,7 @@ async function initialize() {
       saturdayData,
       weekdayData,
       config,
-      eventConfig
+      eventConfig,
     });
 
     if (!result) {
@@ -224,8 +251,13 @@ async function initialize() {
     // Get URL parameters
     const baseDateParam = getDateParam("baseDate", "");
     const participantsFromUrl = getParticipantsFromParams();
-    const startTimeParam = getDateParam("startTime", meetupStartTime.value);
-    const periodParam = getDateParam("period", searchPeriod.value);
+    // Fix: Use getStringParam for startTime instead of getDateParam
+    const startTimeParam = getStringParam("startTime", meetupStartTime.value);
+    // Fix: Use getNumberParam for period instead of getDateParam
+    const periodParam = getNumberParam(
+      "period",
+      parseInt(searchPeriod.value, 10),
+    );
 
     // Apply base date parameter
     if (baseDateParam) {
@@ -250,14 +282,26 @@ async function initialize() {
     if (participantsFromUrl.length > 0) {
       participants.value = participantsFromUrl;
     }
-    
+
     // Apply other parameters
     if (startTimeParam) meetupStartTime.value = startTimeParam;
-    if (periodParam) searchPeriod.value = periodParam;
+    if (periodParam) searchPeriod.value = periodParam.toString();
+
+    // Automatically run search if there are 2 or more participants
+    const validParticipants = participants.value
+      .map((p) => parseInt(p.position, 10))
+      .filter((p) => !isNaN(p));
+
+    if (validParticipants.length >= 2) {
+      // Use setTimeout to ensure the component is fully mounted and reactive
+      setTimeout(() => {
+        findDates();
+      }, 0);
+    }
 
     return true;
   } catch (error) {
-    console.error("Failed to initialize app:", error);
+    alert(ERROR_MESSAGES.INIT_FAILED);
     return false;
   }
 }

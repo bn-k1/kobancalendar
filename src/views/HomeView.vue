@@ -88,14 +88,14 @@ import config from "@config/config.json";
 const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
 const { isLoaded, initializeApp } = useAppInitializer();
 const calendarRef = ref(null);
-const selectedBaseDate = ref('');
+const selectedBaseDate = ref("");
 
 // Calendar composable
 const {
   calendarEvents,
   startPosition,
   generateCalendarEvents,
-  setStartPosition
+  setStartPosition,
 } = useCalendar();
 
 // Schedule composable
@@ -104,22 +104,22 @@ const {
   currentBaseDate,
   lastBaseDate,
   rotationCycleLength,
-  updateCurrentBaseDate
+  updateCurrentBaseDate,
 } = useSchedule();
 
 // Computed values
 const formattedBaseDates = computed(() => {
-  return baseDates.value.map(date => ({
+  return baseDates.value.map((date) => ({
     value: formatAsISODate(date),
-    text: formatAsDisplayDate(date)
+    text: formatAsDisplayDate(date),
   }));
 });
 
 const positionOptions = computed(() => {
-  return Array.from(
-    { length: rotationCycleLength.value },
-    (_, i) => ({ value: i + 1, text: String(i + 1) })
-  );
+  return Array.from({ length: rotationCycleLength.value }, (_, i) => ({
+    value: i + 1,
+    text: String(i + 1),
+  }));
 });
 
 // Initial date for the calendar
@@ -160,7 +160,7 @@ function handlePositionChange(newPosition) {
     const api = calendarRef.value.getApi();
     generateCalendarEvents(
       createDate(api.view.activeStart),
-      createDate(api.view.activeEnd)
+      createDate(api.view.activeEnd),
     );
   }
 }
@@ -188,7 +188,7 @@ async function initialize() {
       saturdayData,
       weekdayData,
       config,
-      eventConfig
+      eventConfig,
     });
 
     if (!result) {
@@ -202,7 +202,7 @@ async function initialize() {
       "startNumber",
       APP_CONFIG.DEFAULT_START_POSITION,
       1,
-      result.scheduleData.rotationCycleLength
+      result.scheduleData.rotationCycleLength,
     );
 
     // Set current base date

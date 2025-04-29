@@ -8,8 +8,8 @@ const routes = [
     name: "home",
     component: HomeView,
     meta: {
-      title: "交番カレンダー🚨"
-    }
+      title: "交番カレンダー🚨",
+    },
   },
   {
     path: "/meetup",
@@ -17,14 +17,14 @@ const routes = [
     // Lazy loading for better performance
     component: () => import("../views/MeetupView.vue"),
     meta: {
-      title: "飲みに行くンダー🍻"
-    }
-  }
+      title: "飲みに行くンダー🍻",
+    },
+  },
 ];
 
 const router = createRouter({
   history: createWebHashHistory("/kobancalendar/"),
-  routes
+  routes,
 });
 
 // Handle page title updates

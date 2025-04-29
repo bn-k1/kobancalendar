@@ -80,7 +80,7 @@ const props = defineProps({
   showResults: {
     type: Boolean,
     default: false,
-  }
+  },
 });
 
 const route = useRoute();
@@ -92,15 +92,15 @@ const isMeetupPage = computed(() => route.path === "/meetup");
 // Page title based on route or props
 const pageTitle = computed(() => {
   if (props.title) return props.title;
-  
-  if (props.layout === 'calendar' || isHomePage.value) {
+
+  if (props.layout === "calendar" || isHomePage.value) {
     return "交番カレンダー🚨";
   }
-  
-  if (props.layout === 'meetup' || isMeetupPage.value) {
+
+  if (props.layout === "meetup" || isMeetupPage.value) {
     return "飲みに行くンダー🍻";
   }
-  
+
   return "交番カレンダー";
 });
 </script>

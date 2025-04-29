@@ -229,12 +229,12 @@ onMounted(() => {
 }
 
 :deep(.fc-day-sat) {
-  background-color: var(--saturday-color);
+  background-color: var(--saturday-color) !important;
 }
 
 :deep(.fc-day-sun),
 :deep(.holiday) {
-  background-color: var(--holiday-color);
+  background-color: var(--holiday-color) !important;
 }
 
 :deep(.today-highlight) {

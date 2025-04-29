@@ -41,19 +41,19 @@ import { useSchedule } from "@/composables/useSchedule";
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   title: {
     type: String,
-    default: ""
+    default: "",
   },
   details: {
     type: Object,
-    default: () => ({ details: [] })
-  }
+    default: () => ({ details: [] }),
+  },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(["close"]);
 
 // Dependencies
 const { getScheduleForDate } = useSchedule();
@@ -61,18 +61,13 @@ const { getScheduleForDate } = useSchedule();
 // Close modal when clicking outside
 function closeModalOnOutsideClick(event) {
   if (event.target.id === "detailsModal") {
-    emit('close');
+    emit("close");
   }
 }
 
 // Get current day shift description
 function getCurrentDayShift(detail) {
-  if (
-    !detail ||
-    !detail.position ||
-    !props.details ||
-    !props.details.date
-  ) {
+  if (!detail || !detail.position || !props.details || !props.details.date) {
     return "-";
   }
 
@@ -92,12 +87,7 @@ function getCurrentDayShift(detail) {
 
 // Get next day shift description
 function getNextDayShift(detail) {
-  if (
-    !detail ||
-    !detail.position ||
-    !props.details ||
-    !props.details.date
-  ) {
+  if (!detail || !detail.position || !props.details || !props.details.date) {
     return "-";
   }
 
