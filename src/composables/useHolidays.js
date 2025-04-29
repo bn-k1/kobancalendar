@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import JapaneseHolidays from "japanese-holidays";
 import { useHolidayStore } from "@/stores/holiday";
-import { CUSTOM_HOLIDAY } from "@/utils/constants";
+import { ERROR_MESSAGES, CUSTOM_HOLIDAY } from "@/utils/constants";
 import { createDate, formatAsISODate, isSunday } from "@/utils/date";
 
 /**
@@ -134,7 +134,7 @@ export function useHolidays() {
       holidayStore.setHolidays(holidays);
       return holidays;
     } catch (error) {
-      console.error("Failed to load holidays:", error);
+      console.error(ERROR_MESSAGES.HOLIDAYS_LOAD_ERROR, error);
       throw error;
     }
   }

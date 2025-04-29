@@ -84,7 +84,6 @@ function handleExportICS() {
     );
     emit("export-complete", { success: true });
   } catch (error) {
-    console.error("ICS export error:", error);
     emit("export-complete", { success: false, error });
   }
 }

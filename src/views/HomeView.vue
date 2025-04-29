@@ -221,6 +221,10 @@ async function initialize() {
     selectedBaseDate.value = formatAsISODate(validBaseDate);
 
     // Set start position
+    if (!startNumberParam) {
+      setStartPosition();
+      return false;
+    }
     setStartPosition(startNumberParam);
 
     return true;

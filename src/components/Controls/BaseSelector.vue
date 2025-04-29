@@ -16,6 +16,7 @@
         :value="modelValue"
         @change="handleChange"
       >
+        <option value="" disabled selected v-if="!modelValue">コマ位置を選択</option>
         <option
           v-for="option in options"
           :key="option.value || option"
@@ -48,7 +49,7 @@ const props = defineProps({
     default: "",
   },
   modelValue: {
-    type: [String, Number, Date, Object],
+    type: [String, Number, Date, Object, null],
     required: true,
   },
   options: {
