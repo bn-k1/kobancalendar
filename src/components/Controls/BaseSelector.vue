@@ -3,12 +3,10 @@
   <fieldset :id="id" class="control-group">
     <legend>{{ legend }}</legend>
     <div class="form-group">
-      <!-- 以下の行を修正 -->
       <span v-if="displayAsText || options.length === 1">
         {{ displayValue || (options.length === 1 && formatter ? formatter(options[0].value || options[0]) : formatOption(options[0])) }}
       </span>
 
-      <!-- 以下は変更なし -->
       <select
         v-else
         :id="id"
