@@ -16,9 +16,9 @@ export function useAppInitializer() {
   const { setEventConfig, setICSExportConfig } = useCalendar();
   const {
     loadScheduleData,
-    setBaseDates,
-    setLastBaseDate,
-    updateCurrentBaseDate,
+    setDefaultBaseDate,
+    setNextBaseDate,
+    updateActiveBaseDate,
   } = useSchedule();
 
   const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
@@ -49,18 +49,23 @@ export function useAppInitializer() {
       );
 
       // Process base dates
-      const configBaseDates = config.base_dates
-        .map((dateStr) => createDate(dateStr))
-        .sort((a, b) => a.unix() - b.unix());
-
-      setBaseDates(configBaseDates);
-      setLastBaseDate(configBaseDates[configBaseDates.length - 1]);
+      const defaultBaseDateObj = createDate(config.default_base_date);
+      setDefaultBaseDate(defaultBaseDateObj);
+      
+      // Set next base date if available
+      if (config.next_base_date) {
+        const nextBaseDateObj = createDate(config.next_base_date);
+        setNextBaseDate(nextBaseDateObj);
+      } else {
+        // If no next_base_date, use default_base_date
+        setNextBaseDate(defaultBaseDateObj);
+      }
 
       isLoaded.value = true;
 
       return {
         scheduleData,
-        baseDates: configBaseDates,
+        defaultBaseDate: defaultBaseDateObj,
       };
     } catch (error) {
       console.error(ERROR_MESSAGES.INIT_FAILED, error);
@@ -68,22 +73,8 @@ export function useAppInitializer() {
     }
   }
 
-  /**
-   * Set the current base date
-   */
-  function setCurrentBaseDate(baseDate, availableDates) {
-    const validBaseDate =
-      availableDates.find((date) =>
-        createDate(date).isSame(createDate(baseDate), "day"),
-      ) || availableDates[0];
-
-    updateCurrentBaseDate(validBaseDate);
-    return validBaseDate;
-  }
-
   return {
     isLoaded,
     initializeApp,
-    setCurrentBaseDate,
   };
 }

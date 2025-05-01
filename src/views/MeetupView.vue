@@ -141,18 +141,35 @@ const { searchResults, findMeetupDates } = useMeetupSearch();
 
 // Schedule composable
 const {
-  baseDates,
-  currentBaseDate,
+  defaultBaseDate,
+  activeBaseDate,
+  nextBaseDate,
   rotationCycleLength,
-  updateCurrentBaseDate,
+  updateActiveBaseDate,
 } = useSchedule();
 
 // Computed values
 const formattedBaseDates = computed(() => {
-  return baseDates.value.map((date) => ({
-    value: formatAsISODate(date),
-    text: formatAsDisplayDate(date),
-  }));
+  const dates = [];
+  
+  // Add default base date
+  if (defaultBaseDate.value) {
+    dates.push({
+      value: formatAsISODate(defaultBaseDate.value),
+      text: formatAsDisplayDate(defaultBaseDate.value),
+    });
+  }
+  
+  // Add next base date if it exists and is different from default
+  if (nextBaseDate.value && 
+      !(defaultBaseDate.value && formatAsISODate(defaultBaseDate.value) === formatAsISODate(nextBaseDate.value))) {
+    dates.push({
+      value: formatAsISODate(nextBaseDate.value),
+      text: formatAsDisplayDate(nextBaseDate.value),
+    });
+  }
+  
+  return dates;
 });
 
 // Options for time and period selectors
@@ -188,7 +205,7 @@ function updateURL() {
 // Event handlers
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
-  updateCurrentBaseDate(newDate);
+  updateActiveBaseDate(newDate);
 
   updateURL();
 }
@@ -249,11 +266,10 @@ async function initialize() {
     }
 
     // Get URL parameters
-    const baseDateParam = getDateParam("baseDate", null, baseDates.value);
+    const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(Boolean);
+    const baseDateParam = getDateParam("baseDate", null, validBaseDates);
     const participantsFromUrl = getParticipantsFromParams();
-    // Fix: Use getStringParam for startTime instead of getDateParam
     const startTimeParam = getStringParam("startTime", meetupStartTime.value);
-    // Fix: Use getNumberParam for period instead of getDateParam
     const periodParam = getNumberParam(
       "period",
       parseInt(searchPeriod.value, 10),
@@ -263,19 +279,17 @@ async function initialize() {
     if (baseDateParam) {
       const dateObj = createDate(baseDateParam);
       if (dateObj.isValid()) {
-        updateCurrentBaseDate(dateObj);
+        updateActiveBaseDate(dateObj);
         selectedBaseDate.value = formatAsISODate(dateObj);
       } else {
         // Use default
-        const defaultBaseDate = baseDates.value[0];
-        updateCurrentBaseDate(defaultBaseDate);
-        selectedBaseDate.value = formatAsISODate(defaultBaseDate);
+        updateActiveBaseDate(defaultBaseDate.value);
+        selectedBaseDate.value = formatAsISODate(defaultBaseDate.value);
       }
     } else {
       // Use default
-      const defaultBaseDate = baseDates.value[0];
-      updateCurrentBaseDate(defaultBaseDate);
-      selectedBaseDate.value = formatAsISODate(defaultBaseDate);
+      updateActiveBaseDate(defaultBaseDate.value);
+      selectedBaseDate.value = formatAsISODate(defaultBaseDate.value);
     }
 
     // Apply participants parameter
@@ -307,7 +321,7 @@ async function initialize() {
 }
 
 // Watch for base date changes from composable
-watch(currentBaseDate, (newBaseDate) => {
+watch(activeBaseDate, (newBaseDate) => {
   if (newBaseDate) {
     selectedBaseDate.value = formatAsISODate(newBaseDate);
   }

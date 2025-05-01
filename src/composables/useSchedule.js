@@ -25,9 +25,9 @@ export function useSchedule() {
 
   // Local cached references to avoid recursion
   const storeScheduleData = computed(() => scheduleStore.scheduleData);
-  const storeBaseDates = computed(() => scheduleStore.baseDates);
-  const storeCurrentBaseDate = computed(() => scheduleStore.currentBaseDate);
-  const storeLastBaseDate = computed(() => scheduleStore.lastBaseDate);
+  const storeDefaultBaseDate = computed(() => scheduleStore.defaultBaseDate);
+  const storeActiveBaseDate = computed(() => scheduleStore.activeBaseDate);
+  const storeNextBaseDate = computed(() => scheduleStore.nextBaseDate);
 
   /**
    * Calculate shift index for a given date
@@ -60,54 +60,23 @@ export function useSchedule() {
   function getScheduleForDate(targetDate, startPosition, baseDateParam) {
     const target = createDate(targetDate);
 
-    // baseDateParam or currentBaseDate is required
-    if (!baseDateParam && !storeCurrentBaseDate.value) {
-      return {
-        dateStr: formatAsISODate(target),
-        subject: "-",
-        startTime: "",
-        endTime: "",
-        isHoliday: false,
-        isSaturday: target.day() === 6,
-      };
-    }
-
     const baseDate = baseDateParam
       ? createDate(baseDateParam)
-      : storeCurrentBaseDate.value;
+      : storeActiveBaseDate.value;
     const isHolidayFlag = isHoliday(target);
     const isSaturday = target.day() === 6;
     const dateStr = formatAsISODate(target);
 
-    // Ensure lastBaseDate is set
-    if (!storeLastBaseDate.value) {
-      return {
-        dateStr,
-        subject: "-",
-        startTime: "",
-        endTime: "",
-        isHoliday: isHolidayFlag,
-        isSaturday,
-      };
-    }
-
     // Check if date is within valid range
     const baseStr = formatAsISODate(baseDate);
-    const lastStr = formatAsISODate(storeLastBaseDate.value);
+    const nextStr = formatAsISODate(storeNextBaseDate.value);
 
     if (
-      (toUnix(baseDate) !== toUnix(storeLastBaseDate.value) &&
-        dateStr >= lastStr) ||
+      (toUnix(baseDate) !== toUnix(storeNextBaseDate.value) &&
+        dateStr >= nextStr) ||
       dateStr < baseStr
     ) {
-      return {
-        dateStr,
-        subject: "-",
-        startTime: "",
-        endTime: "",
-        isHoliday: isHolidayFlag,
-        isSaturday,
-      };
+      return {};
     }
 
     // Calculate shift index
@@ -253,35 +222,35 @@ export function useSchedule() {
   }
 
   /**
-   * Set base dates
-   * @param {Array} dates - Array of base dates
+   * Set default base date
+   * @param {dayjs} date - Default base date
    */
-  function setBaseDates(dates) {
-    scheduleStore.setBaseDates(dates);
+  function setDefaultBaseDate(date) {
+    scheduleStore.setDefaultBaseDate(date);
   }
 
   /**
-   * Update current base date
-   * @param {dayjs} date - New base date
+   * Update active base date
+   * @param {dayjs} date - New active base date
    */
-  function updateCurrentBaseDate(date) {
-    scheduleStore.updateCurrentBaseDate(createDate(date));
+  function updateActiveBaseDate(date) {
+    scheduleStore.updateActiveBaseDate(createDate(date));
   }
 
   /**
-   * Set last base date
-   * @param {dayjs} date - Last base date
+   * Set next base date
+   * @param {dayjs} date - Next base date
    */
-  function setLastBaseDate(date) {
-    scheduleStore.setLastBaseDate(createDate(date));
+  function setNextBaseDate(date) {
+    scheduleStore.setNextBaseDate(createDate(date));
   }
 
   return {
     // Computed state from store
     scheduleData: storeScheduleData,
-    baseDates: storeBaseDates,
-    currentBaseDate: storeCurrentBaseDate,
-    lastBaseDate: storeLastBaseDate,
+    defaultBaseDate: storeDefaultBaseDate,
+    activeBaseDate: storeActiveBaseDate,
+    nextBaseDate: storeNextBaseDate,
     isDataLoaded: computed(
       () => storeScheduleData.value.rotationCycleLength > 0,
     ),
@@ -295,8 +264,8 @@ export function useSchedule() {
     calculateScheduleRange,
     processCSVData,
     loadScheduleData,
-    setBaseDates,
-    updateCurrentBaseDate,
-    setLastBaseDate,
+    setDefaultBaseDate,
+    updateActiveBaseDate,
+    setNextBaseDate,
   };
 }

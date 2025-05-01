@@ -39,9 +39,9 @@
     <!-- Export section -->
     <template #export>
       <ExportSection
-        v-if="isLoaded && currentBaseDate"
-        :base-date="currentBaseDate"
-        :last-base-date="lastBaseDate"
+        v-if="isLoaded && activeBaseDate"
+        :base-date="activeBaseDate"
+        :next-base-date="nextBaseDate"
         :start-position="startPosition"
         @export-complete="handleExportComplete"
       />
@@ -86,32 +86,48 @@ import config from "@config/config.json";
 // Composables initialization
 const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
 const { isLoaded, initializeApp } = useAppInitializer();
-const calendarRef = ref(null);
+const calendarRef = ref(APP_CONFIG.DEFAULT_START_POSITION);
 const selectedBaseDate = ref("");
 
 // Calendar composable
 const {
   calendarEvents,
-  startPosition,
+  startPosition: computedStartPosition,
   generateCalendarEvents,
   setStartPosition,
 } = useCalendar();
 
 // Schedule composable
 const {
-  baseDates,
-  currentBaseDate,
-  lastBaseDate,
+  defaultBaseDate,
+  activeBaseDate,
+  nextBaseDate,
   rotationCycleLength,
-  updateCurrentBaseDate,
+  updateActiveBaseDate,
 } = useSchedule();
 
 // Computed values
 const formattedBaseDates = computed(() => {
-  return baseDates.value.map((date) => ({
-    value: formatAsISODate(date),
-    text: formatAsDisplayDate(date),
-  }));
+  const dates = [];
+  
+  // Add default base date
+  if (defaultBaseDate.value) {
+    dates.push({
+      value: formatAsISODate(defaultBaseDate.value),
+      text: formatAsDisplayDate(defaultBaseDate.value),
+    });
+  }
+  
+  // Add next base date if it exists and is different from default
+  if (nextBaseDate.value && 
+      !(defaultBaseDate.value && formatAsISODate(defaultBaseDate.value) === formatAsISODate(nextBaseDate.value))) {
+    dates.push({
+      value: formatAsISODate(nextBaseDate.value),
+      text: formatAsDisplayDate(nextBaseDate.value),
+    });
+  }
+  
+  return dates;
 });
 
 const positionOptions = computed(() => {
@@ -123,28 +139,31 @@ const positionOptions = computed(() => {
 
 // Initial date for the calendar
 const initialDate = computed(() => {
-  if (!currentBaseDate.value) return null;
+  if (!activeBaseDate.value) return null;
 
   const currentDay = today();
-  return isSameOrAfter(currentBaseDate.value, currentDay)
-    ? toDate(currentBaseDate.value)
+  return isSameOrAfter(activeBaseDate.value, currentDay)
+    ? toDate(activeBaseDate.value)
     : toDate(currentDay);
 });
+
+const startPosition = ref(null);
 
 // Event handlers
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
-  updateCurrentBaseDate(newDate);
+  updateActiveBaseDate(newDate);
 
   // Update URL params
   updateCalendarParams(newDate, startPosition.value);
 }
 
 function handlePositionChange(newPosition) {
-  setStartPosition(parseInt(newPosition, 10));
+  const positionValue = parseInt(newPosition, 10);
+  startPosition.value = positionValue;
+  setStartPosition(positionValue);
 
-  // Update URL params
-  updateCalendarParams(selectedBaseDate.value, parseInt(newPosition, 10));
+  updateCalendarParams(selectedBaseDate.value, positionValue);
 }
 
 function handleDatesSet({ start, end }) {
@@ -154,16 +173,6 @@ function handleDatesSet({ start, end }) {
 function handleExportComplete({ success, error }) {
   if (!success && error) {
     alert(ERROR_MESSAGES.ICS_EXPORT_ERROR);
-  }
-}
-
-function regenerateCalendar(){
-  if (calendarRef.value?.getApi) {
-    const api = calendarRef.value.getApi();
-    generateCalendarEvents(
-      createDate(api.view.activeStart),
-      createDate(api.view.activeEnd),
-    );
   }
 }
 
@@ -185,7 +194,8 @@ async function initialize() {
     }
 
     // Get URL parameters
-    const baseDateParam = getDateParam("baseDate", null, baseDates.value);
+    const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(Boolean);
+    const baseDateParam = getDateParam("baseDate", null, validBaseDates);
     const startNumberParam = getNumberParam(
       "startNumber",
       APP_CONFIG.DEFAULT_START_POSITION,
@@ -193,26 +203,26 @@ async function initialize() {
       result.scheduleData.rotationCycleLength,
     );
 
-    // Set current base date
+    // Set active base date
     let validBaseDate;
     if (baseDateParam) {
       validBaseDate = baseDateParam;
-      updateCurrentBaseDate(validBaseDate);
-    } else if (baseDates.value && baseDates.value.length > 0) {
-      validBaseDate = baseDates.value[0];
-      updateCurrentBaseDate(validBaseDate);
+      updateActiveBaseDate(validBaseDate);
+    } else if (defaultBaseDate.value) {
+      validBaseDate = defaultBaseDate.value;
+      updateActiveBaseDate(validBaseDate);
     } else {
-      validBaseDate = baseDates.value[0];
-      updateCurrentBaseDate(validBaseDate);
+      console.error(ERROR_MESSAGES.NO_BASE_DATE);
+      return false;
     }
 
     selectedBaseDate.value = formatAsISODate(validBaseDate);
 
-    // Set start position
-    if (!startNumberParam || !baseDateParam) {
-      setStartPosition();
-      return false;
+    if (!baseDateParam || !startNumberParam) {
+      setStartPosition(APP_CONFIG.DEFAULT_START_POSITION);
+      return true;
     }
+
     setStartPosition(startNumberParam);
     return true;
 
@@ -224,9 +234,15 @@ async function initialize() {
 }
 
 // Watch for base date changes from composable
-watch(currentBaseDate, (newBaseDate) => {
+watch(activeBaseDate, (newBaseDate) => {
   if (newBaseDate) {
     selectedBaseDate.value = formatAsISODate(newBaseDate);
+  }
+});
+
+watch(computedStartPosition, (newValue) => {
+  if (newValue && newValue !== startPosition.value) {
+    startPosition.value = newValue;
   }
 });
 

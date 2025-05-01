@@ -13,9 +13,9 @@ export const useScheduleStore = defineStore("schedule", () => {
     weekday: [],
     rotationCycleLength: 0,
   });
-  const baseDates = ref([]);
-  const currentBaseDate = ref(null);
-  const lastBaseDate = ref(null);
+  const defaultBaseDate = ref(null);
+  const activeBaseDate = ref(null);
+  const nextBaseDate = ref(null);
 
   const isDataLoaded = computed(() => {
     return scheduleData.value.rotationCycleLength > 0;
@@ -24,29 +24,29 @@ export const useScheduleStore = defineStore("schedule", () => {
   function setScheduleData(data) {
     scheduleData.value = data;
   }
-  function setBaseDates(dates) {
-    baseDates.value = dates;
+  function setDefaultBaseDate(date) {
+    defaultBaseDate.value = date;
   }
 
-  function updateCurrentBaseDate(date) {
-    currentBaseDate.value = date;
+  function updateActiveBaseDate(date) {
+    activeBaseDate.value = date;
   }
 
-  function setLastBaseDate(date) {
-    lastBaseDate.value = date;
+  function setNextBaseDate(date) {
+    nextBaseDate.value = date;
   }
 
   return {
     scheduleData: computed(() => scheduleData.value),
-    baseDates: computed(() => baseDates.value),
-    currentBaseDate: computed(() => currentBaseDate.value),
-    lastBaseDate: computed(() => lastBaseDate.value),
+    defaultBaseDate: computed(() => defaultBaseDate.value),
+    activeBaseDate: computed(() => activeBaseDate.value),
+    nextBaseDate: computed(() => nextBaseDate.value),
 
     isDataLoaded,
 
     setScheduleData,
-    setBaseDates,
-    updateCurrentBaseDate,
-    setLastBaseDate,
+    setDefaultBaseDate,
+    updateActiveBaseDate,
+    setNextBaseDate,
   };
 });

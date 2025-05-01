@@ -15,11 +15,6 @@
       "color": "#ffa726",
       "showTime": true
     },
-    "nullShift": {
-      "keywords": ["-"],
-      "color": "#78909c",
-      "showTime": false
-    },
     "default": {
       "keywords": [],
       "color": "#42a5f5",

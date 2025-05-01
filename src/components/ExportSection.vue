@@ -42,7 +42,7 @@ const props = defineProps({
     type: [Date, Object],
     required: true,
   },
-  lastBaseDate: {
+  nextBaseDate: {
     type: [Date, Object],
     required: true,
   },
@@ -80,7 +80,7 @@ function handleExportICS() {
       months,
       position,
       createDate(props.baseDate),
-      createDate(props.lastBaseDate),
+      createDate(props.nextBaseDate),
     );
     emit("export-complete", { success: true });
   } catch (error) {
