@@ -109,7 +109,7 @@ const {
 // Computed values
 const formattedBaseDates = computed(() => {
   const dates = [];
-  
+
   // Add default base date
   if (defaultBaseDate.value) {
     dates.push({
@@ -117,16 +117,22 @@ const formattedBaseDates = computed(() => {
       text: formatAsDisplayDate(defaultBaseDate.value),
     });
   }
-  
+
   // Add next base date if it exists and is different from default
-  if (nextBaseDate.value && 
-      !(defaultBaseDate.value && formatAsISODate(defaultBaseDate.value) === formatAsISODate(nextBaseDate.value))) {
+  if (
+    nextBaseDate.value &&
+    !(
+      defaultBaseDate.value &&
+      formatAsISODate(defaultBaseDate.value) ===
+        formatAsISODate(nextBaseDate.value)
+    )
+  ) {
     dates.push({
       value: formatAsISODate(nextBaseDate.value),
       text: formatAsDisplayDate(nextBaseDate.value),
     });
   }
-  
+
   return dates;
 });
 
@@ -194,7 +200,9 @@ async function initialize() {
     }
 
     // Get URL parameters
-    const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(Boolean);
+    const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
+      Boolean,
+    );
     const baseDateParam = getDateParam("baseDate", null, validBaseDates);
     const startNumberParam = getNumberParam(
       "startNumber",
@@ -225,7 +233,6 @@ async function initialize() {
 
     setStartPosition(startNumberParam);
     return true;
-
   } catch (error) {
     console.error(ERROR_MESSAGES.INIT_FAILED, error);
     alert(ERROR_MESSAGES.INIT_FAILED);

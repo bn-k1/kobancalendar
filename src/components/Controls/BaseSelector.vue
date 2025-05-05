@@ -4,7 +4,12 @@
     <legend>{{ legend }}</legend>
     <div class="form-group">
       <span v-if="displayAsText || options.length === 1">
-        {{ displayValue || (options.length === 1 && formatter ? formatter(options[0].value || options[0]) : formatOption(options[0])) }}
+        {{
+          displayValue ||
+          (options.length === 1 && formatter
+            ? formatter(options[0].value || options[0])
+            : formatOption(options[0]))
+        }}
       </span>
 
       <select
@@ -14,7 +19,9 @@
         :value="modelValue"
         @change="handleChange"
       >
-        <option value="" disabled selected v-if="!modelValue">コマ位置を選択</option>
+        <option value="" disabled selected v-if="!modelValue">
+          コマ位置を選択
+        </option>
         <option
           v-for="option in options"
           :key="option.value || option"

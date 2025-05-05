@@ -7,7 +7,6 @@ import { ERROR_MESSAGES } from "@/utils/constants";
  * Handles retrieving and updating URL parameters for both views
  */
 export function useUrlParams() {
-
   /**
    * Update URL parameters without reloading the page
    * @param {Object} params - Parameters to update
@@ -18,9 +17,9 @@ export function useUrlParams() {
     // Update or add each parameter
     Object.entries(params).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
-	url.searchParams.set(key, value);
+        url.searchParams.set(key, value);
       } else {
-	url.searchParams.delete(key);
+        url.searchParams.delete(key);
       }
     });
 
@@ -63,8 +62,8 @@ export function useUrlParams() {
       const dateExists = validDates.some((date) => isSameDay(date, dateObj));
 
       if (!dateExists) {
-	alert(ERROR_MESSAGES.INVALID_BASE_DATE);
-	return defaultValue;
+        alert(ERROR_MESSAGES.INVALID_BASE_DATE);
+        return defaultValue;
       }
     }
 

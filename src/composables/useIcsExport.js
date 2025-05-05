@@ -34,59 +34,59 @@ export function useIcsExport() {
     exportMonths.value = months;
   }
 
-/**
- * Export schedule to ICS format
- * @param {number} months - Number of months to export
- * @param {number} startPosition - Starting position in the rotation
- * @param {dayjs} baseDate - Base date for calculations
- * @param {dayjs} nextBaseDate - Next base date for calculations
- * @returns {boolean} Success status
- */
-function exportICS(months, startPosition, baseDate, nextBaseDate) {
-  try {
-    exportError.value = null;
+  /**
+   * Export schedule to ICS format
+   * @param {number} months - Number of months to export
+   * @param {number} startPosition - Starting position in the rotation
+   * @param {dayjs} baseDate - Base date for calculations
+   * @param {dayjs} nextBaseDate - Next base date for calculations
+   * @returns {boolean} Success status
+   */
+  function exportICS(months, startPosition, baseDate, nextBaseDate) {
+    try {
+      exportError.value = null;
 
-    const currentDay = startOfDay(today());
-    const base = createDate(baseDate);
-    const nextBase = createDate(nextBaseDate);
+      const currentDay = startOfDay(today());
+      const base = createDate(baseDate);
+      const nextBase = createDate(nextBaseDate);
 
-    // Determine start date (either base date or today, whichever is later)
-    const startDate =
-      isAfter(base, currentDay) || isSame(base, currentDay)
-        ? startOfDay(base)
-        : currentDay;
+      // Determine start date (either base date or today, whichever is later)
+      const startDate =
+        isAfter(base, currentDay) || isSame(base, currentDay)
+          ? startOfDay(base)
+          : currentDay;
 
-    // Calculate end date based on months parameter
-    let endDate = addMonths(startDate, months);
+      // Calculate end date based on months parameter
+      let endDate = addMonths(startDate, months);
 
-    // Use next base date as limit if it comes before calculated end date
-    if (nextBase && !isSame(base, nextBase) && isBefore(nextBase, endDate)) {
-      endDate = nextBase;
+      // Use next base date as limit if it comes before calculated end date
+      if (nextBase && !isSame(base, nextBase) && isBefore(nextBase, endDate)) {
+        endDate = nextBase;
+      }
+
+      // Get schedule for the date range
+      const scheduleRange = calculateScheduleRange(
+        startDate,
+        endDate,
+        startPosition,
+        base,
+      );
+
+      // Create the calendar
+      const calendar = createCalendar(
+        scheduleRange,
+        calendarStore.icsExportConfig,
+      );
+
+      // Download the ICS file
+      downloadICS(calendar.toString(), startDate, endDate);
+      return true;
+    } catch (error) {
+      console.error(ERROR_MESSAGES.ICS_EXPORT_ERROR, error);
+      exportError.value = error;
+      throw error;
     }
-
-    // Get schedule for the date range
-    const scheduleRange = calculateScheduleRange(
-      startDate,
-      endDate,
-      startPosition,
-      base,
-    );
-
-    // Create the calendar
-    const calendar = createCalendar(
-      scheduleRange,
-      calendarStore.icsExportConfig,
-    );
-
-    // Download the ICS file
-    downloadICS(calendar.toString(), startDate, endDate);
-    return true;
-  } catch (error) {
-    console.error(ERROR_MESSAGES.ICS_EXPORT_ERROR, error);
-    exportError.value = error;
-    throw error;
   }
-}
 
   return {
     exportMonths,

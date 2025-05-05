@@ -138,7 +138,6 @@ export function useCalendar() {
    * @returns {Array} Generated events
    */
   function generateCalendarEvents(startDate, endDate) {
-
     const generatedEvents = [];
     const startPosition = storeStartPosition.value;
 

@@ -51,7 +51,7 @@ export function useAppInitializer() {
       // Process base dates
       const defaultBaseDateObj = createDate(config.default_base_date);
       setDefaultBaseDate(defaultBaseDateObj);
-      
+
       // Set next base date if available
       if (config.next_base_date) {
         const nextBaseDateObj = createDate(config.next_base_date);
