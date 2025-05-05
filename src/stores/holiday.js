@@ -8,7 +8,7 @@ import { ref, computed } from "vue";
  */
 export const useHolidayStore = defineStore("holiday", () => {
   const allHolidays = ref({});
-  const holidayYearsRange = ref(5);
+  const holidayYearsRange = ref(null);
   const userDefinedHolidays = ref([]);
 
   function setHolidays(holidays) {

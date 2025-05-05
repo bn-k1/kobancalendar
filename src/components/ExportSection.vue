@@ -1,24 +1,24 @@
 <!-- src/components/ExportSection.vue -->
 <template>
-  <fieldset id="exportSection" class="control-group">
-    <legend>エクスポート</legend>
+  <fieldset id="exportSection" class="control-group"> <legend>エクスポート</legend>
     <div class="form-group">
-      <label id="exportLabelPostBaseDate" v-if="isBaseDateInPast"
+      <label id="exportLabelDefault" v-if="isBaseDateInPast"
         >今日から</label
       >
-      <label id="exportLabelPreBaseDate" v-else>基準日から</label>
+      <label id="exportLabelNext" v-else>基準日から</label>
       <select
         id="exportMonths"
         aria-label="エクスポート期間を選択"
         v-model="selectedMonths"
         @change="handleMonthsChange"
       >
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
+        <option
+          v-for="option in PERIODOPTIONS"
+          :key="option.value"
+          :value="parseInt(option.value) / 30"
+        >
+          {{ option.text.replace('ヶ月', '') }}
+        </option>
       </select>
       <span>ヶ月分</span>
       <button
@@ -36,6 +36,7 @@
 import { ref, computed } from "vue";
 import { useIcsExport } from "@/composables/useIcsExport";
 import { createDate, today, isBefore } from "@/utils/date";
+import { APP_CONFIG, PERIODOPTIONS } from "@/utils/constants";
 
 const props = defineProps({
   baseDate: {
@@ -55,7 +56,7 @@ const props = defineProps({
 const emit = defineEmits(["export", "export-complete"]);
 
 // State
-const selectedMonths = ref(1);
+const selectedMonths = ref(APP_CONFIG.DEFAULT_EXPORT_MONTHS);
 const { exportICS } = useIcsExport();
 
 // Computed
@@ -88,7 +89,3 @@ function handleExportICS() {
   }
 }
 </script>
-
-<style scoped>
-/* Export section specific styles */
-</style>

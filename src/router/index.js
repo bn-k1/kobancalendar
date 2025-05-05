@@ -8,7 +8,7 @@ const routes = [
     name: "home",
     component: HomeView,
     meta: {
-      title: "交番カレンダー🚨",
+      title: "KobanCalendar🚨",
     },
   },
   {
@@ -17,7 +17,7 @@ const routes = [
     // Lazy loading for better performance
     component: () => import("../views/MeetupView.vue"),
     meta: {
-      title: "飲みに行くンダー🍻",
+      title: "NominiIkundar🍻",
     },
   },
 ];
@@ -29,7 +29,7 @@ const router = createRouter({
 
 // Handle page title updates
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || "交番カレンダー";
+  document.title = to.meta.title || "KobanCalendar";
   next();
 });
 

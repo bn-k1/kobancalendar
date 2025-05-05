@@ -94,14 +94,14 @@ const pageTitle = computed(() => {
   if (props.title) return props.title;
 
   if (props.layout === "calendar" || isHomePage.value) {
-    return "交番カレンダー🚨";
+    return "KobanCalendar🚨";
   }
 
   if (props.layout === "meetup" || isMeetupPage.value) {
-    return "飲みに行くンダー🍻";
+    return "NominiIkundar🍻";
   }
 
-  return "交番カレンダー";
+  return "KobanCalendar🚨";
 });
 </script>
 

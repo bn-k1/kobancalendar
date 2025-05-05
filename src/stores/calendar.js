@@ -1,18 +1,14 @@
 // src/stores/calendar.js
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { CALENDAR_CONFIG, APP_CONFIG } from "@/utils/constants";
 
 /**
  * Calendar store - simplified to only handle state
  * All business logic is moved to the useCalendar composable
  */
 export const useCalendarStore = defineStore("calendar", () => {
-  const calendarConfig = ref({
-    ...CALENDAR_CONFIG,
-  });
-  const startPosition = ref(undefined);
-  const exportMonths = ref(APP_CONFIG.DEFAULT_EXPORT_MONTHS);
+  const startPosition = ref(null);
+  const exportMonths = ref(null);
   const calendarEvents = ref([]);
   const icsExportConfig = ref({});
   const eventConfig = ref(null);
@@ -42,7 +38,6 @@ export const useCalendarStore = defineStore("calendar", () => {
   }
 
   return {
-    calendarConfig,
     startPosition,
     exportMonths,
     calendarEvents,
