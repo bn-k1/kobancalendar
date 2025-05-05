@@ -140,7 +140,7 @@ export function toUnix(date) {
  * Time parsing
  */
 export function parseTime(timeStr) {
-  if (!timeStr) return null;
+  if (!timeStr) return undefined;
 
   const [hours, minutes = "00"] = timeStr.split(":");
   return dayjs()

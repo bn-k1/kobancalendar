@@ -16,7 +16,7 @@ export function useUrlParams() {
 
     // Update or add each parameter
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
+      if (value !== undefined) {
         url.searchParams.set(key, value);
       } else {
         url.searchParams.delete(key);
@@ -33,7 +33,7 @@ export function useUrlParams() {
    * @param {*} defaultValue - Default value if parameter doesn't exist
    * @returns {string} Parameter value or default
    */
-  function getURLParam(paramName, defaultValue = null) {
+  function getURLParam(paramName, defaultValue = undefined) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.has(paramName) ? urlParams.get(paramName) : defaultValue;
   }
@@ -73,7 +73,7 @@ export function useUrlParams() {
   /**
    * Get a number parameter from URL
    */
-  function getNumberParam(paramName, defaultValue, min = null, max = null) {
+  function getNumberParam(paramName, defaultValue, min = undefined, max = undefined) {
     const valueStr = getURLParam(paramName);
     if (!valueStr) return defaultValue;
 
@@ -83,12 +83,12 @@ export function useUrlParams() {
       return defaultValue;
     }
 
-    if (min !== null && value < min) {
+    if (min !== undefined && value < min) {
       console.error(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
       return defaultValue;
     }
 
-    if (max !== null && value > max) {
+    if (max !== undefined && value > max) {
       console.error(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
       return defaultValue;
     }

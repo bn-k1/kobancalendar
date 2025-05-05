@@ -54,7 +54,7 @@ const props = defineProps({
     default: "",
   },
   modelValue: {
-    type: [String, Number, Date, Object, null],
+    type: [String, Number, Date, Object],
     required: false,
   },
   options: {
@@ -71,7 +71,6 @@ const props = defineProps({
   },
   formatter: {
     type: Function,
-    default: null,
   },
 });
 
@@ -84,7 +83,7 @@ function formatOption(option) {
   }
 
   // Default formatting for different types
-  if (option === null || option === undefined) {
+  if (option === undefined) {
     return "";
   }
 

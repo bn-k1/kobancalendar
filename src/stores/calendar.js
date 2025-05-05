@@ -7,14 +7,14 @@ import { ref, computed } from "vue";
  * All business logic is moved to the useCalendar composable
  */
 export const useCalendarStore = defineStore("calendar", () => {
-  const startPosition = ref(null);
-  const exportMonths = ref(null);
+  const startPosition = ref(undefined);
+  const exportMonths = ref(undefined);
   const calendarEvents = ref([]);
   const icsExportConfig = ref({});
-  const eventConfig = ref(null);
+  const eventConfig = ref(undefined);
 
   const isConfigLoaded = computed(() => {
-    return eventConfig.value !== null;
+    return eventConfig.value !== undefined;
   });
 
   function setStartPosition(position) {

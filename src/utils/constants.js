@@ -1,13 +1,4 @@
 // アプリケーション全体で使用される定数を定義
-export const EXPORT_INFO =  {
-    CALENDAR_NAME: "KobanCalendar",
-    TIMEZONE: "Asia/Tokyo",
-    COMPANY: "bn-k1",
-    PRODUCT: "kobancalendar",
-    LANGUAGE: "JP",
-    UID_DOMAIN: "kobancalendar.jp"
-};
-
 export const APP_CONFIG = {
   DEFAULT_EXPORT_MONTHS: 1,
   DEFAULT_SEARCH_PERIOD: 30,

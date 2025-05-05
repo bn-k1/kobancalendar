@@ -4,7 +4,7 @@ import { useCalendar } from "./useCalendar";
 import { useSchedule } from "./useSchedule";
 import { useHolidays } from "./useHolidays";
 import { createDate } from "@/utils/date";
-import { EXPORT_INFO, APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
+import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
 
 /**
  * Shared application initialization logic
@@ -39,7 +39,7 @@ export function useAppInitializer() {
 
       // Calendar configuration
       setEventConfig(eventConfig);
-      setICSExportConfig(EXPORT_INFO);
+      setICSExportConfig(config.info);
 
       // Load schedule data
       const scheduleData = loadScheduleData(

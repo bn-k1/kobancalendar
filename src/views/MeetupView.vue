@@ -242,7 +242,7 @@ async function initialize() {
     const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
       Boolean,
     );
-    const baseDateParam = getDateParam("baseDate", null, validBaseDates);
+    const baseDateParam = getDateParam("baseDate", undefined, validBaseDates);
     const participantsFromUrl = getParticipantsFromParams();
     const startTimeParam = getStringParam("startTime", meetupStartTime.value);
     const periodParam = getNumberParam(

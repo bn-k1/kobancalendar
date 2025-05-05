@@ -13,9 +13,9 @@ export const useScheduleStore = defineStore("schedule", () => {
     weekday: [],
     rotationCycleLength: 0,
   });
-  const defaultBaseDate = ref(null);
-  const activeBaseDate = ref(null);
-  const nextBaseDate = ref(null);
+  const defaultBaseDate = ref(undefined);
+  const activeBaseDate = ref(undefined);
+  const nextBaseDate = ref(undefined);
 
   const isDataLoaded = computed(() => {
     return scheduleData.value.rotationCycleLength > 0;

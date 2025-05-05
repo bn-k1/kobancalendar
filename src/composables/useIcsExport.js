@@ -21,7 +21,7 @@ import {
 export function useIcsExport() {
   // State
   const exportMonths = ref(1);
-  const exportError = ref(null);
+  const exportError = ref(undefined);
 
   // Dependencies
   const calendarStore = useCalendarStore();
@@ -44,7 +44,7 @@ export function useIcsExport() {
    */
   function exportICS(months, startPosition, baseDate, nextBaseDate) {
     try {
-      exportError.value = null;
+      exportError.value = undefined;
 
       const currentDay = startOfDay(today());
       const base = createDate(baseDate);
@@ -91,7 +91,7 @@ export function useIcsExport() {
   return {
     exportMonths,
     exportError: computed(() => exportError.value),
-    hasError: computed(() => exportError.value !== null),
+    hasError: computed(() => exportError.value !== undefined),
 
     // Methods
     setExportMonths,

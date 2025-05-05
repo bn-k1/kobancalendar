@@ -18,7 +18,6 @@ import { createDate, isSameDay, today, toDate } from "@/utils/date";
 const props = defineProps({
   initialDate: {
     type: [Date, Object],
-    default: null,
   },
   startPosition: {
     type: Number,
@@ -37,9 +36,9 @@ const emit = defineEmits(["datesSet"]);
 const { isHoliday, getHolidayName } = useHolidays();
 
 // Local state
-const calendarRef = ref(null);
-const viewStart = ref(null);
-const viewEnd = ref(null);
+const calendarRef = ref(undefined);
+const viewStart = ref(undefined);
+const viewEnd = ref(undefined);
 
 // Calendar options
 const calendarOptions = computed(() => ({

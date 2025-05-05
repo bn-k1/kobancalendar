@@ -194,7 +194,7 @@ export function useCalendar() {
     startPosition: storeStartPosition,
     eventConfig: storeEventConfig,
     icsExportConfig: storeIcsExportConfig,
-    isConfigLoaded: computed(() => storeEventConfig.value !== null),
+    isConfigLoaded: computed(() => storeEventConfig.value !== undefined),
 
     // Store action wrappers
     setStartPosition,

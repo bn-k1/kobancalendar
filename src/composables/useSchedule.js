@@ -92,7 +92,7 @@ export function useSchedule() {
       shiftData = storeScheduleData.value.weekday[shiftIndex];
     }
 
-    if (!shiftData) return null;
+    if (!shiftData) return undefined;
 
     // Parse schedule data
     const [subject, startTime, endTime] = shiftData.split(",");

@@ -145,7 +145,7 @@ const positionOptions = computed(() => {
 
 // Initial date for the calendar
 const initialDate = computed(() => {
-  if (!activeBaseDate.value) return null;
+  if (!activeBaseDate.value) return undefined;
 
   const currentDay = today();
   return isSameOrAfter(activeBaseDate.value, currentDay)
@@ -153,7 +153,7 @@ const initialDate = computed(() => {
     : toDate(currentDay);
 });
 
-const startPosition = ref(null);
+const startPosition = ref(undefined);
 
 // Event handlers
 function handleBaseDateChange(newDateStr) {
@@ -203,7 +203,7 @@ async function initialize() {
     const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
       Boolean,
     );
-    const baseDateParam = getDateParam("baseDate", null, validBaseDates);
+    const baseDateParam = getDateParam("baseDate", undefined, validBaseDates);
     const startNumberParam = getNumberParam(
       "startNumber",
       undefined,
