@@ -29,9 +29,8 @@
               id="meetupStartTime"
               aria-label="飲み会開始時間"
               v-model="meetupStartTime"
-              @change="updateURL"
             >
-              <option v-for="time in timeOptions" :key="time" :value="time">
+              <option v-for="time in TIMEOPTIONS" :key="time" :value="time">
                 {{ time }}
               </option>
             </select>
@@ -42,10 +41,9 @@
               id="searchPeriod"
               aria-label="検索期間"
               v-model="searchPeriod"
-              @change="updateURL"
             >
               <option
-                v-for="period in periodOptions"
+                v-for="period in PERIODOPTIONS"
                 :key="period.value"
                 :value="period.value"
               >
@@ -63,7 +61,6 @@
         v-if="isLoaded"
         v-model="participants"
         :rotation-cycle-length="rotationCycleLength"
-        @change="updateURL"
       />
     </template>
 
@@ -114,7 +111,7 @@ import {
 } from "@/utils/date";
 
 // Config
-import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
+import { APP_CONFIG, TIMEOPTIONS, PERIODOPTIONS, ERROR_MESSAGES } from "@/utils/constants";
 import holidayData from "@data/holiday.csv?raw";
 import saturdayData from "@data/saturday.csv?raw";
 import weekdayData from "@data/weekday.csv?raw";
@@ -178,46 +175,16 @@ const formattedBaseDates = computed(() => {
   return dates;
 });
 
-// Options for time and period selectors
-const timeOptions = [
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-  "19:00",
-  "20:00",
-  "21:00",
-];
-
-const periodOptions = [
-  { value: "30", text: "1ヶ月" },
-  { value: "60", text: "2ヶ月" },
-  { value: "90", text: "3ヶ月" },
-  { value: "120", text: "4ヶ月" },
-  { value: "150", text: "5ヶ月" },
-  { value: "180", text: "6ヶ月" },
-];
-
-function updateURL() {
-  updateMeetupParams(selectedBaseDate.value, participants.value, {
-    startTime: meetupStartTime.value,
-    period: searchPeriod.value,
-  });
-}
 
 // Event handlers
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
   updateActiveBaseDate(newDate);
-
-  updateURL();
 }
 
 // Find available dates
 function findDates() {
+
   // Get valid participant positions
   const positions = participants.value
     .map((p) => parseInt(p.position, 10))

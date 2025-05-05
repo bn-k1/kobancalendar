@@ -24,7 +24,7 @@ export function useUrlParams() {
     });
 
     // Update history without reloading
-    window.history.pushState({}, "", url);
+    window.history.replaceState({}, "", url);
   }
 
   /**

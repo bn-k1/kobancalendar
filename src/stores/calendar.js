@@ -11,7 +11,7 @@ export const useCalendarStore = defineStore("calendar", () => {
   const calendarConfig = ref({
     ...CALENDAR_CONFIG,
   });
-  const startPosition = ref(APP_CONFIG.DEFAULT_START_POSITION);
+  const startPosition = ref(undefined);
   const exportMonths = ref(APP_CONFIG.DEFAULT_EXPORT_MONTHS);
   const calendarEvents = ref([]);
   const icsExportConfig = ref({});

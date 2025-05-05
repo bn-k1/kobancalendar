@@ -86,7 +86,7 @@ import config from "@config/config.json";
 // Composables initialization
 const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
 const { isLoaded, initializeApp } = useAppInitializer();
-const calendarRef = ref(APP_CONFIG.DEFAULT_START_POSITION);
+const calendarRef = ref(undefined);
 const selectedBaseDate = ref("");
 
 // Calendar composable
@@ -206,7 +206,7 @@ async function initialize() {
     const baseDateParam = getDateParam("baseDate", null, validBaseDates);
     const startNumberParam = getNumberParam(
       "startNumber",
-      APP_CONFIG.DEFAULT_START_POSITION,
+      undefined,
       1,
       result.scheduleData.rotationCycleLength,
     );
@@ -227,7 +227,7 @@ async function initialize() {
     selectedBaseDate.value = formatAsISODate(validBaseDate);
 
     if (!baseDateParam || !startNumberParam) {
-      setStartPosition(APP_CONFIG.DEFAULT_START_POSITION);
+      setStartPosition(undefined);
       return true;
     }
 

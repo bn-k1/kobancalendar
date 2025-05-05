@@ -1,7 +1,6 @@
 // アプリケーション全体で使用される定数を定義
 export const APP_CONFIG = {
-  DEFAULT_EXPORT_MONTHS: 3,
-  DEFAULT_START_POSITION: undefined,
+  DEFAULT_EXPORT_MONTHS: 1,
   DEFAULT_SEARCH_PERIOD: 30,
   DEFAULT_MEETUP_START_TIME: "17:00",
   DEFAULT_HOLIDAY_YEARS: 5,
@@ -23,6 +22,29 @@ export const CALENDAR_CONFIG = {
 };
 
 export const CUSTOM_HOLIDAY = "設定祝日";
+
+export const TIMEOPTIONS = [
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00",
+  "21:00",
+  "22:00",
+];
+
+export const PERIODOPTIONS= [
+  { value: "30", text: "1ヶ月" },
+  { value: "60", text: "2ヶ月" },
+  { value: "90", text: "3ヶ月" },
+  { value: "120", text: "4ヶ月" },
+  { value: "150", text: "5ヶ月" },
+  { value: "180", text: "6ヶ月" },
+];
 
 export const ERROR_MESSAGES = {
   INIT_FAILED: "アプリケーションの初期化に失敗しました",
