@@ -1,17 +1,32 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import { fileURLToPath, URL } from "url";
-// https://vitejs.dev/config/
+import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import path from 'path';
+
 export default defineConfig({
-  base: "/kobancalendar/",
   plugins: [vue()],
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
-      "@config": fileURLToPath(new URL("./config", import.meta.url)),
-      "@data": fileURLToPath(new URL("./data", import.meta.url)),
-    },
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@data': fileURLToPath(new URL('./data', import.meta.url)),
+      '@config': fileURLToPath(new URL('./config', import.meta.url)),
+    }
   },
-  // CSVファイルを適切に読み込むための設定
-  assetsInclude: ["**/*.csv"],
+  assetsInclude: ["./data/*.csv"],
+  // Base path for GitHub Pages - repository name
+  base: '/kobancalendar/',
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router', 'pinia'],
+          'calendar': ['@fullcalendar/vue3', '@fullcalendar/daygrid', '@fullcalendar/interaction'],
+          'utils': ['dayjs', 'ical-generator', 'japanese-holidays', 'papaparse']
+        }
+      }
+    }
+  },
 });
