@@ -100,11 +100,11 @@ import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
 
 // Lazy load larger or less critical components
-const ParticipantsList = defineAsyncComponent(() => 
-  import("@/components/Controls/ParticipantsList.vue")
+const ParticipantsList = defineAsyncComponent(
+  () => import("@/components/Controls/ParticipantsList.vue"),
 );
-const ResultsDisplay = defineAsyncComponent(() => 
-  import("@/components/ResultsDisplay.vue")
+const ResultsDisplay = defineAsyncComponent(
+  () => import("@/components/ResultsDisplay.vue"),
 );
 
 // Composables
@@ -126,7 +126,12 @@ import {
 } from "@/utils/date";
 
 // Config
-import { APP_CONFIG, TIMEOPTIONS, PERIODOPTIONS, ERROR_MESSAGES } from "@/utils/constants";
+import {
+  APP_CONFIG,
+  TIMEOPTIONS,
+  PERIODOPTIONS,
+  ERROR_MESSAGES,
+} from "@/utils/constants";
 import holidayData from "@data/holiday.csv?raw";
 import saturdayData from "@data/saturday.csv?raw";
 import weekdayData from "@data/weekday.csv?raw";
@@ -190,7 +195,6 @@ const formattedBaseDates = computed(() => {
   return dates;
 });
 
-
 // Event handlers
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
@@ -199,7 +203,6 @@ function handleBaseDateChange(newDateStr) {
 
 // Find available dates
 function findDates() {
-
   // Get valid participant positions
   const positions = participants.value
     .map((p) => parseInt(p.position, 10))

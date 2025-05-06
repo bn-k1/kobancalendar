@@ -54,6 +54,19 @@
   --font-weight-bold: 700;
 }
 
+:root.dark {
+  --background-light: #121212;
+  --background-dark: #1e1e1e;
+  --text-color: #e0e0e0;
+  --text-light: #ffffff;
+  --primary-color: #bb86fc;
+  --primary-light: #9152cc;
+  --primary-dark: #4500a0;
+  --gray-100: #2a2a2a;
+  --gray-200: #333333;
+  --gray-600: #bbbbbb;
+}
+
 * {
   box-sizing: border-box;
   max-width: 100%;
@@ -91,7 +104,6 @@ body {
 }
 
 header {
-  background-color: var(--primary-color);
   background: linear-gradient(
     120deg,
     var(--primary-color),
@@ -104,6 +116,9 @@ header {
   top: 0;
   z-index: 100;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 header h1 {

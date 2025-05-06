@@ -45,8 +45,8 @@ export function useIcsExport() {
   function exportICS(months, startPosition, baseDate, nextBaseDate) {
     try {
       if (!startPosition) {
-	alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
-	return;
+        alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
+        return;
       }
 
       exportError.value = undefined;

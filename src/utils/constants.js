@@ -37,7 +37,7 @@ export const TIMEOPTIONS = [
   "22:00",
 ];
 
-export const PERIODOPTIONS= [
+export const PERIODOPTIONS = [
   { value: "30", text: "1ヶ月" },
   { value: "60", text: "2ヶ月" },
   { value: "90", text: "3ヶ月" },

@@ -1,10 +1,9 @@
 <!-- src/components/ExportSection.vue -->
 <template>
-  <fieldset id="exportSection" class="control-group"> <legend>エクスポート</legend>
+  <fieldset id="exportSection" class="control-group">
+    <legend>エクスポート</legend>
     <div class="form-group">
-      <label id="exportLabelDefault" v-if="isBaseDateInPast"
-        >今日から</label
-      >
+      <label id="exportLabelDefault" v-if="isBaseDateInPast">今日から</label>
       <label id="exportLabelNext" v-else>基準日から</label>
       <select
         id="exportMonths"
@@ -17,7 +16,7 @@
           :key="option.value"
           :value="parseInt(option.value) / 30"
         >
-          {{ option.text.replace('ヶ月', '') }}
+          {{ option.text.replace("ヶ月", "") }}
         </option>
       </select>
       <span>ヶ月分</span>

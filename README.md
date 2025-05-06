@@ -21,11 +21,11 @@
 
 1. リポジトリをクローンします。
 
-   ````bash
+   ```bash
    git clone https://github.com/bn-k1/kobancalendar.git
    cd kobancalendar
 
-   ````
+   ```
 
 2. 依存パッケージをインストールします。
 

@@ -1,8 +1,17 @@
 // src/layouts/UnifiedPageLayout.vue - Optimizing the layout component
+<!-- src/layouts/UnifiedPageLayout.vue -->
 <template>
   <div class="page-layout">
     <header>
       <h1>{{ pageTitle }}</h1>
+      <button
+        class="dark-toggle"
+        @click="toggleDarkMode"
+        :aria-pressed="isDark"
+        aria-label="ダークモード切替"
+      >
+        {{ isDark ? "☀️" : "🌙" }}
+      </button>
     </header>
 
     <main>
@@ -64,8 +73,8 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { ref, computed, onMounted } from "vue";
 
 const props = defineProps({
   title: {
@@ -102,5 +111,19 @@ const pageTitle = computed(() => {
 
   return "KobanCalendar🚨";
 });
-</script>
 
+const isDark = ref(false);
+
+onMounted(() => {
+  if (localStorage.getItem("dark-mode") === "on") {
+    document.documentElement.classList.add("dark");
+    isDark.value = true;
+  }
+});
+
+function toggleDarkMode() {
+  isDark.value = !isDark.value;
+  document.documentElement.classList.toggle("dark", isDark.value);
+  localStorage.setItem("dark-mode", isDark.value ? "on" : "off");
+}
+</script>

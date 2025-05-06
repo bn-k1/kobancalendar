@@ -7,9 +7,15 @@ import { ERROR_MESSAGES } from "@/utils/constants";
  * Handles retrieving and updating URL parameters for both views
  */
 export function useUrlParams() {
-  const validParams = ["baseDate", "startNumber", "participants", "startTime", "period"];
+  const validParams = [
+    "baseDate",
+    "startNumber",
+    "participants",
+    "startTime",
+    "period",
+  ];
 
-  function resetURL(){
+  function resetURL() {
     window.history.replaceState({}, "", window.location.pathname);
   }
 
@@ -120,7 +126,12 @@ export function useUrlParams() {
   /**
    * Get a number parameter from URL
    */
-  function getNumberParam(paramName, defaultValue, min = undefined, max = undefined) {
+  function getNumberParam(
+    paramName,
+    defaultValue,
+    min = undefined,
+    max = undefined,
+  ) {
     const valueStr = getURLParam(paramName);
     if (!valueStr) return defaultValue;
 
@@ -205,4 +216,3 @@ export function useUrlParams() {
     updateMeetupParams,
   };
 }
-

@@ -62,11 +62,11 @@ import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
 
 // Lazy load components that aren't needed immediately
-const CalendarView = defineAsyncComponent(() => 
-  import("@/components/CalendarView.vue")
+const CalendarView = defineAsyncComponent(
+  () => import("@/components/CalendarView.vue"),
 );
-const ExportSection = defineAsyncComponent(() => 
-  import("@/components/ExportSection.vue")
+const ExportSection = defineAsyncComponent(
+  () => import("@/components/ExportSection.vue"),
 );
 
 // Composables
@@ -282,4 +282,3 @@ onMounted(async () => {
   color: var(--gray-600);
 }
 </style>
-
