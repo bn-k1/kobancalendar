@@ -1,4 +1,4 @@
-<!-- src/views/MeetupView.vue -->
+// src/views/MeetupView.vue
 <template>
   <UnifiedPageLayout layout="meetup" :show-results="showResults">
     <!-- Search controls section -->
@@ -57,11 +57,15 @@
 
     <!-- Participants section -->
     <template #participants>
-      <ParticipantsList
-        v-if="isLoaded"
-        v-model="participants"
-        :rotation-cycle-length="rotationCycleLength"
-      />
+      <Suspense v-if="isLoaded">
+        <ParticipantsList
+          v-model="participants"
+          :rotation-cycle-length="rotationCycleLength"
+        />
+        <template #fallback>
+          <div class="loading-placeholder">参加者設定を読み込み中...</div>
+        </template>
+      </Suspense>
     </template>
 
     <!-- Search button section -->
@@ -78,19 +82,30 @@
 
     <!-- Results section -->
     <template #results>
-      <ResultsDisplay :results="searchResults" />
+      <Suspense v-if="showResults">
+        <ResultsDisplay :results="searchResults" />
+        <template #fallback>
+          <div class="loading-placeholder">検索結果を読み込み中...</div>
+        </template>
+      </Suspense>
     </template>
   </UnifiedPageLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 
-// Components
+// Essential components loaded immediately
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
-import ParticipantsList from "@/components/Controls/ParticipantsList.vue";
-import ResultsDisplay from "@/components/ResultsDisplay.vue";
+
+// Lazy load larger or less critical components
+const ParticipantsList = defineAsyncComponent(() => 
+  import("@/components/Controls/ParticipantsList.vue")
+);
+const ResultsDisplay = defineAsyncComponent(() => 
+  import("@/components/ResultsDisplay.vue")
+);
 
 // Composables
 import { useSchedule } from "@/composables/useSchedule";
@@ -307,3 +322,17 @@ onMounted(async () => {
   await initialize();
 });
 </script>
+
+<style scoped>
+.loading-placeholder {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius-lg);
+  font-size: 1.1rem;
+  color: var(--gray-600);
+  margin: var(--spacing-md) 0;
+}
+</style>

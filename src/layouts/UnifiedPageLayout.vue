@@ -1,4 +1,4 @@
-<!-- src/layouts/UnifiedPageLayout.vue -->
+// src/layouts/UnifiedPageLayout.vue - Optimizing the layout component
 <template>
   <div class="page-layout">
     <header>
@@ -57,8 +57,8 @@
           GitHub
         </a>
         -
-        <a v-if="isHomePage" href="/kobancalendar/#/meetup">🍻</a>
-        <a v-if="isMeetupPage" href="/kobancalendar/#/">🚨</a>
+        <router-link v-if="isHomePage" to="/meetup">🍻</router-link>
+        <router-link v-if="isMeetupPage" to="/">🚨</router-link>
       </p>
     </footer>
   </div>
@@ -105,38 +105,3 @@ const pageTitle = computed(() => {
 });
 </script>
 
-<style scoped>
-.calendar-page-layout,
-.meetup-page-layout {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-.control-section,
-.calendar-section,
-.export-section,
-.search-controls-section,
-.participants-section,
-.search-button-section,
-.results-section {
-  width: 100%;
-}
-
-.calendar-section {
-  flex: 1;
-}
-
-.search-button-section {
-  display: flex;
-  justify-content: center;
-}
-
-@media screen and (max-width: 768px) {
-  .control-section,
-  .search-controls-section,
-  .participants-section {
-    padding: 0;
-  }
-}
-</style>

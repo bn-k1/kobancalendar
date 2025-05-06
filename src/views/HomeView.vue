@@ -1,4 +1,4 @@
-<!-- src/views/HomeView.vue -->
+// src/views/HomeView.vue
 <template>
   <UnifiedPageLayout layout="calendar">
     <!-- Controls section -->
@@ -27,13 +27,18 @@
 
     <!-- Calendar section -->
     <template #calendar>
-      <CalendarView
-        ref="calendarRef"
-        :initial-date="initialDate"
-        :start-position="startPosition"
-        :events="calendarEvents"
-        @dates-set="handleDatesSet"
-      />
+      <Suspense>
+        <CalendarView
+          ref="calendarRef"
+          :initial-date="initialDate"
+          :start-position="startPosition"
+          :events="calendarEvents"
+          @dates-set="handleDatesSet"
+        />
+        <template #fallback>
+          <div class="loading-placeholder">Loading...</div>
+        </template>
+      </Suspense>
     </template>
 
     <!-- Export section -->
@@ -50,13 +55,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 
-// Components
+// Layout component (always loaded)
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
-import CalendarView from "@/components/CalendarView.vue";
-import ExportSection from "@/components/ExportSection.vue";
+
+// Lazy load components that aren't needed immediately
+const CalendarView = defineAsyncComponent(() => 
+  import("@/components/CalendarView.vue")
+);
+const ExportSection = defineAsyncComponent(() => 
+  import("@/components/ExportSection.vue")
+);
 
 // Composables
 import { useCalendar } from "@/composables/useCalendar";
@@ -258,3 +269,17 @@ onMounted(async () => {
   await initialize();
 });
 </script>
+
+<style scoped>
+.loading-placeholder {
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius-lg);
+  font-size: 1.2rem;
+  color: var(--gray-600);
+}
+</style>
+
