@@ -7,6 +7,52 @@ import { ERROR_MESSAGES } from "@/utils/constants";
  * Handles retrieving and updating URL parameters for both views
  */
 export function useUrlParams() {
+  const validParams = ["baseDate", "startNumber", "participants", "startTime", "period"];
+
+  function resetURL(){
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+
+  /**
+   * Reset URL if unknown params exist
+   */
+  function resetURLIfUnknownParams() {
+    const url = new URL(window.location);
+    const keys = Array.from(url.searchParams.keys());
+    const unknownKeys = keys.filter((key) => !validParams.includes(key));
+    if (unknownKeys.length > 0) {
+      resetURL();
+    }
+  }
+
+  /**
+   * Alert and reset URL if baseDate is missing or invalid,
+   * but only when other parameters are present
+   */
+  function enforceValidBaseDate() {
+    const url = new URL(window.location);
+    const paramsExist = url.searchParams.toString().length > 0;
+    if (!paramsExist) {
+      return;
+    }
+
+    const baseDateStr = url.searchParams.get("baseDate");
+    if (!baseDateStr) {
+      alert(ERROR_MESSAGES.NO_BASE_DATE);
+      resetURL();
+      return;
+    }
+
+    const dateObj = createDate(baseDateStr);
+    if (!dateObj.isValid()) {
+      alert(ERROR_MESSAGES.NO_BASE_DATE);
+      resetURL();
+    }
+  }
+
+  resetURLIfUnknownParams();
+  enforceValidBaseDate();
+
   /**
    * Update URL parameters without reloading the page
    * @param {Object} params - Parameters to update
@@ -41,7 +87,6 @@ export function useUrlParams() {
   /**
    * Get and validate a date parameter from URL
    */
-
   function getDateParam(paramName, defaultValue, validDates = []) {
     const dateStr = getURLParam(paramName);
 
@@ -54,6 +99,7 @@ export function useUrlParams() {
     // Check date validity
     if (!dateObj.isValid()) {
       console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
+      resetURL();
       return defaultValue;
     }
 
@@ -63,6 +109,7 @@ export function useUrlParams() {
 
       if (!dateExists) {
         alert(ERROR_MESSAGES.INVALID_BASE_DATE);
+        resetURL();
         return defaultValue;
       }
     }
@@ -80,16 +127,19 @@ export function useUrlParams() {
     const value = parseInt(valueStr, 10);
     if (isNaN(value)) {
       console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
+      resetURL();
       return defaultValue;
     }
 
     if (min !== undefined && value < min) {
       console.error(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
+      resetURL();
       return defaultValue;
     }
 
     if (max !== undefined && value > max) {
       console.error(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
+      resetURL();
       return defaultValue;
     }
 
@@ -155,3 +205,4 @@ export function useUrlParams() {
     updateMeetupParams,
   };
 }
+

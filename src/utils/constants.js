@@ -52,7 +52,7 @@ export const ERROR_MESSAGES = {
   CSV_ROWS_MISMATCH: "CSVファイルの行数が一致しません",
   CSV_PARSE_ERROR: "CSV解析失敗",
   UNKNOWN_CSV_FORMAT: "不明な形式のCSVです",
-  NO_BASE_DATE: "基準日が設定されていません",
+  NO_BASE_DATE: "URLパラメータに基準日が含まれていません",
   BASEDATE_CONFIGURATION_ERROR: "基準日設定失敗",
   INVALID_BASE_DATE: "無効な基準日です",
   INVALID_STARTNUMBER: "無効なコマ位置です",

@@ -20,7 +20,7 @@ import {
  */
 export function useIcsExport() {
   // State
-  const exportMonths = ref(1);
+  const exportMonths = ref("");
   const exportError = ref(undefined);
 
   // Dependencies
@@ -44,6 +44,11 @@ export function useIcsExport() {
    */
   function exportICS(months, startPosition, baseDate, nextBaseDate) {
     try {
+      if (!startPosition) {
+	alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
+	return;
+      }
+
       exportError.value = undefined;
 
       const currentDay = startOfDay(today());

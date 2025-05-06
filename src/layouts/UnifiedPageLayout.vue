@@ -45,7 +45,6 @@
         <slot></slot>
       </div>
     </main>
-
     <footer>
       <p>
         KobanCalendar -
@@ -57,8 +56,8 @@
           GitHub
         </a>
         -
-        <router-link v-if="isHomePage" to="/meetup">🍻</router-link>
-        <router-link v-if="isMeetupPage" to="/">🚨</router-link>
+        <a v-if="isHomePage" href="/kobancalendar/#/meetup">🍻</a>
+        <a v-if="isMeetupPage" href="/kobancalendar/#/">🚨</a>
       </p>
     </footer>
   </div>
