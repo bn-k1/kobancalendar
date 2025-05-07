@@ -1,4 +1,4 @@
-// src/layouts/UnifiedPageLayout.vue - Optimizing the layout component
+// src/layouts/UnifiedPageLayout.vue
 <!-- src/layouts/UnifiedPageLayout.vue -->
 <template>
   <div class="page-layout">

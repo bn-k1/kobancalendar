@@ -63,7 +63,7 @@
           :rotation-cycle-length="rotationCycleLength"
         />
         <template #fallback>
-          <div class="loading-placeholder">参加者設定を読み込み中...</div>
+          <div class="loading-placeholder">Loading...</div>
         </template>
       </Suspense>
     </template>
@@ -85,7 +85,7 @@
       <Suspense v-if="showResults">
         <ResultsDisplay :results="searchResults" />
         <template #fallback>
-          <div class="loading-placeholder">検索結果を読み込み中...</div>
+          <div class="loading-placeholder">Loading...</div>
         </template>
       </Suspense>
     </template>
