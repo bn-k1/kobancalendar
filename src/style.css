@@ -301,7 +301,6 @@ button:focus {
 
 .form-group {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
