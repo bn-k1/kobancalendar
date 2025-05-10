@@ -350,23 +350,4 @@ button:focus {
   html {
     font-size: 10px;
   }
-
-  main {
-    padding: var(--spacing-md);
-  }
-
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-md);
-  }
-
-  .horizontal-fields {
-    flex-direction: row;
-  }
-
-  .control-group {
-    max-width: none;
-    width: 100%;
-  }
 }
