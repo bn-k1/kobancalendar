@@ -112,14 +112,14 @@ const calendarOptions = computed(() => ({
   },
 }));
 
-// Watch for changes to start position
+// Watch for changes to start position or initialDate
 watch(
-  () => props.startPosition,
+  [() => props.startPosition, () => props.initialDate],
   () => {
     if (viewStart.value && viewEnd.value) {
       emit("datesSet", { start: viewStart.value, end: viewEnd.value });
     }
-  },
+  }
 );
 
 // Initialize
