@@ -12,7 +12,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useHolidays } from "@/composables/useHolidays";
 import { CALENDAR_CONFIG } from "@/utils/constants";
-import { createDate, isSameDay, today, toDate } from "@/utils/date";
+import { createDate, isSameDay, today } from "@/utils/date";
 
 // Props
 const props = defineProps({
@@ -113,14 +113,11 @@ const calendarOptions = computed(() => ({
 }));
 
 // Watch for changes to start position or initialDate
-watch(
-  [() => props.startPosition, () => props.initialDate],
-  () => {
-    if (viewStart.value && viewEnd.value) {
-      emit("datesSet", { start: viewStart.value, end: viewEnd.value });
-    }
+watch([() => props.startPosition, () => props.initialDate], () => {
+  if (viewStart.value && viewEnd.value) {
+    emit("datesSet", { start: viewStart.value, end: viewEnd.value });
   }
-);
+});
 
 // Initialize
 onMounted(() => {

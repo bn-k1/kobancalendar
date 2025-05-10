@@ -72,7 +72,6 @@ const ExportSection = defineAsyncComponent(
 // Composables
 import { useCalendar } from "@/composables/useCalendar";
 import { useSchedule } from "@/composables/useSchedule";
-import { useHolidays } from "@/composables/useHolidays";
 import { useAppInitializer } from "@/composables/useAppInitializer";
 import { useUrlParams } from "@/composables/useUrlParams";
 
@@ -87,7 +86,7 @@ import {
 } from "@/utils/date";
 
 // Config
-import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
+import { ERROR_MESSAGES } from "@/utils/constants";
 import holidayData from "@data/holiday.csv?raw";
 import saturdayData from "@data/saturday.csv?raw";
 import weekdayData from "@data/weekday.csv?raw";

@@ -14,12 +14,8 @@ export function useAppInitializer() {
   const isLoaded = ref(false);
 
   const { setEventConfig, setICSExportConfig } = useCalendar();
-  const {
-    loadScheduleData,
-    setDefaultBaseDate,
-    setNextBaseDate,
-    updateActiveBaseDate,
-  } = useSchedule();
+  const { loadScheduleData, setDefaultBaseDate, setNextBaseDate } =
+    useSchedule();
 
   const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
     useHolidays();

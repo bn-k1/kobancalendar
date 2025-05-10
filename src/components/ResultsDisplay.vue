@@ -129,7 +129,6 @@ import {
   formatAsDisplayDate,
   getWeekdayName,
 } from "@/utils/date";
-import { useHolidays } from "@/composables/useHolidays";
 import DetailsModal from "@/components/DetailsModal.vue";
 
 // Props
@@ -140,9 +139,6 @@ const props = defineProps({
     default: () => ({ allMatches: [], partialMatches: [] }),
   },
 });
-
-// Composables
-const { isHoliday } = useHolidays();
 
 // Local state
 const activeTab = ref("all");

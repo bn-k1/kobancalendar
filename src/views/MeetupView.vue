@@ -109,8 +109,6 @@ const ResultsDisplay = defineAsyncComponent(
 
 // Composables
 import { useSchedule } from "@/composables/useSchedule";
-import { useCalendar } from "@/composables/useCalendar";
-import { useHolidays } from "@/composables/useHolidays";
 import { useAppInitializer } from "@/composables/useAppInitializer";
 import { useUrlParams } from "@/composables/useUrlParams";
 import { useMeetupSearch } from "@/composables/useMeetupSearch";
