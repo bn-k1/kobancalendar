@@ -365,8 +365,42 @@ button:focus {
   .loading-placeholder {
     display: none !important;
   }
+  body {
+    background-color: white;
+  }
+  .calendar-container {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .fc-view-harness {
+    height: auto !important;
+  }
+  .fc-toolbar {
+    padding: 0 !important;
+    background-color: transparent !important;
+    margin-bottom: 10px !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+  }
+  .fc-prev-button,
+  .fc-next-button,
+  .fc-today-button,
+  .fc-button-group {
+    display: none !important;
+  }
+  .fc-toolbar-title {
+    display: block !important;
+    color: black !important;
+    font-size: 16pt !important;
+    font-weight: bold !important;
+  }
   * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
     box-shadow: none !important;
   }
+  @page {
+    margin: 5mm !important;
+  }
 }
-
