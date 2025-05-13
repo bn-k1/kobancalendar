@@ -1,0 +1,129 @@
+// src/layouts/UnifiedPageLayout.vue
+<!-- src/layouts/UnifiedPageLayout.vue -->
+<template>
+  <div class="page-layout">
+    <header>
+      <h1>{{ pageTitle }}</h1>
+      <button
+        class="dark-toggle"
+        @click="toggleDarkMode"
+        :aria-pressed="isDark"
+        aria-label="ダークモード切替"
+      >
+        {{ isDark ? "☀️" : "🌙" }}
+      </button>
+    </header>
+
+    <main>
+      <!-- Calendar layout -->
+      <div v-if="layout === 'calendar'" class="calendar-page-layout">
+        <section class="control-section">
+          <slot name="controls"></slot>
+        </section>
+
+        <section class="calendar-section">
+          <slot name="calendar"></slot>
+        </section>
+
+        <section class="export-section">
+          <slot name="export"></slot>
+        </section>
+      </div>
+
+      <!-- Meetup layout -->
+      <div v-else-if="layout === 'meetup'" class="meetup-page-layout">
+        <section class="search-controls-section">
+          <slot name="search-controls"></slot>
+        </section>
+
+        <section class="participants-section">
+          <slot name="participants"></slot>
+        </section>
+
+        <section class="search-button-section">
+          <slot name="search-button"></slot>
+        </section>
+
+        <section class="results-section" v-if="showResults">
+          <slot name="results"></slot>
+        </section>
+      </div>
+
+      <!-- Default layout -->
+      <div v-else>
+        <slot></slot>
+      </div>
+    </main>
+    <footer>
+      <p>
+        KobanCalendar -
+        <a
+	  href="https://github.com/bn-k1/kobancalendar?tab=readme-ov-file#kobancalendar"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+        -
+        <a v-if="isHomePage" href="/kobancalendar/#/meetup">🍻</a>
+        <a v-if="isMeetupPage" href="/kobancalendar/#/">🚨</a>
+      </p>
+    </footer>
+  </div>
+</template>
+
+<script setup>
+import { useRoute } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+
+const props = defineProps({
+  title: {
+    type: String,
+    default: "",
+  },
+  layout: {
+    type: String,
+    default: "default", // 'calendar', 'meetup', or 'default'
+  },
+  showResults: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const route = useRoute();
+
+// Detect current page
+const isHomePage = computed(() => route.path === "/" || route.path === "");
+const isMeetupPage = computed(() => route.path === "/meetup");
+
+// Page title based on route or props
+const pageTitle = computed(() => {
+  if (props.title) return props.title;
+
+  if (props.layout === "calendar" || isHomePage.value) {
+    return "KobanCalendar🚨";
+  }
+
+  if (props.layout === "meetup" || isMeetupPage.value) {
+    return "NominiIkundar🍻";
+  }
+
+  return "KobanCalendar🚨";
+});
+
+const isDark = ref(false);
+
+onMounted(() => {
+  if (localStorage.getItem("dark-mode") === "on") {
+    document.documentElement.classList.add("dark");
+    isDark.value = true;
+  }
+});
+
+function toggleDarkMode() {
+  isDark.value = !isDark.value;
+  document.documentElement.classList.toggle("dark", isDark.value);
+  localStorage.setItem("dark-mode", isDark.value ? "on" : "off");
+}
+</script>

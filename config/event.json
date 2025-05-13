@@ -1,0 +1,24 @@
+{
+  "events": {
+    "restDay": {
+      "keywords": ["公休", "法休"],
+      "color": "#f44336",
+      "showTime": false
+    },
+    "emptyShift": {
+      "keywords": ["空"],
+      "color": "#42a5f5",
+      "showTime": false
+    },
+    "specialShift": {
+      "keywords": ["黄"],
+      "color": "#ffa726",
+      "showTime": true
+    },
+    "default": {
+      "keywords": [],
+      "color": "#42a5f5",
+      "showTime": true
+    }
+  }
+}

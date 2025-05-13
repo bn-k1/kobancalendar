@@ -1,0 +1,32 @@
+{
+  "name": "koban-calendar",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run convert-csv && vite build",
+    "build-gh-pages": "npm run convert-csv && vite build --mode gh-pages",
+    "preview": "vite preview",
+    "convert-csv": "node scripts/csv-to-json.js"
+  },
+  "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.9",
+    "@fullcalendar/interaction": "^6.1.9",
+    "@fullcalendar/vue3": "^6.1.9",
+    "dayjs": "^1.11.10",
+    "ical-generator": "^6.0.0",
+    "japanese-holidays": "^1.0.10",
+    "pinia": "^2.1.7",
+    "vue": "^3.3.7",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "vite": "^6.3.2",
+    "vite-plugin-pwa": "^1.0.0",
+    "papaparse": "^5.4.1"
+  }
+}

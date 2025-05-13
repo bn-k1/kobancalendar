@@ -1,0 +1,23 @@
+{
+  "default_base_date": "2025-01-16",
+  "next_base_date": "2025-05-16",
+  "custom_holidays": [
+    "08-13",
+    "08-14",
+    "08-15",
+    "12-28",
+    "12-29",
+    "12-30",
+    "12-31",
+    "01-02",
+    "01-03"
+  ],
+  "info": {
+    "calendar_name": "KobanCalendar",
+    "timezone": "Asia/Tokyo",
+    "company": "bn-k1",
+    "product": "kobancalendar",
+    "language": "JP",
+    "uid_domain": "kobancalendar.jp"
+  }
+}
