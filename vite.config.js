@@ -26,7 +26,6 @@ export default defineConfig(({ mode }) => {
             calendar: [
               "@fullcalendar/vue3",
               "@fullcalendar/daygrid",
-              "@fullcalendar/interaction",
             ],
             utils: [
               "dayjs",

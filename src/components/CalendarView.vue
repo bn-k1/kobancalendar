@@ -9,7 +9,6 @@
 import { ref, computed, onMounted, watch } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
 import { useHolidays } from "@/composables/useHolidays";
 import { CALENDAR_CONFIG } from "@/utils/constants";
 import { createDate, isSameDay, today } from "@/utils/date";
@@ -42,7 +41,7 @@ const viewEnd = ref(undefined);
 
 // Calendar options
 const calendarOptions = computed(() => ({
-  plugins: [dayGridPlugin, interactionPlugin],
+  plugins: [dayGridPlugin],
   initialView: CALENDAR_CONFIG.INITIAL_VIEW,
   initialDate: props.initialDate ? props.initialDate : undefined,
   locale: CALENDAR_CONFIG.LOCALE,

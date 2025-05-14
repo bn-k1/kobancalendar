@@ -62,8 +62,8 @@ export function useIcsExport() {
         endDate = nextBase;
       }
 
-      startDate = startDate.date(APP_CONFIG.DEFAULT_EXPORT_STARTDAY);
-      endDate = endDate.date(APP_CONFIG.DEFAULT_EXPORT_ENDDAY);
+      startDate = startDate.date(APP_CONFIG.DEFAULT_EXPORTDAY);
+      endDate = endDate.date(APP_CONFIG.DEFAULT_EXPORTDAY);
 
       // Get schedule for the date range
       const scheduleRange = calculateScheduleRange(

@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.9",
-    "@fullcalendar/interaction": "^6.1.9",
     "@fullcalendar/vue3": "^6.1.9",
     "dayjs": "^1.11.10",
     "ical-generator": "^6.0.0",

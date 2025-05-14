@@ -67,7 +67,7 @@ const isBaseDateInPast = computed(() => {
 });
 
 function formatStartDate(date) {
-  return `${createDate(date).format("M")}/${APP_CONFIG.DEFAULT_EXPORT_STARTDAY}`;
+  return `${createDate(date).format("M")}/${APP_CONFIG.DEFAULT_EXPORTDAY}`;
 }
 
 // Handle export months change
