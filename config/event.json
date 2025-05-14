@@ -2,22 +2,22 @@
   "events": {
     "restDay": {
       "keywords": ["公休", "法休"],
-      "color": "#f44336",
+      "color": "red",
       "showTime": false
     },
-    "emptyShift": {
+    "empty": {
       "keywords": ["空"],
-      "color": "#42a5f5",
+      "color": "dodgerblue",
       "showTime": false
     },
-    "specialShift": {
+    "special": {
       "keywords": ["黄"],
-      "color": "#ffa726",
+      "color": "orange",
       "showTime": true
     },
     "default": {
       "keywords": [],
-      "color": "#42a5f5",
+      "color": "royalblue",
       "showTime": true
     }
   }
