@@ -1,6 +1,5 @@
 {
-  "default_base_date": "2025-01-16",
-  "next_base_date": "2025-05-16",
+  "default_base_date": "2025-05-16",
   "custom_holidays": [
     "08-13",
     "08-14",
