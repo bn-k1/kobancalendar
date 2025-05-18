@@ -50,6 +50,7 @@
    - `next_base_date`: コマ位置の入れ替え予定日。next_base_dateを設定することで入れ替え以降のスケジュールを確認できます。設定しなくても動作します。
    - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
    - `info`にはエクスポートされた.icsに記載したい情報を記述します。
+   - `url`にはURLを記述します。QRコードに使います。
 
 4. `data/`の.csv（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。フォーマットは以下のとおりです。全てのファイルの行数は同じある必要があります。Subject,StartTime,EndTimeの形式で、ヘッダーなし、交番表のコマ数=.csvの行数になるように記述してください。
 
@@ -60,10 +61,10 @@
    夜勤,00:00,08:00
    ```
 
-5. .csvを.jsonに変換します。
+5. .csvを.jsonに変換、及びQRコードを生成します。
 
    ```bash
-   npm run convert-csv
+   npm run prebuild
    ```
 
 6. `event.json`の公休、空、などを色分けしたい文字列に置き換えてください。
