@@ -1,4 +1,3 @@
-// src/layouts/UnifiedPageLayout.vue
 <!-- src/layouts/UnifiedPageLayout.vue -->
 <template>
   <div class="page-layout">
@@ -58,14 +57,14 @@
       <p>
         KobanCalendar -
         <a
-	  href="https://github.com/bn-k1/kobancalendar?tab=readme-ov-file#kobancalendar"
+          href="https://github.com/bn-k1/kobancalendar?tab=readme-ov-file#kobancalendar"
           target="_blank"
           rel="noopener noreferrer"
         >
           GitHub
         </a>
         -
-        <a v-if="isHomePage" href="/kobancalendar/#/meetup">🍻</a>
+        <a v-if="isHomePage" :href="meetupLink">🍻</a>
         <a v-if="isMeetupPage" href="/kobancalendar/#/">🚨</a>
       </p>
     </footer>
@@ -75,6 +74,9 @@
 <script setup>
 import { useRoute } from "vue-router";
 import { ref, computed, onMounted } from "vue";
+import { formatAsISODate } from "@/utils/date";
+import { useSchedule } from "@/composables/useSchedule";
+import { useCalendar } from "@/composables/useCalendar";
 
 const props = defineProps({
   title: {
@@ -91,11 +93,34 @@ const props = defineProps({
   },
 });
 
+const { activeBaseDate } = useSchedule();
+const { startPosition } = useCalendar();
+
 const route = useRoute();
 
 // Detect current page
 const isHomePage = computed(() => route.path === "/" || route.path === "");
 const isMeetupPage = computed(() => route.path === "/meetup");
+
+// Generate meetup link with parameters from store
+const meetupLink = computed(() => {
+  let link = "/kobancalendar/";
+  const params = [];
+  
+  if (activeBaseDate.value) {
+    params.push(`baseDate=${formatAsISODate(activeBaseDate.value)}`);
+  }
+  
+  if (startPosition.value) {
+    params.push(`participants=${startPosition.value}`);
+  }
+  
+  if (params.length > 0) {
+    link += `?${params.join("&")}#/meetup`;
+  }
+  
+  return link;
+});
 
 // Page title based on route or props
 const pageTitle = computed(() => {
