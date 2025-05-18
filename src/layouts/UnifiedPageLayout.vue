@@ -90,19 +90,19 @@ const isMeetupPage = computed(() => route.path === "/meetup");
 const meetupLink = computed(() => {
   let link = "/kobancalendar/";
   const params = [];
-  
+
   if (activeBaseDate.value) {
     params.push(`baseDate=${formatAsISODate(activeBaseDate.value)}`);
   }
-  
+
   if (startPosition.value) {
     params.push(`participants=${startPosition.value}`);
   }
-  
+
   if (params.length > 0) {
     link += `?${params.join("&")}#/meetup`;
   }
-  
+
   return link;
 });
 
