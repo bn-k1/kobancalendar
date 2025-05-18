@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run convert-csv && vite build",
-    "build-gh-pages": "npm run convert-csv && vite build --mode gh-pages",
+    "build": "npm run prebuild && vite build",
+    "build-gh-pages": "npm run prebuild && vite build --mode gh-pages",
     "preview": "vite preview",
-    "convert-csv": "node scripts/csv-to-json.js"
+    "prebuild": "npm run convert-csv && npm run create-qr",
+    "convert-csv": "node scripts/csv-to-json.js",
+    "create-qr": "node scripts/createQr.js"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.9",
@@ -23,9 +25,10 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
     "globals": "^16.0.0",
+    "papaparse": "^5.4.1",
     "prettier": "^3.5.3",
+    "qrcode": "^1.5.4",
     "vite": "^6.3.2",
-    "vite-plugin-pwa": "^1.0.0",
-    "papaparse": "^5.4.1"
+    "vite-plugin-pwa": "^1.0.0"
   }
 }

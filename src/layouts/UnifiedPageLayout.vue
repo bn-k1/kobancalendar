@@ -3,7 +3,10 @@
   <div class="page-layout">
     <header>
       <h1>{{ pageTitle }}</h1>
-      <DarkModeToggle />
+      <div class="header-controls">
+        <QrButton />
+        <DarkModeToggle />
+      </div>
     </header>
     <main>
       <!-- Calendar layout -->
@@ -62,6 +65,7 @@ import { formatAsISODate } from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
 import { useCalendar } from "@/composables/useCalendar";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
+import QrButton from "@/components/QrButton.vue";
 
 const props = defineProps({
   title: {
@@ -118,3 +122,41 @@ const pageTitle = computed(() => {
   return "KobanCalendar🚨";
 });
 </script>
+
+<style scoped>
+/* 既存のスタイルを維持 */
+
+/* 新しく追加するスタイル */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.qr-button {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 1.4rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+.qr-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.qr-icon {
+  font-size: 1.4rem;
+}
+</style>
