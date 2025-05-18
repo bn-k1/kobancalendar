@@ -7,7 +7,7 @@
     },
     "empty": {
       "keywords": ["空"],
-      "color": "dodgerblue",
+      "color": "skyblue",
       "showTime": false
     },
     "special": {
@@ -17,7 +17,7 @@
     },
     "default": {
       "keywords": [],
-      "color": "dodgerblue",
+      "color": "skyblue",
       "showTime": true
     }
   }

@@ -78,7 +78,7 @@ const calendarOptions = computed(() => ({
     const date = createDate(event.start);
 
     const holidayName = getHolidayName(date);
-    const metaInfo = holidayName
+    const komaichi = holidayName
       ? `${shiftIndex + 1} ${holidayName}`
       : `${shiftIndex + 1}`;
 
@@ -87,7 +87,7 @@ const calendarOptions = computed(() => ({
         <div class="event-title">${title}</div>
         ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
         ${endTime ? `<div class="event-time">${endTime}</div>` : ""}
-        <div class="event-meta">${metaInfo}</div>
+        <div class="event-meta">${komaichi}</div>
       `,
     };
   },
