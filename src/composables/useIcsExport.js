@@ -33,9 +33,16 @@ export function useIcsExport() {
    * @param {number} startPosition - Starting position in the rotation
    * @param {dayjs} baseDate - Base date for calculations
    * @param {dayjs} nextBaseDate - Next base date for calculations
+   * @param {dayjs} customStartDate - Optional custom start date for export
    * @returns {boolean} Success status
    */
-  function exportICS(months, startPosition, baseDate, nextBaseDate) {
+  function exportICS(
+    months,
+    startPosition,
+    baseDate,
+    nextBaseDate,
+    customStartDate,
+  ) {
     try {
       if (!startPosition) {
         alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
@@ -48,22 +55,32 @@ export function useIcsExport() {
       const base = createDate(baseDate);
       const nextBase = createDate(nextBaseDate);
 
-      // Determine start date (either base date or today, whichever is later)
-      let startDate =
-        isAfter(base, currentDay) || isSame(base, currentDay)
-          ? startOfDay(base)
-          : currentDay;
+      let startDate;
 
-      // Calculate end date based on months parameter
+      if (customStartDate) {
+        startDate = createDate(customStartDate);
+      } else {
+        const currentMonth = currentDay.month();
+        const currentYear = currentDay.year();
+
+        const monthExportDay = createDate(
+          `${currentYear}-${currentMonth + 1}-${APP_CONFIG.DEFAULT_EXPORTDAY}`,
+        );
+
+        if (currentDay.date() < APP_CONFIG.DEFAULT_EXPORTDAY) {
+          startDate = currentDay
+            .date(APP_CONFIG.DEFAULT_EXPORTDAY)
+            .subtract(1, "month");
+        } else {
+          startDate = monthExportDay;
+        }
+      }
+
       let endDate = addMonths(startDate, months);
 
-      // Use next base date as limit if it comes before calculated end date
       if (nextBase && !isSame(base, nextBase) && isBefore(nextBase, endDate)) {
         endDate = nextBase;
       }
-
-      startDate = startDate.date(APP_CONFIG.DEFAULT_EXPORTDAY);
-      endDate = endDate.date(APP_CONFIG.DEFAULT_EXPORTDAY);
 
       // Get schedule for the date range
       const scheduleRange = calculateScheduleRange(

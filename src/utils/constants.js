@@ -41,9 +41,6 @@ export const PERIODOPTIONS = [
   { value: "30", text: "1ヶ月" },
   { value: "60", text: "2ヶ月" },
   { value: "90", text: "3ヶ月" },
-  { value: "120", text: "4ヶ月" },
-  { value: "150", text: "5ヶ月" },
-  { value: "180", text: "6ヶ月" },
 ];
 
 export const ERROR_MESSAGES = {

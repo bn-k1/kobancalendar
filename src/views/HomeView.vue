@@ -169,6 +169,8 @@ const startPosition = ref(undefined);
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
   updateActiveBaseDate(newDate);
+  startPosition.value = undefined;
+  setStartPosition(undefined);
 
   // Update URL params
   updateCalendarParams(newDate, startPosition.value);

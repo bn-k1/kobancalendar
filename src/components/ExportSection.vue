@@ -3,9 +3,7 @@
   <fieldset id="exportSection" class="control-group">
     <legend>エクスポート</legend>
     <div class="form-group">
-      <label id="exportLabel"
-        >{{ formatStartDate(isBaseDateInPast ? today() : baseDate) }}から</label
-      >
+      <label id="exportLabel">{{ formatStartDate(exportStartDate) }}から</label>
       <select
         id="exportMonths"
         aria-label="エクスポート期間を選択"
@@ -35,7 +33,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useIcsExport } from "@/composables/useIcsExport";
-import { createDate, today, isBefore } from "@/utils/date";
+import { createDate, today } from "@/utils/date";
 import { APP_CONFIG, PERIODOPTIONS } from "@/utils/constants";
 
 const props = defineProps({
@@ -59,11 +57,20 @@ const emit = defineEmits(["export", "export-complete"]);
 const selectedMonths = ref(APP_CONFIG.DEFAULT_EXPORT_MONTHS);
 const { exportICS } = useIcsExport();
 
-// Computed
-const isBaseDateInPast = computed(() => {
+const exportStartDate = computed(() => {
   const currentDay = today();
-  const baseDateValue = createDate(props.baseDate);
-  return baseDateValue ? isBefore(baseDateValue, currentDay) : false;
+  const currentMonth = currentDay.month();
+  const currentYear = currentDay.year();
+
+  const monthExportDay = createDate(
+    `${currentYear}-${currentMonth + 1}-${APP_CONFIG.DEFAULT_EXPORTDAY}`,
+  );
+
+  if (currentDay.date() < APP_CONFIG.DEFAULT_EXPORTDAY) {
+    return currentDay.date(APP_CONFIG.DEFAULT_EXPORTDAY).subtract(1, "month");
+  }
+
+  return monthExportDay;
 });
 
 function formatStartDate(date) {
@@ -86,6 +93,7 @@ function handleExportICS() {
       position,
       createDate(props.baseDate),
       createDate(props.nextBaseDate),
+      exportStartDate.value,
     );
     emit("export-complete", { success: true });
   } catch (error) {
