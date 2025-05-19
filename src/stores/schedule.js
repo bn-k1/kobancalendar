@@ -33,14 +33,6 @@ export const useScheduleStore = defineStore("schedule", () => {
     );
   });
 
-  // 後方互換性のために維持（useScheduleの中で使用する）
-  function setScheduleData(data) {
-    // 現在は使用しないが、後方互換性のために維持
-    console.log(
-      "setScheduleData is deprecated, use setScheduleDataSets instead",
-    );
-  }
-
   function setScheduleDataSets(dataSets) {
     scheduleDataSets.value = dataSets;
   }
@@ -65,7 +57,6 @@ export const useScheduleStore = defineStore("schedule", () => {
 
     isDataLoaded,
 
-    setScheduleData,
     setScheduleDataSets,
     setDefaultBaseDate,
     updateActiveBaseDate,
