@@ -64,7 +64,7 @@
    夜勤,00:00,08:00
    ```
 
-   next_base_date以降、交番表データが変わる場合、`data/next`以下の.csvを同じように編集します。変わらない場合、`data/default`の.csvを`data/next`にコピーします。next_base_dateが設定されていない、あるいはまだ交番表が出来上がっていない場合は何も置く必要はありません。
+   next_base_date以降、交番表データが変わる場合、`data/next`以下の.csvを同じように編集します。変わらない場合、`data/default`の.csvを`data/next`にコピーします。next_base_dateが設定されていない、あるいはまだ次の交番表が存在しない場合は何も置く必要はありません。
 
 5. .csvを.jsonに変換、及びQRコードを生成します。
 
