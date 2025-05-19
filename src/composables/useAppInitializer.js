@@ -24,10 +24,15 @@ export function useAppInitializer() {
    * Initialize the application with configuration data
    */
   async function initializeApp(data) {
-    const { 
-      defaultHolidayData, defaultSaturdayData, defaultWeekdayData,
-      nextHolidayData, nextSaturdayData, nextWeekdayData,
-      config, eventConfig 
+    const {
+      defaultHolidayData,
+      defaultSaturdayData,
+      defaultWeekdayData,
+      nextHolidayData,
+      nextSaturdayData,
+      nextWeekdayData,
+      config,
+      eventConfig,
     } = data;
 
     try {
@@ -40,7 +45,17 @@ export function useAppInitializer() {
       setEventConfig(eventConfig);
       setICSExportConfig(config.info);
 
-      // Load schedule data from both data sets
+      // Load schedule data:
+      const nextHolidayDataset = config.next_base_date
+        ? nextHolidayData
+        : defaultHolidayData;
+      const nextSaturdayDataset = config.next_base_date
+        ? nextSaturdayData
+        : defaultSaturdayData;
+      const nextWeekdayDataset = config.next_base_date
+        ? nextWeekdayData
+        : defaultWeekdayData;
+
       const scheduleData = loadScheduleData(
         {
           holiday: defaultHolidayData,
@@ -48,10 +63,10 @@ export function useAppInitializer() {
           weekday: defaultWeekdayData,
         },
         {
-          holiday: nextHolidayData,
-          saturday: nextSaturdayData,
-          weekday: nextWeekdayData,
-        }
+          holiday: nextHolidayDataset,
+          saturday: nextSaturdayDataset,
+          weekday: nextWeekdayDataset,
+        },
       );
 
       // Process base dates

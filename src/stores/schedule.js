@@ -19,9 +19,9 @@ export const useScheduleStore = defineStore("schedule", () => {
       saturday: [],
       weekday: [],
       rotationCycleLength: 0,
-    }
+    },
   });
-  
+
   const defaultBaseDate = ref(undefined);
   const activeBaseDate = ref(undefined);
   const nextBaseDate = ref(undefined);
@@ -36,13 +36,15 @@ export const useScheduleStore = defineStore("schedule", () => {
   // 後方互換性のために維持（useScheduleの中で使用する）
   function setScheduleData(data) {
     // 現在は使用しないが、後方互換性のために維持
-    console.log("setScheduleData is deprecated, use setScheduleDataSets instead");
+    console.log(
+      "setScheduleData is deprecated, use setScheduleDataSets instead",
+    );
   }
 
   function setScheduleDataSets(dataSets) {
     scheduleDataSets.value = dataSets;
   }
-  
+
   function setDefaultBaseDate(date) {
     defaultBaseDate.value = date;
   }

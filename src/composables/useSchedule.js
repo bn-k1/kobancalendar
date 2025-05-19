@@ -1,4 +1,4 @@
-// src/composables/useSchedule.js の修正例
+// src/composables/useSchedule.js
 import { computed } from "vue";
 import { useScheduleStore } from "@/stores/schedule";
 import { useHolidays } from "@/composables/useHolidays";
@@ -33,7 +33,7 @@ export function useSchedule() {
     if (!storeActiveBaseDate.value || !storeNextBaseDate.value) {
       return storeScheduleDataSets.value.default;
     }
-    
+
     return isSameDay(storeActiveBaseDate.value, storeNextBaseDate.value)
       ? storeScheduleDataSets.value.next
       : storeScheduleDataSets.value.default;
@@ -198,12 +198,12 @@ export function useSchedule() {
           saturday: nextData.saturday,
           weekday: nextData.weekday,
           rotationCycleLength: nextHolidayLength,
-        }
+        },
       };
 
       // Update store
       scheduleStore.setScheduleDataSets(dataSets);
-      
+
       // Return the current active data set based on the active base date
       return storeScheduleData.value;
     } catch (error) {

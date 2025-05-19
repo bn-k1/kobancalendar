@@ -202,7 +202,7 @@ const formattedBaseDates = computed(() => {
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
   updateActiveBaseDate(newDate);
-  
+
   if (showResults.value) {
     showResults.value = false;
   }

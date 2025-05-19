@@ -8,7 +8,9 @@
           id="baseDate"
           legend="基準日"
           aria-label="基準日を選択"
-          v-model="selectedBaseDate" :options="formattedBaseDates" :formatter="formatAsDisplayDate"
+          v-model="selectedBaseDate"
+          :options="formattedBaseDates"
+          :formatter="formatAsDisplayDate"
           @change="handleBaseDateChange"
         />
 
@@ -95,7 +97,6 @@ import nextSaturdayData from "@data/next/json/saturday.json";
 import nextWeekdayData from "@data/next/json/weekday.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
-
 
 // Composables initialization
 const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
