@@ -58,6 +58,7 @@ export const ERROR_MESSAGES = {
   CONFIG_LOAD_ERROR: "設定の取得に失敗しました",
   EVENT_CONFIG_ERROR: "イベント設定が読み込まれていないか無効です",
   SCHEDULE_DATA_ERROR: "スケジュールデータの読み込みに失敗しました",
+  NO_NEXT_SCHEDULE_DATA: "次回基準日用のスケジュールデータがありません",
   HOLIDAYS_LOAD_ERROR: "祝日データの取得に失敗しました",
   ICS_EXPORT_ERROR: "ICSファイルのエクスポート中にエラーが発生しました",
   NO_PARTICIPANTS: "参加者を1人以上選択してください",

@@ -8,9 +8,7 @@
           id="baseDate"
           legend="基準日"
           aria-label="基準日を選択"
-          v-model="selectedBaseDate"
-          :options="formattedBaseDates"
-          :formatter="formatAsDisplayDate"
+          v-model="selectedBaseDate" :options="formattedBaseDates" :formatter="formatAsDisplayDate"
           @change="handleBaseDateChange"
         />
 
@@ -87,11 +85,17 @@ import {
 
 // Config
 import { ERROR_MESSAGES } from "@/utils/constants";
-import holidayData from "@data/schedule/holiday.json";
-import saturdayData from "@data/schedule/saturday.json";
-import weekdayData from "@data/schedule/weekday.json";
+
+// Import
+import defaultHolidayData from "@data/default/json/holiday.json";
+import defaultSaturdayData from "@data/default/json/saturday.json";
+import defaultWeekdayData from "@data/default/json/weekday.json";
+import nextHolidayData from "@data/next/json/holiday.json";
+import nextSaturdayData from "@data/next/json/saturday.json";
+import nextWeekdayData from "@data/next/json/weekday.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
+
 
 // Composables initialization
 const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
@@ -197,11 +201,14 @@ function handleExportComplete({ success, error }) {
 // Initialize application
 async function initialize() {
   try {
-    // Initialize app with shared logic
+    // Initialize app with shared logic and both data sets
     const result = await initializeApp({
-      holidayData,
-      saturdayData,
-      weekdayData,
+      defaultHolidayData,
+      defaultSaturdayData,
+      defaultWeekdayData,
+      nextHolidayData,
+      nextSaturdayData,
+      nextWeekdayData,
       config,
       eventConfig,
     });

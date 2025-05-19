@@ -3,27 +3,46 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
 /**
- * Schedule store - simplified to only handle state
+ * Schedule store - modified to handle multiple data sets
  * All business logic is moved to the useSchedule composable
  */
 export const useScheduleStore = defineStore("schedule", () => {
-  const scheduleData = ref({
-    holiday: [],
-    saturday: [],
-    weekday: [],
-    rotationCycleLength: 0,
+  const scheduleDataSets = ref({
+    default: {
+      holiday: [],
+      saturday: [],
+      weekday: [],
+      rotationCycleLength: 0,
+    },
+    next: {
+      holiday: [],
+      saturday: [],
+      weekday: [],
+      rotationCycleLength: 0,
+    }
   });
+  
   const defaultBaseDate = ref(undefined);
   const activeBaseDate = ref(undefined);
   const nextBaseDate = ref(undefined);
 
   const isDataLoaded = computed(() => {
-    return scheduleData.value.rotationCycleLength > 0;
+    return (
+      scheduleDataSets.value.default.rotationCycleLength > 0 ||
+      scheduleDataSets.value.next.rotationCycleLength > 0
+    );
   });
 
+  // 後方互換性のために維持（useScheduleの中で使用する）
   function setScheduleData(data) {
-    scheduleData.value = data;
+    // 現在は使用しないが、後方互換性のために維持
+    console.log("setScheduleData is deprecated, use setScheduleDataSets instead");
   }
+
+  function setScheduleDataSets(dataSets) {
+    scheduleDataSets.value = dataSets;
+  }
+  
   function setDefaultBaseDate(date) {
     defaultBaseDate.value = date;
   }
@@ -37,7 +56,7 @@ export const useScheduleStore = defineStore("schedule", () => {
   }
 
   return {
-    scheduleData: computed(() => scheduleData.value),
+    scheduleDataSets: computed(() => scheduleDataSets.value),
     defaultBaseDate: computed(() => defaultBaseDate.value),
     activeBaseDate: computed(() => activeBaseDate.value),
     nextBaseDate: computed(() => nextBaseDate.value),
@@ -45,6 +64,7 @@ export const useScheduleStore = defineStore("schedule", () => {
     isDataLoaded,
 
     setScheduleData,
+    setScheduleDataSets,
     setDefaultBaseDate,
     updateActiveBaseDate,
     setNextBaseDate,

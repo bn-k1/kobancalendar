@@ -1,4 +1,4 @@
-// src/composables/useSchedule.js
+// src/composables/useSchedule.js の修正例
 import { computed } from "vue";
 import { useScheduleStore } from "@/stores/schedule";
 import { useHolidays } from "@/composables/useHolidays";
@@ -9,6 +9,7 @@ import {
   isBefore,
   addDays,
   toUnix,
+  isSameDay,
 } from "@/utils/date";
 
 /**
@@ -23,10 +24,20 @@ export function useSchedule() {
   const { isHoliday } = useHolidays();
 
   // Local cached references to avoid recursion
-  const storeScheduleData = computed(() => scheduleStore.scheduleData);
+  const storeScheduleDataSets = computed(() => scheduleStore.scheduleDataSets);
   const storeDefaultBaseDate = computed(() => scheduleStore.defaultBaseDate);
   const storeActiveBaseDate = computed(() => scheduleStore.activeBaseDate);
   const storeNextBaseDate = computed(() => scheduleStore.nextBaseDate);
+
+  const storeScheduleData = computed(() => {
+    if (!storeActiveBaseDate.value || !storeNextBaseDate.value) {
+      return storeScheduleDataSets.value.default;
+    }
+    
+    return isSameDay(storeActiveBaseDate.value, storeNextBaseDate.value)
+      ? storeScheduleDataSets.value.next
+      : storeScheduleDataSets.value.default;
+  });
 
   /**
    * Calculate shift index for a given date
@@ -78,17 +89,21 @@ export function useSchedule() {
       return {};
     }
 
+    const currentScheduleData = isSameDay(baseDate, storeNextBaseDate.value)
+      ? storeScheduleDataSets.value.next
+      : storeScheduleDataSets.value.default;
+
     // Calculate shift index
     const shiftIndex = calculateShiftIndex(target, startPosition, baseDate);
 
     // Get appropriate data based on date type
     let shiftData;
     if (isHolidayFlag) {
-      shiftData = storeScheduleData.value.holiday[shiftIndex];
+      shiftData = currentScheduleData.holiday[shiftIndex];
     } else if (isSaturday) {
-      shiftData = storeScheduleData.value.saturday[shiftIndex];
+      shiftData = currentScheduleData.saturday[shiftIndex];
     } else {
-      shiftData = storeScheduleData.value.weekday[shiftIndex];
+      shiftData = currentScheduleData.weekday[shiftIndex];
     }
 
     if (!shiftData) return undefined;
@@ -146,33 +161,51 @@ export function useSchedule() {
 
   /**
    * Load schedule data from pre-parsed JSON
-   * @param {Array} holidayData - Holiday data array
-   * @param {Array} saturdayData - Saturday data array
-   * @param {Array} weekdayData - Weekday data array
-   * @returns {Object} Loaded schedule data
+   * @param {Object} defaultData - Default schedule data
+   * @param {Object} nextData - Next schedule data
+   * @returns {Object} Loaded active schedule data
    */
-  function loadScheduleData(holidayData, saturdayData, weekdayData) {
+  function loadScheduleData(defaultData, nextData) {
     try {
-      // Validate data
-      const holidayLength = holidayData.length;
+      // Validate default data
+      const defaultHolidayLength = defaultData.holiday.length;
       if (
-        holidayLength !== saturdayData.length ||
-        holidayLength !== weekdayData.length
+        defaultHolidayLength !== defaultData.saturday.length ||
+        defaultHolidayLength !== defaultData.weekday.length
       ) {
         throw new Error(ERROR_MESSAGES.JSON_ROWS_MISMATCH);
       }
 
-      // Create data object
-      const data = {
-        holiday: holidayData,
-        saturday: saturdayData,
-        weekday: weekdayData,
-        rotationCycleLength: holidayLength,
+      // Validate next data
+      const nextHolidayLength = nextData.holiday.length;
+      if (
+        nextHolidayLength !== nextData.saturday.length ||
+        nextHolidayLength !== nextData.weekday.length
+      ) {
+        throw new Error(ERROR_MESSAGES.JSON_ROWS_MISMATCH);
+      }
+
+      // Create data sets
+      const dataSets = {
+        default: {
+          holiday: defaultData.holiday,
+          saturday: defaultData.saturday,
+          weekday: defaultData.weekday,
+          rotationCycleLength: defaultHolidayLength,
+        },
+        next: {
+          holiday: nextData.holiday,
+          saturday: nextData.saturday,
+          weekday: nextData.weekday,
+          rotationCycleLength: nextHolidayLength,
+        }
       };
 
       // Update store
-      scheduleStore.setScheduleData(data);
-      return data;
+      scheduleStore.setScheduleDataSets(dataSets);
+      
+      // Return the current active data set based on the active base date
+      return storeScheduleData.value;
     } catch (error) {
       console.error(ERROR_MESSAGES.SCHEDULE_DATA_ERROR, error);
       throw error;
@@ -192,7 +225,8 @@ export function useSchedule() {
    * @param {dayjs} date - New active base date
    */
   function updateActiveBaseDate(date) {
-    scheduleStore.updateActiveBaseDate(createDate(date));
+    const newDate = createDate(date);
+    scheduleStore.updateActiveBaseDate(newDate);
   }
 
   /**
@@ -206,6 +240,7 @@ export function useSchedule() {
   return {
     // Computed state from store
     scheduleData: storeScheduleData,
+    scheduleDataSets: storeScheduleDataSets,
     defaultBaseDate: storeDefaultBaseDate,
     activeBaseDate: storeActiveBaseDate,
     nextBaseDate: storeNextBaseDate,

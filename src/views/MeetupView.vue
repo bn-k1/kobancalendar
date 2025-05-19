@@ -130,9 +130,14 @@ import {
   PERIODOPTIONS,
   ERROR_MESSAGES,
 } from "@/utils/constants";
-import holidayData from "@data/schedule/holiday.json";
-import saturdayData from "@data/schedule/saturday.json";
-import weekdayData from "@data/schedule/weekday.json";
+
+// Import
+import defaultHolidayData from "@data/default/json/holiday.json";
+import defaultSaturdayData from "@data/default/json/saturday.json";
+import defaultWeekdayData from "@data/default/json/weekday.json";
+import nextHolidayData from "@data/next/json/holiday.json";
+import nextSaturdayData from "@data/next/json/saturday.json";
+import nextWeekdayData from "@data/next/json/weekday.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
@@ -197,6 +202,10 @@ const formattedBaseDates = computed(() => {
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
   updateActiveBaseDate(newDate);
+  
+  if (showResults.value) {
+    showResults.value = false;
+  }
 }
 
 // Find available dates
@@ -240,11 +249,14 @@ function findDates() {
 // Initialize application
 async function initialize() {
   try {
-    // Initialize app with shared logic
+    // Initialize app with shared logic and both data sets
     const result = await initializeApp({
-      holidayData,
-      saturdayData,
-      weekdayData,
+      defaultHolidayData,
+      defaultSaturdayData,
+      defaultWeekdayData,
+      nextHolidayData,
+      nextSaturdayData,
+      nextWeekdayData,
       config,
       eventConfig,
     });

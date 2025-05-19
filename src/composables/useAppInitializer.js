@@ -8,7 +8,7 @@ import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
 
 /**
  * Shared application initialization logic
- * Centralizes the setup code used by both views
+ * Centralized the setup code used by both views
  */
 export function useAppInitializer() {
   const isLoaded = ref(false);
@@ -24,8 +24,11 @@ export function useAppInitializer() {
    * Initialize the application with configuration data
    */
   async function initializeApp(data) {
-    const { holidayData, saturdayData, weekdayData, config, eventConfig } =
-      data;
+    const { 
+      defaultHolidayData, defaultSaturdayData, defaultWeekdayData,
+      nextHolidayData, nextSaturdayData, nextWeekdayData,
+      config, eventConfig 
+    } = data;
 
     try {
       // Holiday configuration
@@ -37,12 +40,18 @@ export function useAppInitializer() {
       setEventConfig(eventConfig);
       setICSExportConfig(config.info);
 
-      // Load schedule data directly from JSON
-      // Note: We're expecting pre-processed data in JSON format now
+      // Load schedule data from both data sets
       const scheduleData = loadScheduleData(
-        holidayData,
-        saturdayData,
-        weekdayData,
+        {
+          holiday: defaultHolidayData,
+          saturday: defaultSaturdayData,
+          weekday: defaultWeekdayData,
+        },
+        {
+          holiday: nextHolidayData,
+          saturday: nextSaturdayData,
+          weekday: nextWeekdayData,
+        }
       );
 
       // Process base dates
