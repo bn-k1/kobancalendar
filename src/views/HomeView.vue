@@ -11,6 +11,7 @@
           v-model="selectedBaseDate"
           :options="formattedBaseDates"
           :formatter="formatAsDisplayDate"
+          :display-as-text="formattedBaseDates.length === 1"
           @change="handleBaseDateChange"
         />
 
@@ -133,9 +134,11 @@ const formattedBaseDates = computed(() => {
     });
   }
 
-  // Add next base date if it exists and is different from default
+  // Add next base date if it exists, is valid, and is different from default
   if (
     nextBaseDate.value &&
+    nextBaseDate.value.isValid &&
+    nextBaseDate.value.isValid() &&
     !(
       defaultBaseDate.value &&
       formatAsISODate(defaultBaseDate.value) ===
