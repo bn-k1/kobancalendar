@@ -8,6 +8,7 @@
           id="exportStartDate"
           v-model="selectedStartDate"
           aria-label="エクスポート開始日"
+          class="date-select"
           @change="handleStartDateChange"
         >
           <option value="" disabled>開始日を選択</option>
@@ -28,6 +29,7 @@
           id="exportEndDate"
           v-model="selectedEndDate"
           aria-label="エクスポート終了日"
+          class="date-select"
           :disabled="!selectedStartDate"
         >
           <option value="" disabled>終了日を選択</option>
@@ -47,7 +49,7 @@
         id="exportButton"
         class="export-button"
         aria-label="ICSをダウンロード"
-        :disabled="!selectedStartDate || !selectedEndDate"
+        :disabled="!canExport"
         @click="handleExportICS"
       >
         ダウンロード
@@ -57,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useIcsExport } from "@/composables/useIcsExport";
 import { 
   createDate, 
@@ -91,46 +93,28 @@ const selectedStartDate = ref("");
 const selectedEndDate = ref("");
 const { exportICS } = useIcsExport();
 
+// Computed values
+const startDay = computed(() => {
+  return isSameDay(props.baseDate, props.nextBaseDate) 
+    ? createDate(props.nextBaseDate)
+    : today();
+});
+
+const defaultStartDate = computed(() => formatAsISODate(startDay.value));
+const defaultEndDate = computed(() => formatAsISODate(addDays(startDay.value, 30)));
+
 // Generate 90 days of date options
 const availableDates = computed(() => {
   const dates = [];
-  const startDay = isSameDay(props.baseDate, props.nextBaseDate) 
-    ? createDate(props.nextBaseDate)
-    : today();
-  
   for (let i = 0; i < 90; i++) {
-    const date = addDays(startDay, i);
+    const date = addDays(startDay.value, i);
     dates.push({
       value: formatAsISODate(date),
       text: formatAsDisplayDate(date)
     });
   }
-  
   return dates;
 });
-
-// Set default dates
-const defaultStartDate = computed(() => {
-  const startDay = isSameDay(props.baseDate, props.nextBaseDate)
-    ? createDate(props.nextBaseDate)
-    : today();
-  return formatAsISODate(startDay);
-});
-
-const defaultEndDate = computed(() => {
-  const startDay = isSameDay(props.baseDate, props.nextBaseDate)
-    ? createDate(props.nextBaseDate)
-    : today();
-  return formatAsISODate(addDays(startDay, 30));
-});
-
-// Initialize default values
-if (!selectedStartDate.value) {
-  selectedStartDate.value = defaultStartDate.value;
-}
-if (!selectedEndDate.value) {
-  selectedEndDate.value = defaultEndDate.value;
-}
 
 // Available end dates (dates after selected start date)
 const availableEndDates = computed(() => {
@@ -143,9 +127,19 @@ const availableEndDates = computed(() => {
   });
 });
 
+// Check if export is possible
+const canExport = computed(() => {
+  return selectedStartDate.value && selectedEndDate.value;
+});
+
+// Initialize default values
+onMounted(() => {
+  selectedStartDate.value = defaultStartDate.value;
+  selectedEndDate.value = defaultEndDate.value;
+});
+
 // Handle start date change
 function handleStartDateChange() {
-  // Reset end date if it's before the new start date
   if (selectedEndDate.value) {
     const start = createDate(selectedStartDate.value);
     const end = createDate(selectedEndDate.value);
@@ -158,15 +152,11 @@ function handleStartDateChange() {
 
 // Handle ICS export button click
 function handleExportICS() {
-  if (!selectedStartDate.value || !selectedEndDate.value) {
-    return;
-  }
+  if (!canExport.value) return;
 
-  const position = props.startPosition;
-  
   try {
     exportICS(
-      position,
+      props.startPosition,
       createDate(props.baseDate),
       createDate(props.nextBaseDate),
       createDate(selectedStartDate.value),
@@ -218,8 +208,7 @@ function handleExportICS() {
   cursor: not-allowed;
 }
 
-#exportStartDate,
-#exportEndDate {
+.date-select {
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--gray-300);
@@ -230,16 +219,14 @@ function handleExportICS() {
   transition: all var(--transition-normal);
 }
 
-#exportStartDate:focus,
-#exportEndDate:focus {
+.date-select:focus {
   border-color: var(--primary-light);
   outline: none;
   box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.3);
 }
 
-#exportEndDate:disabled {
+.date-select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
 </style>
