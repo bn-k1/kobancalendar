@@ -1,6 +1,6 @@
 // src/services/ical-service.js
 import ical from "ical-generator";
-import { createDate, formatAsFileName, toDate, addDays } from "@/utils/date";
+import { createDate, formatAsFileName, toDate } from "@/utils/date";
 
 /**
  * Generate a unique identifier for calendar events
@@ -118,7 +118,7 @@ export function downloadICS(icsContent, startDate, endDate) {
 
   // Create filename with date range
   const startDateStr = formatAsFileName(startDate);
-  const endDateStr = formatAsFileName(addDays(endDate, -1));
+  const endDateStr = formatAsFileName(endDate);
 
   downloadLink.href = url;
   downloadLink.download = `schedule_${startDateStr}-${endDateStr}.ics`;

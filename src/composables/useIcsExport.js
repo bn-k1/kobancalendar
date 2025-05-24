@@ -1,17 +1,14 @@
 // src/composables/useIcsExport.js
 import { ref, computed } from "vue";
-import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
+import { ERROR_MESSAGES } from "@/utils/constants";
 import { createCalendar, downloadICS } from "@/utils/ical";
 import { useCalendarStore } from "@/stores/calendar";
 import { useSchedule } from "@/composables/useSchedule";
 import {
   createDate,
-  today,
-  isAfter,
   isSame,
   isBefore,
-  addMonths,
-  startOfDay,
+  addDays
 } from "@/utils/date";
 
 /**
@@ -20,7 +17,6 @@ import {
  */
 export function useIcsExport() {
   // State
-  const exportMonths = ref("");
   const exportError = ref(undefined);
 
   // Dependencies
@@ -29,75 +25,58 @@ export function useIcsExport() {
 
   /**
    * Export schedule to ICS format
-   * @param {number} months - Number of months to export
    * @param {number} startPosition - Starting position in the rotation
    * @param {dayjs} baseDate - Base date for calculations
    * @param {dayjs} nextBaseDate - Next base date for calculations
-   * @param {dayjs} customStartDate - Optional custom start date for export
+   * @param {dayjs} startDate - Export start date
+   * @param {dayjs} endDate - Export end date
    * @returns {boolean} Success status
    */
   function exportICS(
-    months,
     startPosition,
     baseDate,
     nextBaseDate,
-    customStartDate,
+    startDate,
+    endDate
   ) {
     try {
       if (!startPosition) {
         alert(ERROR_MESSAGES.INVALID_STARTNUMBER);
-        return;
+        return false;
       }
 
       exportError.value = undefined;
 
-      const currentDay = startOfDay(today());
+      const start = createDate(startDate);
+      const end = createDate(endDate);
       const base = createDate(baseDate);
       const nextBase = createDate(nextBaseDate);
 
-      let startDate;
+      // Adjust end date to one day after the selected end date for inclusive range
+      const adjustedEndDate = addDays(end, 1);
 
-      if (customStartDate) {
-        startDate = createDate(customStartDate);
-      } else {
-        const currentMonth = currentDay.month();
-        const currentYear = currentDay.year();
-
-        const monthExportDay = createDate(
-          `${currentYear}-${currentMonth + 1}-${APP_CONFIG.DEFAULT_EXPORTDAY}`,
-        );
-
-        if (currentDay.date() < APP_CONFIG.DEFAULT_EXPORTDAY) {
-          startDate = currentDay
-            .date(APP_CONFIG.DEFAULT_EXPORTDAY)
-            .subtract(1, "month");
-        } else {
-          startDate = monthExportDay;
-        }
-      }
-
-      let endDate = addMonths(startDate, months);
-
-      if (nextBase && !isSame(base, nextBase) && isBefore(nextBase, endDate)) {
-        endDate = nextBase;
+      // If we have a different next base date and the range crosses it, limit to next base date
+      let finalEndDate = adjustedEndDate;
+      if (nextBase && !isSame(base, nextBase) && isBefore(nextBase, adjustedEndDate)) {
+        finalEndDate = nextBase;
       }
 
       // Get schedule for the date range
       const scheduleRange = calculateScheduleRange(
-        startDate,
-        endDate,
+        start,
+        finalEndDate,
         startPosition,
-        base,
+        base
       );
 
       // Create the calendar
       const calendar = createCalendar(
         scheduleRange,
-        calendarStore.icsExportConfig,
+        calendarStore.icsExportConfig
       );
 
       // Download the ICS file
-      downloadICS(calendar.toString(), startDate, endDate);
+      downloadICS(calendar.toString(), start, end);
       return true;
     } catch (error) {
       console.error(ERROR_MESSAGES.ICS_EXPORT_ERROR, error);
@@ -107,10 +86,8 @@ export function useIcsExport() {
   }
 
   return {
-    exportMonths,
     exportError: computed(() => exportError.value),
     hasError: computed(() => exportError.value !== undefined),
-
-    exportICS,
+    exportICS
   };
 }

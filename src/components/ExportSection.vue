@@ -2,26 +2,52 @@
 <template>
   <fieldset id="exportSection" class="control-group">
     <legend>エクスポート</legend>
-    <div class="form-group">
-      <label id="exportLabel">{{ formatStartDate(exportStartDate) }}から</label>
-      <select
-        id="exportMonths"
-        aria-label="エクスポート期間を選択"
-        v-model="selectedMonths"
-        @change="handleMonthsChange"
-      >
-        <option
-          v-for="option in PERIODOPTIONS"
-          :key="option.value"
-          :value="parseInt(option.value) / 30"
+    <div class="export-date-selectors">
+      <div class="date-selector-group">
+        <select
+          id="exportStartDate"
+          v-model="selectedStartDate"
+          aria-label="エクスポート開始日"
+          @change="handleStartDateChange"
         >
-          {{ option.text.replace("ヶ月", "") }}
-        </option>
-      </select>
-      <span>ヶ月分</span>
+          <option value="" disabled>開始日を選択</option>
+          <option
+            v-for="date in availableDates"
+            :key="date.value"
+            :value="date.value"
+          >
+            {{ date.text }}
+          </option>
+        </select>
+      </div>
+      
+      <span class="date-separator">から</span>
+      
+      <div class="date-selector-group">
+        <select
+          id="exportEndDate"
+          v-model="selectedEndDate"
+          aria-label="エクスポート終了日"
+          :disabled="!selectedStartDate"
+        >
+          <option value="" disabled>終了日を選択</option>
+          <option
+            v-for="date in availableEndDates"
+            :key="date.value"
+            :value="date.value"
+          >
+            {{ date.text }}
+          </option>
+        </select>
+      </div>
+      
+      <span class="date-separator">まで</span>
+      
       <button
         id="exportButton"
+        class="export-button"
         aria-label="ICSをダウンロード"
+        :disabled="!selectedStartDate || !selectedEndDate"
         @click="handleExportICS"
       >
         ダウンロード
@@ -33,8 +59,15 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useIcsExport } from "@/composables/useIcsExport";
-import { createDate, today } from "@/utils/date";
-import { APP_CONFIG, PERIODOPTIONS } from "@/utils/constants";
+import { 
+  createDate, 
+  today, 
+  addDays, 
+  formatAsISODate, 
+  formatAsDisplayDate,
+  isSameDay,
+  isAfter
+} from "@/utils/date";
 
 const props = defineProps({
   baseDate: {
@@ -54,50 +87,159 @@ const props = defineProps({
 const emit = defineEmits(["export", "export-complete"]);
 
 // State
-const selectedMonths = ref(APP_CONFIG.DEFAULT_EXPORT_MONTHS);
+const selectedStartDate = ref("");
+const selectedEndDate = ref("");
 const { exportICS } = useIcsExport();
 
-const exportStartDate = computed(() => {
-  const currentDay = today();
-  const currentMonth = currentDay.month();
-  const currentYear = currentDay.year();
-
-  const monthExportDay = createDate(
-    `${currentYear}-${currentMonth + 1}-${APP_CONFIG.DEFAULT_EXPORTDAY}`,
-  );
-
-  if (currentDay.date() < APP_CONFIG.DEFAULT_EXPORTDAY) {
-    return currentDay.date(APP_CONFIG.DEFAULT_EXPORTDAY).subtract(1, "month");
+// Generate 90 days of date options
+const availableDates = computed(() => {
+  const dates = [];
+  const startDay = isSameDay(props.baseDate, props.nextBaseDate) 
+    ? createDate(props.nextBaseDate)
+    : today();
+  
+  for (let i = 0; i < 90; i++) {
+    const date = addDays(startDay, i);
+    dates.push({
+      value: formatAsISODate(date),
+      text: formatAsDisplayDate(date)
+    });
   }
-
-  return monthExportDay;
+  
+  return dates;
 });
 
-function formatStartDate(date) {
-  return `${createDate(date).format("M")}/${APP_CONFIG.DEFAULT_EXPORTDAY}`;
+// Set default dates
+const defaultStartDate = computed(() => {
+  const startDay = isSameDay(props.baseDate, props.nextBaseDate)
+    ? createDate(props.nextBaseDate)
+    : today();
+  return formatAsISODate(startDay);
+});
+
+const defaultEndDate = computed(() => {
+  const startDay = isSameDay(props.baseDate, props.nextBaseDate)
+    ? createDate(props.nextBaseDate)
+    : today();
+  return formatAsISODate(addDays(startDay, 30));
+});
+
+// Initialize default values
+if (!selectedStartDate.value) {
+  selectedStartDate.value = defaultStartDate.value;
+}
+if (!selectedEndDate.value) {
+  selectedEndDate.value = defaultEndDate.value;
 }
 
-// Handle export months change
-function handleMonthsChange() {
-  emit("export", { months: parseInt(selectedMonths.value, 10) });
+// Available end dates (dates after selected start date)
+const availableEndDates = computed(() => {
+  if (!selectedStartDate.value) return [];
+  
+  const startDate = createDate(selectedStartDate.value);
+  return availableDates.value.filter(date => {
+    const currentDate = createDate(date.value);
+    return isAfter(currentDate, startDate) || isSameDay(currentDate, startDate);
+  });
+});
+
+// Handle start date change
+function handleStartDateChange() {
+  // Reset end date if it's before the new start date
+  if (selectedEndDate.value) {
+    const start = createDate(selectedStartDate.value);
+    const end = createDate(selectedEndDate.value);
+    
+    if (!isAfter(end, start) && !isSameDay(end, start)) {
+      selectedEndDate.value = "";
+    }
+  }
 }
 
 // Handle ICS export button click
 function handleExportICS() {
-  const months = parseInt(selectedMonths.value, 10);
-  const position = props.startPosition;
+  if (!selectedStartDate.value || !selectedEndDate.value) {
+    return;
+  }
 
+  const position = props.startPosition;
+  
   try {
     exportICS(
-      months,
       position,
       createDate(props.baseDate),
       createDate(props.nextBaseDate),
-      exportStartDate.value,
+      createDate(selectedStartDate.value),
+      createDate(selectedEndDate.value)
     );
+    
     emit("export-complete", { success: true });
   } catch (error) {
     emit("export-complete", { success: false, error });
   }
 }
 </script>
+
+<style scoped>
+.export-date-selectors {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.date-separator {
+  color: var(--gray-600);
+  font-weight: var(--font-weight-medium);
+  padding: 0 var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.export-button {
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+}
+
+.export-button:hover:not(:disabled) {
+  background-color: var(--success-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#exportStartDate,
+#exportEndDate {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius-md);
+  background-color: var(--background-light);
+  color: var(--text-color);
+  font-size: 1rem;
+  transition: all var(--transition-normal);
+}
+
+#exportStartDate:focus,
+#exportEndDate:focus {
+  border-color: var(--primary-light);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.3);
+}
+
+#exportEndDate:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+</style>
