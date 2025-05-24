@@ -4,12 +4,7 @@ import { ERROR_MESSAGES } from "@/utils/constants";
 import { createCalendar, downloadICS } from "@/utils/ical";
 import { useCalendarStore } from "@/stores/calendar";
 import { useSchedule } from "@/composables/useSchedule";
-import {
-  createDate,
-  isSame,
-  isBefore,
-  addDays
-} from "@/utils/date";
+import { createDate, isSame, isBefore, addDays } from "@/utils/date";
 
 /**
  * ICS Export composable
@@ -37,7 +32,7 @@ export function useIcsExport() {
     baseDate,
     nextBaseDate,
     startDate,
-    endDate
+    endDate,
   ) {
     try {
       if (!startPosition) {
@@ -57,7 +52,11 @@ export function useIcsExport() {
 
       // If we have a different next base date and the range crosses it, limit to next base date
       let finalEndDate = adjustedEndDate;
-      if (nextBase && !isSame(base, nextBase) && isBefore(nextBase, adjustedEndDate)) {
+      if (
+        nextBase &&
+        !isSame(base, nextBase) &&
+        isBefore(nextBase, adjustedEndDate)
+      ) {
         finalEndDate = nextBase;
       }
 
@@ -66,13 +65,13 @@ export function useIcsExport() {
         start,
         finalEndDate,
         startPosition,
-        base
+        base,
       );
 
       // Create the calendar
       const calendar = createCalendar(
         scheduleRange,
-        calendarStore.icsExportConfig
+        calendarStore.icsExportConfig,
       );
 
       // Download the ICS file
@@ -88,6 +87,6 @@ export function useIcsExport() {
   return {
     exportError: computed(() => exportError.value),
     hasError: computed(() => exportError.value !== undefined),
-    exportICS
+    exportICS,
   };
 }

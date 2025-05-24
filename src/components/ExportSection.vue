@@ -21,9 +21,9 @@
           </option>
         </select>
       </div>
-      
+
       <span class="date-separator">から</span>
-      
+
       <div class="date-selector-group">
         <select
           id="exportEndDate"
@@ -42,9 +42,9 @@
           </option>
         </select>
       </div>
-      
+
       <span class="date-separator">まで</span>
-      
+
       <button
         id="exportButton"
         class="export-button"
@@ -62,15 +62,17 @@
 import { ref, computed, watch } from "vue";
 import { useIcsExport } from "@/composables/useIcsExport";
 import { APP_CONFIG } from "@/utils/constants";
-import { 
-  createDate, 
-  today, 
-  addDays, 
+import {
+  createDate,
+  today,
+  addDays,
   addMonths,
-  formatAsISODate, 
+  formatAsISODate,
   formatAsDisplayDate,
   isSameDay,
-  isAfter
+  isAfter,
+  isBefore,
+  isSameOrBefore,
 } from "@/utils/date";
 
 const props = defineProps({
@@ -95,37 +97,95 @@ const selectedStartDate = ref("");
 const selectedEndDate = ref("");
 const { exportICS } = useIcsExport();
 
-// Computed values
+// Calculate the earliest available start date
 const startDay = computed(() => {
   return isSameDay(props.baseDate, props.nextBaseDate)
     ? createDate(props.nextBaseDate)
     : today();
 });
 
+// Default start date (today or base date, whichever is later)
 const defaultStartDate = computed(() => formatAsISODate(startDay.value));
-const defaultEndDate = computed(() => formatAsISODate(addDays(addMonths(startDay.value, 1), -1)));
 
-// Generate 90 days of date options
+// Default end date (1 month from start, or limited by nextBaseDate)
+const defaultEndDate = computed(() => {
+  const endDate = addDays(addMonths(startDay.value, 1), -1);
+
+  // Apply nextBaseDate limit if applicable
+  if (hasEndDateLimit.value) {
+    const limitDate = addDays(props.nextBaseDate, -1);
+    return formatAsISODate(isBefore(endDate, limitDate) ? endDate : limitDate);
+  }
+
+  return formatAsISODate(endDate);
+});
+
+// Check if end date should be limited by nextBaseDate
+const hasEndDateLimit = computed(() => {
+  // No limit if nextBaseDate is not set
+  if (!props.nextBaseDate) return false;
+
+  // No limit if baseDate == nextBaseDate (using next period data)
+  if (isSameDay(props.baseDate, props.nextBaseDate)) return false;
+
+  // Apply limit if baseDate is active and nextBaseDate is in the future
+  return isAfter(props.nextBaseDate, props.baseDate);
+});
+
+// Maximum selectable end date
+const maxEndDate = computed(() => {
+  if (hasEndDateLimit.value) {
+    // Limited to day before nextBaseDate
+    return addDays(props.nextBaseDate, -1);
+  }
+
+  // No limit: 90 days from start
+  return addDays(startDay.value, APP_CONFIG.EXPORT_MAX_DAYS - 1);
+});
+
+// Generate available start date options
 const availableDates = computed(() => {
   const dates = [];
-  for (let i = 0; i < APP_CONFIG.EXPORT_MAX_DAYS; i++) {
+  const maxDays = hasEndDateLimit.value
+    ? Math.min(
+        APP_CONFIG.EXPORT_MAX_DAYS,
+        props.nextBaseDate.diff(startDay.value, "day"),
+      )
+    : APP_CONFIG.EXPORT_MAX_DAYS;
+
+  for (let i = 0; i < maxDays; i++) {
     const date = addDays(startDay.value, i);
+
+    // Exclude dates from nextBaseDate onwards if limit is applied
+    if (hasEndDateLimit.value && !isBefore(date, props.nextBaseDate)) {
+      break;
+    }
+
     dates.push({
       value: formatAsISODate(date),
-      text: formatAsDisplayDate(date)
+      text: formatAsDisplayDate(date),
     });
   }
   return dates;
 });
 
-// Available end dates (dates after selected start date)
+// Generate available end date options (after selected start date, with limit consideration)
 const availableEndDates = computed(() => {
   if (!selectedStartDate.value) return [];
-  
+
   const startDate = createDate(selectedStartDate.value);
-  return availableDates.value.filter(date => {
+  return availableDates.value.filter((date) => {
     const currentDate = createDate(date.value);
-    return isAfter(currentDate, startDate) || isSameDay(currentDate, startDate);
+
+    // Must be on or after start date
+    if (isBefore(currentDate, startDate)) return false;
+
+    // Apply nextBaseDate limit
+    if (hasEndDateLimit.value && !isBefore(currentDate, props.nextBaseDate)) {
+      return false;
+    }
+
+    return true;
   });
 });
 
@@ -141,17 +201,24 @@ function resetToDefaults() {
 }
 
 // Watch for changes in dependencies and reset dates
-watch([() => props.baseDate, () => props.nextBaseDate, () => props.startPosition], () => {
-  resetToDefaults();
-}, { immediate: true });
+watch(
+  [() => props.baseDate, () => props.nextBaseDate, () => props.startPosition],
+  () => {
+    resetToDefaults();
+  },
+  { immediate: true },
+);
 
 // Handle start date change
 function handleStartDateChange() {
   if (selectedEndDate.value) {
     const start = createDate(selectedStartDate.value);
     const end = createDate(selectedEndDate.value);
-    
+
+    // Reset end date if it's before start date or beyond limit
     if (!isAfter(end, start) && !isSameDay(end, start)) {
+      selectedEndDate.value = "";
+    } else if (hasEndDateLimit.value && !isBefore(end, props.nextBaseDate)) {
       selectedEndDate.value = "";
     }
   }
@@ -167,9 +234,9 @@ function handleExportICS() {
       createDate(props.baseDate),
       createDate(props.nextBaseDate),
       createDate(selectedStartDate.value),
-      createDate(selectedEndDate.value)
+      createDate(selectedEndDate.value),
     );
-    
+
     emit("export-complete", { success: true });
   } catch (error) {
     emit("export-complete", { success: false, error });
