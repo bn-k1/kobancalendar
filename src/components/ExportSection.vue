@@ -59,12 +59,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import { useIcsExport } from "@/composables/useIcsExport";
+import { APP_CONFIG } from "@/utils/constants";
 import { 
   createDate, 
   today, 
   addDays, 
+  addMonths,
   formatAsISODate, 
   formatAsDisplayDate,
   isSameDay,
@@ -95,18 +97,18 @@ const { exportICS } = useIcsExport();
 
 // Computed values
 const startDay = computed(() => {
-  return isSameDay(props.baseDate, props.nextBaseDate) 
+  return isSameDay(props.baseDate, props.nextBaseDate)
     ? createDate(props.nextBaseDate)
     : today();
 });
 
 const defaultStartDate = computed(() => formatAsISODate(startDay.value));
-const defaultEndDate = computed(() => formatAsISODate(addDays(startDay.value, 30)));
+const defaultEndDate = computed(() => formatAsISODate(addDays(addMonths(startDay.value, 1), -1)));
 
 // Generate 90 days of date options
 const availableDates = computed(() => {
   const dates = [];
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0; i < APP_CONFIG.EXPORT_MAX_DAYS; i++) {
     const date = addDays(startDay.value, i);
     dates.push({
       value: formatAsISODate(date),
@@ -132,11 +134,16 @@ const canExport = computed(() => {
   return selectedStartDate.value && selectedEndDate.value;
 });
 
-// Initialize default values
-onMounted(() => {
+// Reset dates to defaults when dependencies change
+function resetToDefaults() {
   selectedStartDate.value = defaultStartDate.value;
   selectedEndDate.value = defaultEndDate.value;
-});
+}
+
+// Watch for changes in dependencies and reset dates
+watch([() => props.baseDate, () => props.nextBaseDate, () => props.startPosition], () => {
+  resetToDefaults();
+}, { immediate: true });
 
 // Handle start date change
 function handleStartDateChange() {

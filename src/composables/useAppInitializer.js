@@ -46,16 +46,6 @@ export function useAppInitializer() {
       setICSExportConfig(config.info);
 
       // Load schedule data:
-      const nextHolidayDataset = config.next_base_date
-        ? nextHolidayData
-        : defaultHolidayData;
-      const nextSaturdayDataset = config.next_base_date
-        ? nextSaturdayData
-        : defaultSaturdayData;
-      const nextWeekdayDataset = config.next_base_date
-        ? nextWeekdayData
-        : defaultWeekdayData;
-
       const scheduleData = loadScheduleData(
         {
           holiday: defaultHolidayData,
@@ -63,9 +53,9 @@ export function useAppInitializer() {
           weekday: defaultWeekdayData,
         },
         {
-          holiday: nextHolidayDataset,
-          saturday: nextSaturdayDataset,
-          weekday: nextWeekdayDataset,
+          holiday: nextHolidayData,
+          saturday: nextSaturdayData,
+          weekday: nextWeekdayData,
         },
       );
 
@@ -79,7 +69,7 @@ export function useAppInitializer() {
         setNextBaseDate(nextBaseDateObj);
       } else {
         // If no next_base_date, use default_base_date
-        setNextBaseDate(defaultBaseDateObj);
+        setNextBaseDate([]);
       }
 
       isLoaded.value = true;

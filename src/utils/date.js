@@ -5,14 +5,14 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import isSameOrBeforePlugin from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfterPlugin from "dayjs/plugin/isSameOrAfter";
-import { DATE_FORMATS, WEEKDAYS } from "@/utils/constants";
+import { TIMEZONE, DATE_FORMATS, WEEKDAYS } from "@/utils/constants";
 
 // Setup plugins - order matters
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(isSameOrBeforePlugin);
 dayjs.extend(isSameOrAfterPlugin);
-dayjs.tz.setDefault("Asia/Tokyo");
+dayjs.tz.setDefault(TIMEZONE);
 
 /**
  * Create a dayjs object for a date

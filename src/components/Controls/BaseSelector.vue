@@ -81,7 +81,7 @@ function formatOption(option) {
   }
 
   // Default formatting for different types
-  if (option === undefined) {
+  if (!option) {
     return "";
   }
 
