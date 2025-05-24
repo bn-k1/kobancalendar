@@ -1,0 +1,1959 @@
+{
+  "holiday": [
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "104",
+      "startTime": "13:46",
+      "endTime": "20:30"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "T113/114",
+      "startTime": "07:39",
+      "endTime": "22:04"
+    },
+    {
+      "subject": "132",
+      "startTime": "14:36",
+      "endTime": "23:24"
+    },
+    {
+      "subject": "814",
+      "startTime": "12:19",
+      "endTime": "22:26"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "T501/502",
+      "startTime": "06:25",
+      "endTime": "20:36"
+    },
+    {
+      "subject": "143",
+      "startTime": "07:51",
+      "endTime": "20:30"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄121",
+      "startTime": "05:23",
+      "endTime": "12:41"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "131",
+      "startTime": "05:43",
+      "endTime": "15:40"
+    },
+    {
+      "subject": "T805/806",
+      "startTime": "05:44",
+      "endTime": "19:41"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "139",
+      "startTime": "05:59",
+      "endTime": "20:03"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "135",
+      "startTime": "05:52",
+      "endTime": "15:02"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "711",
+      "startTime": "06:34",
+      "endTime": "19:01"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "123",
+      "startTime": "05:32",
+      "endTime": "14:10"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "126",
+      "startTime": "13:36",
+      "endTime": "22:44"
+    },
+    {
+      "subject": "134",
+      "startTime": "15:16",
+      "endTime": "23:20"
+    },
+    {
+      "subject": "P予備",
+      "startTime": "13:00",
+      "endTime": "21:55"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "812",
+      "startTime": "11:49",
+      "endTime": "22:15"
+    },
+    {
+      "subject": "T807/808",
+      "startTime": "08:19",
+      "endTime": "21:55"
+    },
+    {
+      "subject": "141",
+      "startTime": "07:33",
+      "endTime": "19:54"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄133",
+      "startTime": "05:46",
+      "endTime": "13:25"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "129",
+      "startTime": "05:41",
+      "endTime": "19:32"
+    },
+    {
+      "subject": "815",
+      "startTime": "05:33",
+      "endTime": "19:26"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "513",
+      "startTime": "05:39",
+      "endTime": "13:44"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "T503/504",
+      "startTime": "07:13",
+      "endTime": "21:08"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1105",
+      "startTime": "06:42",
+      "endTime": "14:54"
+    },
+    {
+      "subject": "821",
+      "startTime": "07:19",
+      "endTime": "19:11"
+    },
+    {
+      "subject": "803",
+      "startTime": "07:34",
+      "endTime": "13:56"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "804",
+      "startTime": "13:04",
+      "endTime": "21:25"
+    },
+    {
+      "subject": "105/106",
+      "startTime": "07:26",
+      "endTime": "21:27"
+    },
+    {
+      "subject": "128",
+      "startTime": "14:01",
+      "endTime": "23:02"
+    },
+    {
+      "subject": "516",
+      "startTime": "13:48",
+      "endTime": "23:08"
+    },
+    {
+      "subject": "130",
+      "startTime": "14:26",
+      "endTime": "22:31"
+    },
+    {
+      "subject": "124",
+      "startTime": "13:06",
+      "endTime": "22:16"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "3011",
+      "startTime": "08:56",
+      "endTime": "18:14"
+    },
+    {
+      "subject": "521",
+      "startTime": "08:25",
+      "endTime": "17:24"
+    },
+    {
+      "subject": "823",
+      "startTime": "07:52",
+      "endTime": "18:26"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄125",
+      "startTime": "05:33",
+      "endTime": "12:31"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "517",
+      "startTime": "06:07",
+      "endTime": "15:00"
+    },
+    {
+      "subject": "1101",
+      "startTime": "05:31",
+      "endTime": "13:09"
+    },
+    {
+      "subject": "T703/704",
+      "startTime": "09:18",
+      "endTime": "22:13"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "101",
+      "startTime": "06:08",
+      "endTime": "12:17"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "102",
+      "startTime": "12:24",
+      "endTime": "19:32"
+    },
+    {
+      "subject": "T111/112",
+      "startTime": "06:59",
+      "endTime": "20:51"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "147",
+      "startTime": "08:49",
+      "endTime": "17:40"
+    },
+    {
+      "subject": "515",
+      "startTime": "05:53",
+      "endTime": "13:56"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "817",
+      "startTime": "05:48",
+      "endTime": "18:41"
+    },
+    {
+      "subject": "801/802",
+      "startTime": "06:34",
+      "endTime": "20:49"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "713",
+      "startTime": "08:33",
+      "endTime": "15:16"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "519",
+      "startTime": "06:42",
+      "endTime": "20:44"
+    },
+    {
+      "subject": "145",
+      "startTime": "08:14",
+      "endTime": "17:42"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄813",
+      "startTime": "05:29",
+      "endTime": "12:56"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "107/108",
+      "startTime": "06:51",
+      "endTime": "21:03"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1106",
+      "startTime": "14:37",
+      "endTime": "20:37"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "512",
+      "startTime": "12:48",
+      "endTime": "22:46"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "514",
+      "startTime": "13:00",
+      "endTime": "22:29"
+    },
+    {
+      "subject": "122",
+      "startTime": "12:06",
+      "endTime": "23:04"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "825",
+      "startTime": "08:34",
+      "endTime": "19:56"
+    },
+    {
+      "subject": "137",
+      "startTime": "05:54",
+      "endTime": "14:47"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1103",
+      "startTime": "05:46",
+      "endTime": "19:44"
+    },
+    {
+      "subject": "T109/110",
+      "startTime": "06:02",
+      "endTime": "20:20"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "127",
+      "startTime": "05:40",
+      "endTime": "19:24"
+    },
+    {
+      "subject": "A予備",
+      "startTime": "05:10",
+      "endTime": "14:05"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "701/702",
+      "startTime": "06:22",
+      "endTime": "19:46"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "819",
+      "startTime": "05:59",
+      "endTime": "16:56"
+    },
+    {
+      "subject": "黄511",
+      "startTime": "05:26",
+      "endTime": "13:10"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "811",
+      "startTime": "05:18",
+      "endTime": "18:56"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "103",
+      "startTime": "06:12",
+      "endTime": "14:21"
+    }
+  ],
+  "saturday": [
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "104",
+      "startTime": "13:46",
+      "endTime": "20:30"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "T113/114",
+      "startTime": "07:39",
+      "endTime": "22:04"
+    },
+    {
+      "subject": "132",
+      "startTime": "14:36",
+      "endTime": "23:24"
+    },
+    {
+      "subject": "814",
+      "startTime": "12:19",
+      "endTime": "22:26"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "T501/502",
+      "startTime": "06:25",
+      "endTime": "20:36"
+    },
+    {
+      "subject": "143",
+      "startTime": "07:51",
+      "endTime": "20:30"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄121",
+      "startTime": "05:23",
+      "endTime": "12:41"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "131",
+      "startTime": "05:43",
+      "endTime": "15:40"
+    },
+    {
+      "subject": "T805/806",
+      "startTime": "05:44",
+      "endTime": "19:41"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "139",
+      "startTime": "05:59",
+      "endTime": "20:03"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "135",
+      "startTime": "05:52",
+      "endTime": "15:02"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "711",
+      "startTime": "06:34",
+      "endTime": "19:01"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "123",
+      "startTime": "05:32",
+      "endTime": "14:10"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "126",
+      "startTime": "13:36",
+      "endTime": "22:44"
+    },
+    {
+      "subject": "134",
+      "startTime": "15:16",
+      "endTime": "23:20"
+    },
+    {
+      "subject": "P予備",
+      "startTime": "13:00",
+      "endTime": "21:55"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "812",
+      "startTime": "11:49",
+      "endTime": "22:15"
+    },
+    {
+      "subject": "T807/808",
+      "startTime": "08:19",
+      "endTime": "21:55"
+    },
+    {
+      "subject": "141",
+      "startTime": "07:33",
+      "endTime": "19:54"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄133",
+      "startTime": "05:46",
+      "endTime": "13:25"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "129",
+      "startTime": "05:41",
+      "endTime": "19:32"
+    },
+    {
+      "subject": "815",
+      "startTime": "05:33",
+      "endTime": "19:26"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "513",
+      "startTime": "05:39",
+      "endTime": "13:44"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "T503/504",
+      "startTime": "07:13",
+      "endTime": "21:08"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1105",
+      "startTime": "06:42",
+      "endTime": "14:54"
+    },
+    {
+      "subject": "821",
+      "startTime": "07:19",
+      "endTime": "19:11"
+    },
+    {
+      "subject": "803",
+      "startTime": "07:34",
+      "endTime": "13:56"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "804",
+      "startTime": "13:04",
+      "endTime": "21:25"
+    },
+    {
+      "subject": "105/106",
+      "startTime": "07:26",
+      "endTime": "21:27"
+    },
+    {
+      "subject": "128",
+      "startTime": "14:01",
+      "endTime": "23:02"
+    },
+    {
+      "subject": "516",
+      "startTime": "13:48",
+      "endTime": "23:08"
+    },
+    {
+      "subject": "130",
+      "startTime": "14:26",
+      "endTime": "22:31"
+    },
+    {
+      "subject": "124",
+      "startTime": "13:06",
+      "endTime": "22:16"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "3011",
+      "startTime": "08:56",
+      "endTime": "18:14"
+    },
+    {
+      "subject": "521",
+      "startTime": "08:25",
+      "endTime": "17:24"
+    },
+    {
+      "subject": "823",
+      "startTime": "07:52",
+      "endTime": "18:26"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄125",
+      "startTime": "05:33",
+      "endTime": "12:31"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "517",
+      "startTime": "06:07",
+      "endTime": "15:00"
+    },
+    {
+      "subject": "1101",
+      "startTime": "05:31",
+      "endTime": "13:09"
+    },
+    {
+      "subject": "T703/704",
+      "startTime": "09:18",
+      "endTime": "22:13"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1513",
+      "startTime": "08:30",
+      "endTime": "17:11"
+    },
+    {
+      "subject": "101",
+      "startTime": "06:08",
+      "endTime": "12:17"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "102",
+      "startTime": "12:24",
+      "endTime": "19:32"
+    },
+    {
+      "subject": "T111/112",
+      "startTime": "06:59",
+      "endTime": "20:51"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "147",
+      "startTime": "08:49",
+      "endTime": "17:40"
+    },
+    {
+      "subject": "515",
+      "startTime": "05:53",
+      "endTime": "13:56"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "817",
+      "startTime": "05:48",
+      "endTime": "18:41"
+    },
+    {
+      "subject": "801/802",
+      "startTime": "06:34",
+      "endTime": "20:49"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "713",
+      "startTime": "08:33",
+      "endTime": "15:16"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "519",
+      "startTime": "06:42",
+      "endTime": "20:44"
+    },
+    {
+      "subject": "145",
+      "startTime": "08:14",
+      "endTime": "17:42"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄813",
+      "startTime": "05:29",
+      "endTime": "12:56"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "107/108",
+      "startTime": "06:51",
+      "endTime": "21:03"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1106",
+      "startTime": "14:37",
+      "endTime": "20:37"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "512",
+      "startTime": "12:48",
+      "endTime": "22:46"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "514",
+      "startTime": "13:00",
+      "endTime": "22:29"
+    },
+    {
+      "subject": "122",
+      "startTime": "12:06",
+      "endTime": "23:04"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "825",
+      "startTime": "08:34",
+      "endTime": "19:56"
+    },
+    {
+      "subject": "137",
+      "startTime": "05:54",
+      "endTime": "14:47"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1103",
+      "startTime": "05:46",
+      "endTime": "19:44"
+    },
+    {
+      "subject": "T109/110",
+      "startTime": "06:02",
+      "endTime": "20:20"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "127",
+      "startTime": "05:40",
+      "endTime": "19:24"
+    },
+    {
+      "subject": "A予備",
+      "startTime": "05:10",
+      "endTime": "14:05"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "701/702",
+      "startTime": "06:22",
+      "endTime": "19:46"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "819",
+      "startTime": "05:59",
+      "endTime": "16:56"
+    },
+    {
+      "subject": "黄511",
+      "startTime": "05:26",
+      "endTime": "13:10"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "811",
+      "startTime": "05:18",
+      "endTime": "18:56"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1511",
+      "startTime": "06:11",
+      "endTime": "19:46"
+    },
+    {
+      "subject": "103",
+      "startTime": "06:12",
+      "endTime": "14:21"
+    }
+  ],
+  "weekday": [
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "804",
+      "startTime": "12:09",
+      "endTime": "20:15"
+    },
+    {
+      "subject": "819",
+      "startTime": "06:44",
+      "endTime": "21:11"
+    },
+    {
+      "subject": "T809/810",
+      "startTime": "07:39",
+      "endTime": "22:04"
+    },
+    {
+      "subject": "134",
+      "startTime": "17:26",
+      "endTime": "24:42"
+    },
+    {
+      "subject": "816",
+      "startTime": "15:24",
+      "endTime": "22:50"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "827",
+      "startTime": "09:09",
+      "endTime": "19:31"
+    },
+    {
+      "subject": "T501/502",
+      "startTime": "06:25",
+      "endTime": "20:35"
+    },
+    {
+      "subject": "145",
+      "startTime": "06:34",
+      "endTime": "20:43"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄815",
+      "startTime": "05:36",
+      "endTime": "11:46"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "811",
+      "startTime": "05:06",
+      "endTime": "13:31"
+    },
+    {
+      "subject": "101/102",
+      "startTime": "05:18",
+      "endTime": "18:46"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "133",
+      "startTime": "05:51",
+      "endTime": "20:01"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "105",
+      "startTime": "06:05",
+      "endTime": "12:46"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "106",
+      "startTime": "12:56",
+      "endTime": "20:26"
+    },
+    {
+      "subject": "715",
+      "startTime": "06:09",
+      "endTime": "19:26"
+    },
+    {
+      "subject": "T113/114",
+      "startTime": "05:35",
+      "endTime": "18:34"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "141",
+      "startTime": "06:13",
+      "endTime": "12:36"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "523",
+      "startTime": "06:00",
+      "endTime": "14:02"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "128",
+      "startTime": "15:32",
+      "endTime": "22:58"
+    },
+    {
+      "subject": "132",
+      "startTime": "16:20",
+      "endTime": "24:11"
+    },
+    {
+      "subject": "P予備",
+      "startTime": "13:00",
+      "endTime": "21:55"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "512",
+      "startTime": "11:48",
+      "endTime": "21:49"
+    },
+    {
+      "subject": "T119/120",
+      "startTime": "07:55",
+      "endTime": "21:20"
+    },
+    {
+      "subject": "823",
+      "startTime": "07:34",
+      "endTime": "20:34"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄135",
+      "startTime": "05:58",
+      "endTime": "12:13"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "517",
+      "startTime": "05:35",
+      "endTime": "19:11"
+    },
+    {
+      "subject": "813",
+      "startTime": "05:22",
+      "endTime": "18:56"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "511",
+      "startTime": "05:11",
+      "endTime": "12:44"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "T807/808",
+      "startTime": "05:42",
+      "endTime": "20:06"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1105",
+      "startTime": "06:42",
+      "endTime": "14:54"
+    },
+    {
+      "subject": "817",
+      "startTime": "06:19",
+      "endTime": "19:32"
+    },
+    {
+      "subject": "711",
+      "startTime": "05:22",
+      "endTime": "12:46"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "821",
+      "startTime": "07:19",
+      "endTime": "19:41"
+    },
+    {
+      "subject": "T117/118",
+      "startTime": "07:47",
+      "endTime": "21:57"
+    },
+    {
+      "subject": "712",
+      "startTime": "14:03",
+      "endTime": "23:25"
+    },
+    {
+      "subject": "516",
+      "startTime": "14:59",
+      "endTime": "23:29"
+    },
+    {
+      "subject": "122",
+      "startTime": "14:31",
+      "endTime": "24:22"
+    },
+    {
+      "subject": "812",
+      "startTime": "12:54",
+      "endTime": "22:39"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "825",
+      "startTime": "08:37",
+      "endTime": "22:26"
+    },
+    {
+      "subject": "717",
+      "startTime": "08:18",
+      "endTime": "21:01"
+    },
+    {
+      "subject": "1106",
+      "startTime": "14:37",
+      "endTime": "20:37"
+    },
+    {
+      "subject": "525",
+      "startTime": "06:10",
+      "endTime": "17:53"
+    },
+    {
+      "subject": "黄121",
+      "startTime": "05:07",
+      "endTime": "11:13"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "131",
+      "startTime": "05:49",
+      "endTime": "13:06"
+    },
+    {
+      "subject": "1101",
+      "startTime": "05:31",
+      "endTime": "13:09"
+    },
+    {
+      "subject": "T701/702",
+      "startTime": "07:28",
+      "endTime": "21:13"
+    },
+    {
+      "subject": "149",
+      "startTime": "08:22",
+      "endTime": "22:33"
+    },
+    {
+      "subject": "1513",
+      "startTime": "08:30",
+      "endTime": "17:11"
+    },
+    {
+      "subject": "103",
+      "startTime": "05:48",
+      "endTime": "12:06"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "104",
+      "startTime": "11:41",
+      "endTime": "20:04"
+    },
+    {
+      "subject": "T115/116",
+      "startTime": "06:48",
+      "endTime": "21:10"
+    },
+    {
+      "subject": "529",
+      "startTime": "06:55",
+      "endTime": "20:54"
+    },
+    {
+      "subject": "151",
+      "startTime": "10:06",
+      "endTime": "18:42"
+    },
+    {
+      "subject": "513",
+      "startTime": "05:20",
+      "endTime": "12:22"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "519",
+      "startTime": "05:48",
+      "endTime": "18:20"
+    },
+    {
+      "subject": "109/110",
+      "startTime": "06:23",
+      "endTime": "20:13"
+    },
+    {
+      "subject": "147",
+      "startTime": "07:16",
+      "endTime": "20:52"
+    },
+    {
+      "subject": "527",
+      "startTime": "06:25",
+      "endTime": "20:30"
+    },
+    {
+      "subject": "107",
+      "startTime": "06:24",
+      "endTime": "12:58"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "143",
+      "startTime": "06:27",
+      "endTime": "20:33"
+    },
+    {
+      "subject": "108",
+      "startTime": "12:34",
+      "endTime": "20:38"
+    },
+    {
+      "subject": "139",
+      "startTime": "06:10",
+      "endTime": "20:38"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "黄129",
+      "startTime": "05:37",
+      "endTime": "11:28"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "111/112",
+      "startTime": "07:26",
+      "endTime": "21:42"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "514",
+      "startTime": "13:54",
+      "endTime": "23:43"
+    },
+    {
+      "subject": "126",
+      "startTime": "15:31",
+      "endTime": "23:06"
+    },
+    {
+      "subject": "518",
+      "startTime": "15:04",
+      "endTime": "24:56"
+    },
+    {
+      "subject": "814",
+      "startTime": "14:39",
+      "endTime": "22:57"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "124",
+      "startTime": "15:11",
+      "endTime": "23:03"
+    },
+    {
+      "subject": "130",
+      "startTime": "15:50",
+      "endTime": "23:43"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "153",
+      "startTime": "10:51",
+      "endTime": "19:36"
+    },
+    {
+      "subject": "713",
+      "startTime": "05:37",
+      "endTime": "12:01"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "127",
+      "startTime": "05:29",
+      "endTime": "12:26"
+    },
+    {
+      "subject": "1103",
+      "startTime": "05:46",
+      "endTime": "19:44"
+    },
+    {
+      "subject": "801/802",
+      "startTime": "05:19",
+      "endTime": "19:11"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "137",
+      "startTime": "05:59",
+      "endTime": "16:56"
+    },
+    {
+      "subject": "A予備",
+      "startTime": "05:10",
+      "endTime": "14:05"
+    },
+    {
+      "subject": "公休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "T805/806",
+      "startTime": "06:33",
+      "endTime": "20:09"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "125",
+      "startTime": "05:28",
+      "endTime": "18:27"
+    },
+    {
+      "subject": "123",
+      "startTime": "05:23",
+      "endTime": "19:03"
+    },
+    {
+      "subject": "黄515",
+      "startTime": "05:25",
+      "endTime": "11:20"
+    },
+    {
+      "subject": "法休",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "521",
+      "startTime": "05:49",
+      "endTime": "18:34"
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "空",
+      "startTime": "",
+      "endTime": ""
+    },
+    {
+      "subject": "1511",
+      "startTime": "06:11",
+      "endTime": "19:46"
+    },
+    {
+      "subject": "803",
+      "startTime": "06:18",
+      "endTime": "13:01"
+    }
+  ],
+  "rotationCycleLength": 130
+}

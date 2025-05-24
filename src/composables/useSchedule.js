@@ -15,6 +15,7 @@ import {
 /**
  * Schedule management composable
  * Contains all schedule-related logic
+ * Updated to work with consolidated JSON format
  */
 export function useSchedule() {
   // Get stores for state management only
@@ -108,13 +109,12 @@ export function useSchedule() {
 
     if (!shiftData) return undefined;
 
-    // Parse schedule data
-    const [subject, startTime, endTime] = shiftData.split(",");
+    // Return schedule data directly (no more split() processing needed)
     return {
       dateStr,
-      subject,
-      startTime,
-      endTime,
+      subject: shiftData.subject,
+      startTime: shiftData.startTime,
+      endTime: shiftData.endTime,
       isHoliday: isHolidayFlag,
       isSaturday,
       shiftIndex,
@@ -160,44 +160,29 @@ export function useSchedule() {
   }
 
   /**
-   * Load schedule data from pre-parsed JSON
-   * @param {Object} defaultData - Default schedule data
-   * @param {Object} nextData - Next schedule data
+   * Load schedule data from consolidated JSON format
+   * @param {Object} defaultData - Default schedule data object
+   * @param {Object} nextData - Next schedule data object
    * @returns {Object} Loaded active schedule data
    */
   function loadScheduleData(defaultData, nextData) {
     try {
-      // Validate default data
-      const defaultHolidayLength = defaultData.holiday.length;
-      if (
-        defaultHolidayLength !== defaultData.saturday.length ||
-        defaultHolidayLength !== defaultData.weekday.length
-      ) {
-        throw new Error(ERROR_MESSAGES.JSON_ROWS_MISMATCH);
-      }
+      const { holiday: defaultHoliday, saturday: defaultSaturday, weekday: defaultWeekday, rotationCycleLength: defaultCycleLength } = defaultData;
+      const { holiday: nextHoliday, saturday: nextSaturday, weekday: nextWeekday, rotationCycleLength: nextCycleLength } = nextData;
 
-      // Validate next data
-      const nextHolidayLength = nextData.holiday.length;
-      if (
-        nextHolidayLength !== nextData.saturday.length ||
-        nextHolidayLength !== nextData.weekday.length
-      ) {
-        throw new Error(ERROR_MESSAGES.JSON_ROWS_MISMATCH);
-      }
-
-      // Create data sets
+      // Create data sets with validated data
       const dataSets = {
         default: {
           holiday: defaultData.holiday,
           saturday: defaultData.saturday,
           weekday: defaultData.weekday,
-          rotationCycleLength: defaultHolidayLength,
+          rotationCycleLength: defaultData.rotationCycleLength,
         },
         next: {
           holiday: nextData.holiday,
           saturday: nextData.saturday,
           weekday: nextData.weekday,
-          rotationCycleLength: nextHolidayLength,
+          rotationCycleLength: nextData.rotationCycleLength,
         },
       };
 

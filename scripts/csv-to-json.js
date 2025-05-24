@@ -1,9 +1,10 @@
 // scripts/csv-to-json.js
 /**
- * CSV to JSON conversion script
+ * CSV to JSON conversion script - Modified Version
  *
- * This script converts CSV files to JSON format for two data sets (default and next),
- * which removes the need for runtime CSV parsing and reduces bundle size.
+ * This script converts CSV files to consolidated JSON format for two data sets (default and next).
+ * Each dataset outputs a single JSON file containing holiday, saturday, and weekday data.
+ * Includes validation and error handling for mismatched row counts or missing files.
  */
 
 import { createRequire } from 'module';
@@ -18,8 +19,8 @@ const Papa = require('papaparse');
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-console.log('CSV to JSON Conversion');
-console.log('=====================');
+console.log('CSV to JSON Conversion - Modified Version');
+console.log('========================================');
 
 // Project root directory (one level up from this script)
 const PROJECT_ROOT = resolve(__dirname, '..');
@@ -29,11 +30,11 @@ const TARGET_DIRS = ['default', 'next'];
 const FILES_TO_CONVERT = ['holiday', 'saturday', 'weekday'];
 
 /**
- * Process raw CSV data into an array of comma-separated strings
+ * Parse CSV content into an array of objects with subject, startTime, endTime
  * @param {string} csvData - CSV content as a string
- * @returns {string[]} Array of processed row strings
+ * @returns {Object[]} Array of parsed schedule objects
  */
-function processCSVData(csvData) {
+function parseCSVToScheduleObjects(csvData) {
   try {
     const result = Papa.parse(csvData, {
       skipEmptyLines: true,
@@ -46,55 +47,123 @@ function processCSVData(csvData) {
       return [];
     }
 
-    return result.data.map(row => row.join(','));
+    // Convert each row to an object with subject, startTime, endTime
+    return result.data.map(row => ({
+      subject: row[0] || '',
+      startTime: row[1] || '',
+      endTime: row[2] || ''
+    }));
   } catch (error) {
-    console.error('Error processing CSV data:', error);
+    console.error('Error parsing CSV data:', error);
     return [];
   }
 }
 
-// Iterate over each target directory
-TARGET_DIRS.forEach(dirName => {
+/**
+ * Validate that all schedule arrays have the same length
+ * @param {Object} scheduleData - Object containing holiday, saturday, weekday arrays
+ * @returns {boolean} True if all arrays have same length, false otherwise
+ */
+function validateScheduleData(scheduleData) {
+  const { holiday, saturday, weekday } = scheduleData;
+  
+  if (!holiday.length || !saturday.length || !weekday.length) {
+    return false;
+  }
+  
+  const holidayLength = holiday.length;
+  return saturday.length === holidayLength && weekday.length === holidayLength;
+}
+
+/**
+ * Create empty schedule data structure
+ * @returns {Object} Empty schedule data with rotationCycleLength of 0
+ */
+function createEmptyScheduleData() {
+  return {
+    holiday: [],
+    saturday: [],
+    weekday: [],
+    rotationCycleLength: 0
+  };
+}
+
+/**
+ * Process a single directory (default or next)
+ * @param {string} dirName - Directory name ('default' or 'next')
+ */
+function processDirectory(dirName) {
   const inputDir = resolve(PROJECT_ROOT, 'data', dirName);
-  const outputDir = resolve(inputDir, 'json');
+  const outputFile = resolve(inputDir, `${dirName}.json`);
 
   console.log(`\nProcessing directory: ${inputDir}`);
-  console.log(`Output directory: ${outputDir}`);
+  console.log(`Output file: ${outputFile}`);
 
-  // Ensure the output directory exists
-  if (!fs.existsSync(outputDir)) {
-    console.log(`Creating output directory: ${outputDir}`);
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
+  const scheduleData = {
+    holiday: [],
+    saturday: [],
+    weekday: [],
+    rotationCycleLength: 0
+  };
 
-  // Convert each specified file
-  FILES_TO_CONVERT.forEach(filename => {
+  let hasValidData = true;
+
+  // Process each CSV file
+  for (const filename of FILES_TO_CONVERT) {
     const csvPath = join(inputDir, `${filename}.csv`);
-    const jsonPath = join(outputDir, `${filename}.json`);
-
-    console.log(`Converting ${csvPath} -> ${jsonPath}`);
-    let processedData = [];
-
-    if (fs.existsSync(csvPath)) {
-      try {
-        const csvContent = fs.readFileSync(csvPath, 'utf8');
-        processedData = processCSVData(csvContent);
-      } catch (err) {
-        console.error(`Error reading or parsing ${csvPath}:`, err);
-        processedData = [];
-      }
-    } else {
-      console.warn(`File not found: ${csvPath}. Generating empty JSON array.`);
-      processedData = [];
+    
+    console.log(`Processing ${csvPath}`);
+    
+    if (!fs.existsSync(csvPath)) {
+      console.warn(`File not found: ${csvPath}. Marking data as invalid.`);
+      hasValidData = false;
+      break;
     }
 
     try {
-      fs.writeFileSync(jsonPath, JSON.stringify(processedData, null, 2));
-      console.log(`✓ ${filename}.json created (${processedData.length} entries)`);
+      const csvContent = fs.readFileSync(csvPath, 'utf8');
+      const parsedData = parseCSVToScheduleObjects(csvContent);
+      scheduleData[filename] = parsedData;
+      
+      console.log(`✓ Parsed ${filename}.csv (${parsedData.length} entries)`);
     } catch (err) {
-      console.error(`Error writing ${jsonPath}:`, err);
+      console.error(`Error reading or parsing ${csvPath}:`, err);
+      hasValidData = false;
+      break;
     }
-  });
-});
+  }
+
+  // Validate data consistency
+  if (hasValidData && validateScheduleData(scheduleData)) {
+    scheduleData.rotationCycleLength = scheduleData.holiday.length;
+    console.log(`✓ Validation passed. Rotation cycle length: ${scheduleData.rotationCycleLength}`);
+  } else {
+    console.warn(`⚠ Validation failed or missing files. Creating empty schedule data.`);
+    Object.assign(scheduleData, createEmptyScheduleData());
+  }
+
+  // Write consolidated JSON file
+  try {
+    // Ensure directory exists
+    const outputDir = dirname(outputFile);
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    fs.writeFileSync(outputFile, JSON.stringify(scheduleData, null, 2));
+    console.log(`✓ ${dirName}.json created successfully`);
+    console.log(`  - Holiday entries: ${scheduleData.holiday.length}`);
+    console.log(`  - Saturday entries: ${scheduleData.saturday.length}`);
+    console.log(`  - Weekday entries: ${scheduleData.weekday.length}`);
+    console.log(`  - Rotation cycle length: ${scheduleData.rotationCycleLength}`);
+  } catch (err) {
+    console.error(`Error writing ${outputFile}:`, err);
+  }
+}
+
+// Process both directories
+TARGET_DIRS.forEach(processDirectory);
 
 console.log('\n✅ CSV to JSON conversion complete!');
+console.log('Note: Client-side split() processing is no longer needed.');
+console.log('Schedule data is now pre-parsed into objects with subject, startTime, endTime properties.');

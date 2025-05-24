@@ -132,13 +132,9 @@ import {
   ERROR_MESSAGES,
 } from "@/utils/constants";
 
-// Import
-import defaultHolidayData from "@data/default/json/holiday.json";
-import defaultSaturdayData from "@data/default/json/saturday.json";
-import defaultWeekdayData from "@data/default/json/weekday.json";
-import nextHolidayData from "@data/next/json/holiday.json";
-import nextSaturdayData from "@data/next/json/saturday.json";
-import nextWeekdayData from "@data/next/json/weekday.json";
+// Import consolidated JSON data
+import defaultScheduleData from "@data/default/default.json";
+import nextScheduleData from "@data/next/next.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
@@ -252,14 +248,10 @@ function findDates() {
 // Initialize application
 async function initialize() {
   try {
-    // Initialize app with shared logic and both data sets
+    // Initialize app with shared logic and consolidated data
     const result = await initializeApp({
-      defaultHolidayData,
-      defaultSaturdayData,
-      defaultWeekdayData,
-      nextHolidayData,
-      nextSaturdayData,
-      nextWeekdayData,
+      defaultScheduleData,
+      nextScheduleData,
       config,
       eventConfig,
     });
