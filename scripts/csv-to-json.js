@@ -30,7 +30,8 @@ const TARGET_DIRS = ['default', 'next'];
 const FILES_TO_CONVERT = ['holiday', 'saturday', 'weekday'];
 
 /**
- * Parse CSV content into an array of objects with subject, startTime, endTime
+ * Parse CSV content into an array of optimized schedule objects
+ * Omits empty startTime and endTime to reduce bundle size
  * @param {string} csvData - CSV content as a string
  * @returns {Object[]} Array of parsed schedule objects
  */
@@ -47,12 +48,22 @@ function parseCSVToScheduleObjects(csvData) {
       return [];
     }
 
-    // Convert each row to an object with subject, startTime, endTime
-    return result.data.map(row => ({
-      subject: row[0] || '',
-      startTime: row[1] || '',
-      endTime: row[2] || ''
-    }));
+    // Convert each row to an optimized object (omit empty strings)
+    return result.data.map(row => {
+      const scheduleItem = {
+        subject: row[0] || ''
+      };
+      
+      // Only include startTime and endTime if they have values
+      if (row[1] && row[1].trim()) {
+        scheduleItem.startTime = row[1].trim();
+      }
+      if (row[2] && row[2].trim()) {
+        scheduleItem.endTime = row[2].trim();
+      }
+      
+      return scheduleItem;
+    });
   } catch (error) {
     console.error('Error parsing CSV data:', error);
     return [];

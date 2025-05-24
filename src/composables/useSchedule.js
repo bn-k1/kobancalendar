@@ -113,8 +113,8 @@ export function useSchedule() {
     return {
       dateStr,
       subject: shiftData.subject,
-      startTime: shiftData.startTime,
-      endTime: shiftData.endTime,
+      startTime: shiftData.startTime || "",
+      endTime: shiftData.endTime || "",
       isHoliday: isHolidayFlag,
       isSaturday,
       shiftIndex,
