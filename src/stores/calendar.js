@@ -10,7 +10,6 @@ export const useCalendarStore = defineStore("calendar", () => {
   const startPosition = ref(undefined);
   const exportMonths = ref(undefined);
   const calendarEvents = ref([]);
-  const icsExportConfig = ref({});
   const eventConfig = ref(undefined);
 
   const isConfigLoaded = computed(() => {
@@ -29,10 +28,6 @@ export const useCalendarStore = defineStore("calendar", () => {
     calendarEvents.value = events;
   }
 
-  function setICSExportConfig(config) {
-    icsExportConfig.value = config;
-  }
-
   function setEventConfig(config) {
     eventConfig.value = config;
   }
@@ -41,7 +36,6 @@ export const useCalendarStore = defineStore("calendar", () => {
     startPosition,
     exportMonths,
     calendarEvents,
-    icsExportConfig,
     eventConfig,
 
     isConfigLoaded,
@@ -49,7 +43,6 @@ export const useCalendarStore = defineStore("calendar", () => {
     setStartPosition,
     setExportMonths,
     setCalendarEvents,
-    setICSExportConfig,
     setEventConfig,
   };
 });

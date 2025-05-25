@@ -23,6 +23,11 @@ export const CALENDAR_CONFIG = {
 
 export const CUSTOM_HOLIDAY = "設定祝日";
 
+export const ICS_CONFIG = {
+  PRODUCT_NAME: "kobancalendar",
+  LANGUAGE: "EN",
+};
+
 export const TIMEOPTIONS = [
   "12:00",
   "13:00",

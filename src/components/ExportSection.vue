@@ -88,6 +88,10 @@ const props = defineProps({
     type: Number,
     required: false,
   },
+  url: {
+    type: String,
+    required: true,
+  },
 });
 
 const emit = defineEmits(["export", "export-complete"]);
@@ -235,6 +239,7 @@ function handleExportICS() {
       createDate(props.nextBaseDate),
       createDate(selectedStartDate.value),
       createDate(selectedEndDate.value),
+      props.url,
     );
 
     emit("export-complete", { success: true });

@@ -1,6 +1,20 @@
-// src/services/ical-service.js
+// src/utils/ical.js
 import ical from "ical-generator";
 import { createDate, formatAsFileName, toDate } from "@/utils/date";
+import { ICS_CONFIG } from "@/utils/constants";
+
+/**
+ * Extract domain name from URL
+ * @param {string} url - URL string
+ * @returns {string} Domain name
+ */
+function extractDomain(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "localhost";
+  }
+}
 
 /**
  * Generate a unique identifier for calendar events
@@ -44,19 +58,15 @@ function simpleHash(str) {
 /**
  * Create an ICS calendar from events
  * @param {Array} events - Array of event objects
- * @param {Object} config - Calendar configuration
+ * @param {string} url - Application URL for domain extraction
  * @returns {Object} ical calendar object
  */
-export function createCalendar(events, config) {
-  // Create calendar with configuration
+export function createCalendar(events, url) {
+  const domain = extractDomain(url);
+
+  // Create calendar
   const calendar = ical({
-    name: config.calendar_name,
-    timezone: config.timezone,
-    prodId: {
-      company: config.company,
-      product: config.product,
-      language: config.language,
-    },
+    prodId: `-//${domain}//${ICS_CONFIG.PRODUCT_NAME}//${ICS_CONFIG.LANGUAGE}`,
   });
 
   // Add events to calendar
@@ -67,13 +77,7 @@ export function createCalendar(events, config) {
     // Create event
     const calEvent = calendar.createEvent({
       summary: subject,
-      uid: generateUID(
-        eventDate,
-        subject,
-        startTime,
-        endTime,
-        config.uid_domain,
-      ),
+      id: generateUID(eventDate, subject, startTime, endTime, domain),
     });
 
     // Set event time

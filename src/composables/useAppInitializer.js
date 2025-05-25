@@ -14,7 +14,7 @@ import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
 export function useAppInitializer() {
   const isLoaded = ref(false);
 
-  const { setEventConfig, setICSExportConfig } = useCalendar();
+  const { setEventConfig } = useCalendar();
   const { loadScheduleData, setDefaultBaseDate, setNextBaseDate } =
     useSchedule();
 
@@ -30,12 +30,7 @@ export function useAppInitializer() {
    * @param {Object} data.eventConfig - Event configuration
    */
   async function initializeApp(data) {
-    const {
-      defaultScheduleData,
-      nextScheduleData,
-      config,
-      eventConfig,
-    } = data;
+    const { defaultScheduleData, nextScheduleData, config, eventConfig } = data;
 
     try {
       // Holiday configuration
@@ -45,12 +40,11 @@ export function useAppInitializer() {
 
       // Calendar configuration
       setEventConfig(eventConfig);
-      setICSExportConfig(config.info);
 
       // Load schedule data from consolidated JSON format
       const scheduleData = loadScheduleData(
         defaultScheduleData,
-        nextScheduleData
+        nextScheduleData,
       );
 
       // Process base dates

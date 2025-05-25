@@ -49,6 +49,7 @@
         :base-date="activeBaseDate"
         :next-base-date="nextBaseDate"
         :start-position="startPosition"
+        :url="config.url"
         @export-complete="handleExportComplete"
       />
     </template>

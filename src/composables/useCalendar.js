@@ -21,7 +21,6 @@ export function useCalendar() {
   const storeCalendarEvents = computed(() => calendarStore.calendarEvents);
   const storeStartPosition = computed(() => calendarStore.startPosition);
   const storeEventConfig = computed(() => calendarStore.eventConfig);
-  const storeIcsExportConfig = computed(() => calendarStore.icsExportConfig);
 
   /**
    * Set the starting position (shift number)
@@ -45,14 +44,6 @@ export function useCalendar() {
    */
   function setCalendarEvents(events) {
     calendarStore.setCalendarEvents(events);
-  }
-
-  /**
-   * Set the ICS export configuration
-   * @param {Object} config - Export configuration
-   */
-  function setICSExportConfig(config) {
-    calendarStore.setICSExportConfig(config);
   }
 
   /**
@@ -193,14 +184,12 @@ export function useCalendar() {
     calendarEvents: storeCalendarEvents,
     startPosition: storeStartPosition,
     eventConfig: storeEventConfig,
-    icsExportConfig: storeIcsExportConfig,
     isConfigLoaded: computed(() => storeEventConfig.value !== undefined),
 
     // Store action wrappers
     setStartPosition,
     setExportMonths,
     setCalendarEvents,
-    setICSExportConfig,
     setEventConfig,
 
     // Business logic functions

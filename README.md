@@ -43,19 +43,19 @@
    {
      "default_base_date": "YYYY-MM-DD",
      "next_base_date": "YYYY-MM-DD",
-     "custom_holidays": ["MM-DD", "MM-DD"]
+     "custom_holidays": ["MM-DD", "MM-DD"],
+     "url": "https://bn-k1.github.io/kobancalendar/"
    }
    ```
 
    - `default_base_date`: シフト計算の基準日。
    - `next_base_date`: コマ位置の入れ替え予定日。next_base_dateを設定することで入れ替え以降のスケジュールを確認できます。設定しなくても動作します。
    - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
-   - `info`にはエクスポートされた.icsに記載したい情報を記述します。
-   - `url`にはURLを記述します。QRコードに使います。
+   - `url`にはURLを記述します。QRコードと.icsのPRODID,UIDに使います。
 
 4. `data/default`以下の.csv（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。
 
-   Subject,StartTime,EndTimeの形式で、ヘッダーなし、交番表のコマ数=.csvの行数になるように記述してください。全てのファイルの行数は同じある必要があります。
+   subject,startTime,endTimeの形式で、ヘッダーなし、交番表のコマ数=.csvの行数になるように記述してください。全てのファイルの行数は同じある必要があります。
 
    ```csv
    遅番,16:00,00:00

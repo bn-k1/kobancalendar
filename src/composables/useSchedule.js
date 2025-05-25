@@ -167,8 +167,18 @@ export function useSchedule() {
    */
   function loadScheduleData(defaultData, nextData) {
     try {
-      const { holiday: defaultHoliday, saturday: defaultSaturday, weekday: defaultWeekday, rotationCycleLength: defaultCycleLength } = defaultData;
-      const { holiday: nextHoliday, saturday: nextSaturday, weekday: nextWeekday, rotationCycleLength: nextCycleLength } = nextData;
+      const {
+        holiday: defaultHoliday,
+        saturday: defaultSaturday,
+        weekday: defaultWeekday,
+        rotationCycleLength: defaultCycleLength,
+      } = defaultData;
+      const {
+        holiday: nextHoliday,
+        saturday: nextSaturday,
+        weekday: nextWeekday,
+        rotationCycleLength: nextCycleLength,
+      } = nextData;
 
       // Create data sets with validated data
       const dataSets = {

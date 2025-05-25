@@ -11,13 +11,5 @@
     "01-02",
     "01-03"
   ],
-  "info": {
-    "calendar_name": "KobanCalendar",
-    "timezone": "Asia/Tokyo",
-    "company": "bn-k1",
-    "product": "kobancalendar",
-    "language": "JP",
-    "uid_domain": "kobancalendar.jp"
-  },
   "url": "https://bn-k1.github.io/kobancalendar/"
 }

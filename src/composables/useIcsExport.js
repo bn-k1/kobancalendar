@@ -2,7 +2,6 @@
 import { ref, computed } from "vue";
 import { ERROR_MESSAGES } from "@/utils/constants";
 import { createCalendar, downloadICS } from "@/utils/ical";
-import { useCalendarStore } from "@/stores/calendar";
 import { useSchedule } from "@/composables/useSchedule";
 import { createDate, isSame, isBefore, addDays } from "@/utils/date";
 
@@ -15,7 +14,6 @@ export function useIcsExport() {
   const exportError = ref(undefined);
 
   // Dependencies
-  const calendarStore = useCalendarStore();
   const { calculateScheduleRange } = useSchedule();
 
   /**
@@ -25,6 +23,7 @@ export function useIcsExport() {
    * @param {dayjs} nextBaseDate - Next base date for calculations
    * @param {dayjs} startDate - Export start date
    * @param {dayjs} endDate - Export end date
+   * @param {string} url - Application URL for domain extraction
    * @returns {boolean} Success status
    */
   function exportICS(
@@ -33,6 +32,7 @@ export function useIcsExport() {
     nextBaseDate,
     startDate,
     endDate,
+    url,
   ) {
     try {
       if (!startPosition) {
@@ -69,10 +69,7 @@ export function useIcsExport() {
       );
 
       // Create the calendar
-      const calendar = createCalendar(
-        scheduleRange,
-        calendarStore.icsExportConfig,
-      );
+      const calendar = createCalendar(scheduleRange, url);
 
       // Download the ICS file
       downloadICS(calendar.toString(), start, end);
