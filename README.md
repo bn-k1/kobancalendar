@@ -43,13 +43,15 @@
    {
      "default_base_date": "YYYY-MM-DD",
      "next_base_date": "YYYY-MM-DD",
+     "schedule_update": "YYYY-MM-DD",
      "custom_holidays": ["MM-DD", "MM-DD"],
      "url": "https://bn-k1.github.io/kobancalendar/"
    }
    ```
 
    - `default_base_date`: シフト計算の基準日。
-   - `next_base_date`: コマ位置の入れ替え予定日。next_base_dateを設定することで入れ替え以降のスケジュールを確認できます。設定しなくても動作します。
+   - `next_base_date`: コマ位置の入れ替え予定日。設定しなくても動作します。
+   - `schedule_update`: 交番表データの切り替え日。todayがこの日以降になると`data/next`を使用します。
    - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
    - `url`にはURLを記述します。QRコードと.icsのPRODID,UIDに使います。
 

@@ -15,8 +15,12 @@ export function useAppInitializer() {
   const isLoaded = ref(false);
 
   const { setEventConfig } = useCalendar();
-  const { loadScheduleData, setDefaultBaseDate, setNextBaseDate } =
-    useSchedule();
+  const {
+    loadScheduleData,
+    setDefaultBaseDate,
+    setNextBaseDate,
+    setScheduleUpdateDate,
+  } = useSchedule();
 
   const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
     useHolidays();
@@ -50,6 +54,10 @@ export function useAppInitializer() {
       // Process base dates
       const defaultBaseDateObj = createDate(config.default_base_date);
       setDefaultBaseDate(defaultBaseDateObj);
+
+      if (config.schedule_update) {
+        setScheduleUpdateDate(createDate(config.schedule_update));
+      }
 
       // Set next base date if available
       if (config.next_base_date) {

@@ -10,6 +10,8 @@ import {
   addDays,
   toUnix,
   isSameDay,
+  today,
+  isSameOrBefore,
 } from "@/utils/date";
 
 /**
@@ -29,15 +31,18 @@ export function useSchedule() {
   const storeDefaultBaseDate = computed(() => scheduleStore.defaultBaseDate);
   const storeActiveBaseDate = computed(() => scheduleStore.activeBaseDate);
   const storeNextBaseDate = computed(() => scheduleStore.nextBaseDate);
+  const storeScheduleUpdateDate = computed(
+    () => scheduleStore.scheduleUpdateDate,
+  );
 
   const storeScheduleData = computed(() => {
-    if (!storeActiveBaseDate.value || !storeNextBaseDate.value) {
+    if (!storeScheduleUpdateDate.value) {
       return storeScheduleDataSets.value.default;
     }
 
-    return isSameDay(storeActiveBaseDate.value, storeNextBaseDate.value)
-      ? storeScheduleDataSets.value.next
-      : storeScheduleDataSets.value.default;
+    return isSameOrBefore(today(), storeScheduleUpdateDate.value)
+      ? storeScheduleDataSets.value.default
+      : storeScheduleDataSets.value.next;
   });
 
   /**
@@ -90,9 +95,7 @@ export function useSchedule() {
       return {};
     }
 
-    const currentScheduleData = isSameDay(baseDate, storeNextBaseDate.value)
-      ? storeScheduleDataSets.value.next
-      : storeScheduleDataSets.value.default;
+    const currentScheduleData = storeScheduleData.value;
 
     // Calculate shift index
     const shiftIndex = calculateShiftIndex(target, startPosition, baseDate);
@@ -232,6 +235,10 @@ export function useSchedule() {
     scheduleStore.setNextBaseDate(createDate(date));
   }
 
+  function setScheduleUpdateDate(date) {
+    scheduleStore.setScheduleUpdateDate(createDate(date));
+  }
+
   return {
     // Computed state from store
     scheduleData: storeScheduleData,
@@ -239,6 +246,7 @@ export function useSchedule() {
     defaultBaseDate: storeDefaultBaseDate,
     activeBaseDate: storeActiveBaseDate,
     nextBaseDate: storeNextBaseDate,
+    scheduleUpdateDate: storeScheduleUpdateDate,
     isDataLoaded: computed(
       () => storeScheduleData.value.rotationCycleLength > 0,
     ),
@@ -254,5 +262,6 @@ export function useSchedule() {
     setDefaultBaseDate,
     updateActiveBaseDate,
     setNextBaseDate,
+    setScheduleUpdateDate,
   };
 }
