@@ -5,6 +5,7 @@
  * This script converts CSV files to consolidated JSON format for two data sets (default and next).
  * Each dataset outputs a single JSON file containing holiday, saturday, and weekday data.
  * Includes validation and error handling for mismatched row counts or missing files.
+ * Output: Minified JSON with shortened property names (s, sT, eT)
  */
 
 import { createRequire } from 'module';
@@ -19,7 +20,7 @@ const Papa = require('papaparse');
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-console.log('CSV to JSON Conversion - Modified Version');
+console.log('CSV to JSON Conversion');
 console.log('========================================');
 
 // Project root directory (one level up from this script)
@@ -31,6 +32,7 @@ const FILES_TO_CONVERT = ['holiday', 'saturday', 'weekday'];
 
 /**
  * Parse CSV content into an array of optimized schedule objects
+ * Uses shortened property names: s (subject), sT (startTime), eT (endTime)
  * Omits empty startTime and endTime to reduce bundle size
  * @param {string} csvData - CSV content as a string
  * @returns {Object[]} Array of parsed schedule objects
@@ -48,18 +50,18 @@ function parseCSVToScheduleObjects(csvData) {
       return [];
     }
 
-    // Convert each row to an optimized object (omit empty strings)
+    // Convert each row to an optimized object with shortened property names
     return result.data.map(row => {
       const scheduleItem = {
-        subject: row[0] || ''
+        s: row[0] || '' // subject -> s
       };
       
-      // Only include startTime and endTime if they have values
+      // Only include startTime (sT) and endTime (eT) if they have values
       if (row[1] && row[1].trim()) {
-        scheduleItem.startTime = row[1].trim();
+        scheduleItem.sT = row[1].trim(); // startTime -> sT
       }
       if (row[2] && row[2].trim()) {
-        scheduleItem.endTime = row[2].trim();
+        scheduleItem.eT = row[2].trim(); // endTime -> eT
       }
       
       return scheduleItem;
@@ -153,7 +155,7 @@ function processDirectory(dirName) {
     Object.assign(scheduleData, createEmptyScheduleData());
   }
 
-  // Write consolidated JSON file
+  // Write consolidated JSON file (minified - no formatting)
   try {
     // Ensure directory exists
     const outputDir = dirname(outputFile);
@@ -161,8 +163,9 @@ function processDirectory(dirName) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    fs.writeFileSync(outputFile, JSON.stringify(scheduleData, null, 2));
-    console.log(`✓ ${dirName}.json created successfully`);
+    // Write JSON without formatting (minified)
+    fs.writeFileSync(outputFile, JSON.stringify(scheduleData));
+    console.log(`✓ ${dirName}.json created successfully.`);
     console.log(`  - Holiday entries: ${scheduleData.holiday.length}`);
     console.log(`  - Saturday entries: ${scheduleData.saturday.length}`);
     console.log(`  - Weekday entries: ${scheduleData.weekday.length}`);
@@ -176,5 +179,3 @@ function processDirectory(dirName) {
 TARGET_DIRS.forEach(processDirectory);
 
 console.log('\n✅ CSV to JSON conversion complete!');
-console.log('Note: Client-side split() processing is no longer needed.');
-console.log('Schedule data is now pre-parsed into objects with subject, startTime, endTime properties.');

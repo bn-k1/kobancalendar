@@ -112,9 +112,9 @@ export function useSchedule() {
     // Return schedule data directly (no more split() processing needed)
     return {
       dateStr,
-      subject: shiftData.subject,
-      startTime: shiftData.startTime || "",
-      endTime: shiftData.endTime || "",
+      subject: shiftData.s,
+      startTime: shiftData.sT || "",
+      endTime: shiftData.eT || "",
       isHoliday: isHolidayFlag,
       isSaturday,
       shiftIndex,
