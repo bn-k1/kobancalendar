@@ -15,8 +15,12 @@ export function useAppInitializer() {
   const isLoaded = ref(false);
 
   const { setEventConfig } = useCalendar();
-  const { loadScheduleData, setDefaultBaseDate, setNextBaseDate } =
-    useSchedule();
+  const {
+    loadScheduleData,
+    setDefaultBaseDate,
+    setNextBaseDate,
+    setScheduleUpdateDate,
+  } = useSchedule();
 
   const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
     useHolidays();
@@ -58,6 +62,11 @@ export function useAppInitializer() {
       } else {
         // If no next_base_date, use default_base_date
         setNextBaseDate([]);
+      }
+
+      if (config.schedule_update) {
+        const updateDateObj = createDate(config.schedule_update);
+        setScheduleUpdateDate(updateDateObj);
       }
 
       isLoaded.value = true;
