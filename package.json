@@ -8,7 +8,8 @@
     "build": "npm run prebuild && vite build",
     "build-gh-pages": "npm run prebuild && vite build --mode gh-pages",
     "preview": "vite preview",
-    "prebuild": "npm run convert-csv && npm run create-qr",
+    "prebuild": "npm run apply-update && npm run convert-csv && npm run create-qr",
+    "apply-update": "node scripts/applyUpdate.js",
     "convert-csv": "node scripts/csv-to-json.js",
     "create-qr": "node scripts/createQr.js"
   },
