@@ -10,12 +10,12 @@ import {
   addDays,
   toUnix,
   isSameDay,
+  isSameOrAfter,
 } from "@/utils/date";
 
 /**
  * Schedule management composable
  * Contains all schedule-related logic
- * Updated to work with consolidated JSON format
  */
 export function useSchedule() {
   // Get stores for state management only
@@ -29,15 +29,28 @@ export function useSchedule() {
   const storeDefaultBaseDate = computed(() => scheduleStore.defaultBaseDate);
   const storeActiveBaseDate = computed(() => scheduleStore.activeBaseDate);
   const storeNextBaseDate = computed(() => scheduleStore.nextBaseDate);
+  const storeScheduleUpdateDate = computed(() => scheduleStore.scheduleUpdateDate);
 
-  const storeScheduleData = computed(() => {
-    if (!storeActiveBaseDate.value || !storeNextBaseDate.value) {
-      return storeScheduleDataSets.value.default;
+  // Determine which schedule data to use based on target date
+  const getScheduleDataForDate = (targetDate) => {
+    // If schedule_update date is set, use next data for dates on or after that date
+    if (storeScheduleUpdateDate.value && isSameOrAfter(targetDate, storeScheduleUpdateDate.value)) {
+      return storeScheduleDataSets.value.next;
     }
 
-    return isSameDay(storeActiveBaseDate.value, storeNextBaseDate.value)
-      ? storeScheduleDataSets.value.next
-      : storeScheduleDataSets.value.default;
+    // Legacy logic: if activeBaseDate equals nextBaseDate, use next data
+    if (storeActiveBaseDate.value && storeNextBaseDate.value && 
+        isSameDay(storeActiveBaseDate.value, storeNextBaseDate.value)) {
+      return storeScheduleDataSets.value.next;
+    }
+
+    // Default to using default data
+    return storeScheduleDataSets.value.default;
+  };
+
+  const storeScheduleData = computed(() => {
+    // For backward compatibility, return default data when no specific date is provided
+    return storeScheduleDataSets.value.default;
   });
 
   /**
@@ -45,14 +58,15 @@ export function useSchedule() {
    * @param {dayjs} targetDate - Target date
    * @param {number} startPosition - Starting position in rotation
    * @param {dayjs} baseDate - Base date for calculation
+   * @param {Object} scheduleData - Schedule data to use for calculation
    * @returns {number} Shift index
    */
-  function calculateShiftIndex(targetDate, startPosition, baseDate) {
+  function calculateShiftIndex(targetDate, startPosition, baseDate, scheduleData) {
     const target = createDate(targetDate);
     const base = createDate(baseDate);
     const daysDifference = target.diff(base, "day");
     const adjustedStartPosition = startPosition - 1;
-    const cycleLength = storeScheduleData.value.rotationCycleLength;
+    const cycleLength = scheduleData.rotationCycleLength;
 
     const shiftIndex =
       (((adjustedStartPosition + daysDifference) % cycleLength) + cycleLength) %
@@ -90,12 +104,11 @@ export function useSchedule() {
       return {};
     }
 
-    const currentScheduleData = isSameDay(baseDate, storeNextBaseDate.value)
-      ? storeScheduleDataSets.value.next
-      : storeScheduleDataSets.value.default;
+    // Get appropriate schedule data based on target date and schedule_update logic
+    const currentScheduleData = getScheduleDataForDate(target);
 
     // Calculate shift index
-    const shiftIndex = calculateShiftIndex(target, startPosition, baseDate);
+    const shiftIndex = calculateShiftIndex(target, startPosition, baseDate, currentScheduleData);
 
     // Get appropriate data based on date type
     let shiftData;
@@ -232,6 +245,16 @@ export function useSchedule() {
     scheduleStore.setNextBaseDate(createDate(date));
   }
 
+  /**
+   * Set schedule update date - date from which to use next schedule data
+   * @param {dayjs|string} date - Schedule update date
+   */
+  function setScheduleUpdateDate(date) {
+    if (date) {
+      scheduleStore.setScheduleUpdateDate(createDate(date));
+    }
+  }
+
   return {
     // Computed state from store
     scheduleData: storeScheduleData,
@@ -239,6 +262,7 @@ export function useSchedule() {
     defaultBaseDate: storeDefaultBaseDate,
     activeBaseDate: storeActiveBaseDate,
     nextBaseDate: storeNextBaseDate,
+    scheduleUpdateDate: storeScheduleUpdateDate,
     isDataLoaded: computed(
       () => storeScheduleData.value.rotationCycleLength > 0,
     ),
@@ -254,5 +278,7 @@ export function useSchedule() {
     setDefaultBaseDate,
     updateActiveBaseDate,
     setNextBaseDate,
+    setScheduleUpdateDate,
+    getScheduleDataForDate,
   };
 }

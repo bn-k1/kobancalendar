@@ -9,14 +9,17 @@ import { APP_CONFIG, ERROR_MESSAGES } from "@/utils/constants";
 /**
  * Shared application initialization logic
  * Centralized the setup code used by both views
- * Updated to work with consolidated JSON format
  */
 export function useAppInitializer() {
   const isLoaded = ref(false);
 
   const { setEventConfig } = useCalendar();
-  const { loadScheduleData, setDefaultBaseDate, setNextBaseDate } =
-    useSchedule();
+  const { 
+    loadScheduleData, 
+    setDefaultBaseDate, 
+    setNextBaseDate,
+    setScheduleUpdateDate 
+  } = useSchedule();
 
   const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
     useHolidays();
@@ -58,6 +61,14 @@ export function useAppInitializer() {
       } else {
         // If no next_base_date, use default_base_date
         setNextBaseDate([]);
+      }
+
+      // Set schedule update date if available
+      if (config.schedule_update) {
+        const scheduleUpdateDateObj = createDate(config.schedule_update);
+        if (scheduleUpdateDateObj.isValid()) {
+          setScheduleUpdateDate(scheduleUpdateDateObj);
+        }
       }
 
       isLoaded.value = true;

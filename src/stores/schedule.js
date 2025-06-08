@@ -2,10 +2,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
-/**
- * Schedule store - modified to handle multiple data sets
- * All business logic is moved to the useSchedule composable
- */
 export const useScheduleStore = defineStore("schedule", () => {
   const scheduleDataSets = ref({
     default: {
@@ -25,6 +21,8 @@ export const useScheduleStore = defineStore("schedule", () => {
   const defaultBaseDate = ref(undefined);
   const activeBaseDate = ref(undefined);
   const nextBaseDate = ref(undefined);
+  
+  const scheduleUpdateDate = ref(undefined);
 
   const isDataLoaded = computed(() => {
     return (
@@ -49,11 +47,16 @@ export const useScheduleStore = defineStore("schedule", () => {
     nextBaseDate.value = date;
   }
 
+  function setScheduleUpdateDate(date) {
+    scheduleUpdateDate.value = date;
+  }
+
   return {
     scheduleDataSets: computed(() => scheduleDataSets.value),
     defaultBaseDate: computed(() => defaultBaseDate.value),
     activeBaseDate: computed(() => activeBaseDate.value),
     nextBaseDate: computed(() => nextBaseDate.value),
+    scheduleUpdateDate: computed(() => scheduleUpdateDate.value),
 
     isDataLoaded,
 
@@ -61,5 +64,6 @@ export const useScheduleStore = defineStore("schedule", () => {
     setDefaultBaseDate,
     updateActiveBaseDate,
     setNextBaseDate,
+    setScheduleUpdateDate,
   };
 });
