@@ -42,6 +42,7 @@
    ```json
    {
      "default_base_date": "YYYY-MM-DD",
+     "schedule_update": "YYYY-MM-DD",
      "next_base_date": "YYYY-MM-DD",
      "custom_holidays": ["MM-DD", "MM-DD"],
      "url": "https://bn-k1.github.io/kobancalendar/"
@@ -50,15 +51,15 @@
 
    - `default_base_date`: シフト計算の基準日。
    - `schedule_update`: 交番表の変更予定日。
-   - `next_base_date`: コマ位置の入れ替え予定日。next_base_dateを設定することで入れ替え以降のスケジュールを確認できます。設定しなくても動作します。
+   - `next_base_date`: コマ位置の入れ替え予定日。
    - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
    - `url`にはURLを記述します。QRコードと.icsのPRODID,UIDに使います。
 
-4. `data/default`以下の.csv（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。
+4. `data/default`以下のCSVファイル（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。
 
-   subject,startTime,endTimeの形式で、ヘッダーなし、交番表のコマ数=.csvの行数になるように記述してください。全てのファイルの行数は同じある必要があります。
+   `subject,startTime,endTime`の形式で、ヘッダーなし、交番表のコマ数=CSVファイルの行数になるように記述してください。全てのファイルの行数は同じである必要があります。
 
-   ```csv
+   ``CSVファイル
    遅番,16:00,00:00
    早番,08:00,16:00
    法休,,
@@ -67,7 +68,7 @@
 
 5. `event.json`の公休、空、などを色分けしたい文字列に置き換えてください。
 
-6. .csvを.jsonに変換、及びQRコードを生成します。
+6. CSVファイルを.jsonに変換、及びQRコードを生成します。
 
    ```bash
    npm run prebuild
@@ -95,11 +96,11 @@
 1. `config.json`の`next_base_date`に入れ替え日を設定
 2. `data/default/`の内容を`data/next/`にコピー
 
-基準日選択により、入れ替え前後のスケジュールを使い分けできます。
-
-**注意点: **
+**注意点：**
 - `schedule_update`は設定しないでください
 - 入れ替えの内容が決まっていない場合でも、入れ替え後のスケジュールを非表示にするために速やかに日付を設定してください
+
+基準日選択により、入れ替え前後のスケジュールを使い分けできます。
 
 ### 2. 交番表のみの変更
 
@@ -107,10 +108,10 @@
 1. `config.json`の`schedule_update`に変更開始日を設定
 2. `data/next/`に新しいCSVファイルを作成（形式はインストール手順4と同じ）
 
-指定日以降は自動的に新しいスケジュールデータが適用されます。
-
-**注意点: **
+**注意点：**
 - `next_base_date`は設定しないでください
+
+指定日以降は自動的に新しいスケジュールデータが適用されます。
 
 ### 3. 両方
 
