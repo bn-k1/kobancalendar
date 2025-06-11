@@ -1,11 +1,9 @@
-// scripts/csv-to-json.js
+// scripts/convertCsv.js
 /**
- * CSV to JSON conversion script - Modified Version
+ * CSV to JSON conversion script
  *
  * This script converts CSV files to consolidated JSON format for two data sets (default and next).
  * Each dataset outputs a single JSON file containing holiday, saturday, and weekday data.
- * Includes validation and error handling for mismatched row counts or missing files.
- * Output: Minified JSON with shortened property names (s, sT, eT)
  */
 
 import { createRequire } from 'module';

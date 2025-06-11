@@ -1,16 +1,16 @@
 {
-  "name": "koban-calendar",
+  "name": "KobanCalendar",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run prebuild && vite build",
-    "build-gh-pages": "npm run prebuild && vite build --mode gh-pages",
+    "build": "npm run build-prep && vite build",
+    "build-gh-pages": "npm run build-prep && vite build --mode gh-pages",
     "preview": "vite preview",
-    "prebuild": "npm run apply-update && npm run convert-csv && npm run create-qr",
+    "build-prep": "npm run apply-update && npm run convert-csv && npm run create-qr",
     "apply-update": "node scripts/applyUpdate.js",
-    "convert-csv": "node scripts/csv-to-json.js",
+    "convert-csv": "node scripts/convertCsv.js",
     "create-qr": "node scripts/createQr.js"
   },
   "dependencies": {
@@ -25,7 +25,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
-    "globals": "^16.0.0",
     "papaparse": "^5.4.1",
     "prettier": "^3.5.3",
     "qrcode": "^1.5.4",

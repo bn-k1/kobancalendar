@@ -99,12 +99,11 @@ async function main() {
   } else if (hasScheduleUpdate && !hasNextBaseDate) {
     if (config.schedule_update <= todayStr) {
       console.log(`schedule_update (${config.schedule_update}) is today or earlier.`);
-      const confirmUpdate = await askConfirmation('Apply schedule_update as new default_base_date?');
+      const confirmUpdate = await askConfirmation('Remove schedule_update?');
       if (confirmUpdate) {
-        config.default_base_date = config.schedule_update;
         delete config.schedule_update;
         updated = true;
-        console.log('schedule_update applied as default_base_date.');
+        console.log('schedule_update removed.');
         
         const confirmMove = await askConfirmation('Move CSV files?');
         if (confirmMove) {
@@ -130,7 +129,7 @@ async function main() {
         }
       }
     } else {
-      console.log('next_base_date date is in the future. No changes applied.');
+      console.log('next_base_date is in the future. No changes applied.');
     }
   }
 

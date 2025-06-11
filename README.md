@@ -50,9 +50,9 @@
    ```
 
    - `default_base_date`: シフト計算の基準日。
-   - `schedule_update`: 交番表の変更予定日。設定しなくても動作します。
+   - `schedule_update`: 交番表の内容の変更予定日。設定しなくても動作します。
    - `next_base_date`: コマ位置の入れ替え予定日。設定しなくても動作します。
-   - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。設定しなくても動作します。
+   - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
    - `url`にはURLを記述します。QRコードと.icsのPRODID,UIDに使います。
 
 4. `data/default`以下の.csv（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。
@@ -68,10 +68,10 @@
 
 5. `event.json`の公休、空、などを色分けしたい文字列に置き換えてください。
 
-6. .csvを.jsonに変換、及びQRコードを生成します。
+6. 過去予定日とデータの整理(`applyUpdate.js`)、.csvを.jsonに変換(`convertCsv.js`)、及びQRコードを生成(`createQr.js`)します。
 
    ```bash
-   npm run prebuild
+   npm run build-prep
    ```
 
 7. アプリケーションを実行します。
@@ -89,6 +89,8 @@
    またはビルドして`dist/`をウェブサーバーで配信。
 
 ## 運用方法
+
+以下の方法で各員のコマ位置の入れ替え、交番表の内容の変更に対処できます。
 
 ### 1. コマ位置のみの入れ替え
 
@@ -124,8 +126,8 @@
 
 ### データ更新時の注意点
 
-- .csv編集後は必ず`npm run prebuild`を実行してください。
-- `schedule_update`,`next_base_date`に設定した日付を過ぎた場合、`npm run prebuild`を実行することで、`config.json`の編集およびファイルの移動が自動で行われて`default_base_date`単一になり、`data/next`以下は空になります。手動で設定しなおす必要はありません。
+- `config.json`と.csv編集後は必ず`npm run build-prep`を実行してください。
+- `schedule_update`,`next_base_date`に設定した日付を過ぎた場合、`npm run build-prep`を実行することで、`config.json`の編集およびファイルの移動が自動で行われて`default_base_date`単一になり、`data/next`以下のデータは`data/default`以下に上書きされて空になります。手動で設定しなおす必要はありません。
 - 本番環境では`npm run build`でビルドし直してください。
 - 変更前にバックアップを取ることを推奨します。
 
