@@ -55,7 +55,7 @@
    - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
    - `url`にはURLを記述します。QRコードと.icsのPRODID,UIDに使います。
 
-4. `data/default`以下の.csv（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。
+4. `data/default/`以下の.csv（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。
 
    `subject,startTime,endTime`の形式で、ヘッダーなし、交番表のコマ数=.csvの行数になるように記述してください。全てのファイルの行数は同じである必要があります。
 
@@ -122,12 +122,12 @@
 
 **注意点：**
 - `schedule_update`は設定しないでください。
-- 交番表の内容がまだ決まっていない場合、`data/next`を空にして日付のみ設定してください。日付以降のスケジュールが非表示になります。
+- 交番表の内容がまだ決まっていない場合、`data/next/`を空にして日付のみ設定してください。日付以降のスケジュールが非表示になります。
 
 ### データ更新時の注意点
 
 - `config.json`と.csv編集後は必ず`npm run build-prep`を実行してください。
-- `schedule_update`,`next_base_date`に設定した日付を過ぎた場合、`npm run build-prep`を実行することで、`config.json`の編集およびファイルの移動が自動で行われて`default_base_date`単一になり、`data/next`以下のデータは`data/default`以下に上書きされて空になります。手動で設定しなおす必要はありません。
+- `schedule_update`,`next_base_date`に設定した日付を過ぎた場合、`npm run build-prep`を実行することで、`config.json`の編集およびファイルの移動が自動で行われて`default_base_date`単一になり、`data/next/`のデータは`data/default/`に上書きされて空になります。手動で設定しなおす必要はありません。
 - 本番環境では`npm run build`でビルドし直してください。
 - 変更前にバックアップを取ることを推奨します。
 
@@ -137,7 +137,7 @@
 
 ## 備考
 
-- 本リポジトリの交番表データはAIによって生成されたサンプルです。特定の組織や企業とは関係ありません。
+- 本リポジトリの設定ファイル、交番表データはAIによって生成されたサンプルです。特定の組織や企業とは関係ありません。
 
 ## ライセンス
 
