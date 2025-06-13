@@ -34,6 +34,10 @@
 
       <slot></slot>
     </div>
+    
+    <div v-if="scheduleUpdateNotice" class="schedule-update-notice">
+      交番表更新: {{ scheduleUpdateNotice }}~
+    </div>
   </fieldset>
 </template>
 
@@ -70,6 +74,10 @@ const props = defineProps({
   formatter: {
     type: Function,
   },
+  scheduleUpdateNotice: {
+    type: String,
+    default: "",
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
@@ -99,3 +107,12 @@ function handleChange(event) {
   emit("change", newValue);
 }
 </script>
+
+<style scoped>
+.schedule-update-notice {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+</style>

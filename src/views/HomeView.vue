@@ -12,6 +12,7 @@
           :display-as-text="formattedBaseDates.length === 1"
           :options="formattedBaseDates"
           :formatter="formatAsDisplayDate"
+          :schedule-update-notice="scheduleUpdateNotice"
           @change="handleBaseDateChange"
         />
 
@@ -116,6 +117,7 @@ const {
   activeBaseDate,
   nextBaseDate,
   rotationCycleLength,
+  scheduleUpdateDate,
   updateActiveBaseDate,
 } = useSchedule();
 
@@ -156,6 +158,13 @@ const positionOptions = computed(() => {
     value: i + 1,
     text: String(i + 1),
   }));
+});
+
+const scheduleUpdateNotice = computed(() => {
+  if (scheduleUpdateDate.value) {
+    return formatAsDisplayDate(scheduleUpdateDate.value);
+  }
+  return "";
 });
 
 // Initial date for the calendar

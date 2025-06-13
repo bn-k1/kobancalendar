@@ -13,6 +13,7 @@
           :options="formattedBaseDates"
           :formatter="formatAsDisplayDate"
           :display-as-text="formattedBaseDates.length === 1"
+          :schedule-update-notice="scheduleUpdateNotice"
           @change="handleBaseDateChange"
           v-if="isLoaded"
         />
@@ -162,6 +163,7 @@ const {
   activeBaseDate,
   nextBaseDate,
   rotationCycleLength,
+  scheduleUpdateDate,
   updateActiveBaseDate,
 } = useSchedule();
 
@@ -195,6 +197,13 @@ const formattedBaseDates = computed(() => {
   }
 
   return dates;
+});
+
+const scheduleUpdateNotice = computed(() => {
+  if (scheduleUpdateDate.value) {
+    return formatAsDisplayDate(scheduleUpdateDate.value);
+  }
+  return "";
 });
 
 // Event handlers
