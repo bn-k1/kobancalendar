@@ -101,8 +101,10 @@ export function createCalendar(events, url) {
       calEvent.end(end);
     } else {
       // All-day event
+      const adjustedDate = eventDate.add(1, "day");
       calEvent.allDay(true);
-      calEvent.start(toDate(eventDate));
+      calEvent.start(adjustedDate.toDate());
+      calEvent.end(adjustedDate.toDate());
     }
   });
 
