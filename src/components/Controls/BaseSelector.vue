@@ -35,13 +35,16 @@
       <slot></slot>
     </div>
     
-    <div v-if="scheduleUpdateNotice" class="schedule-update-notice">
-      交番表更新: {{ scheduleUpdateNotice }}~
+    <div v-if="displayScheduleUpdateNotice" class="schedule-update-notice">
+      交番表更新: {{ scheduleUpdateNotice }}~{{ isScheduleApplied ? '(適用済)' : '' }}
     </div>
   </fieldset>
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useSchedule } from '@/composables/useSchedule';
+
 const props = defineProps({
   id: {
     type: String,
@@ -81,6 +84,23 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
+
+// Get schedule composable to check next schedule data
+const { scheduleDataSets } = useSchedule();
+
+// Check if schedule update notice should be displayed
+const displayScheduleUpdateNotice = computed(() => {
+  return props.scheduleUpdateNotice && props.scheduleUpdateNotice.trim() !== "";
+});
+
+// Check if next schedule is applied (both conditions must be met)
+const isScheduleApplied = computed(() => {
+  if (!props.scheduleUpdateNotice) return false;
+  
+  // Check if next schedule data exists and has valid rotation cycle length
+  const nextData = scheduleDataSets.value?.next;
+  return nextData && nextData.rotationCycleLength > 0;
+});
 
 // Format option for display
 function formatOption(option) {
