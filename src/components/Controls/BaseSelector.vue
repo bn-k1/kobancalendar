@@ -36,7 +36,7 @@
     </div>
     
     <div v-if="displayScheduleUpdateNotice" class="schedule-update-notice">
-      交番表更新: {{ scheduleUpdateNotice }}~{{ isScheduleApplied ? '(適用済)' : '' }}
+      ※交番表更新: {{ scheduleUpdateNotice }}{{ isScheduleApplied ? '以降の表示に対して新データ適用済み' : '' }}
     </div>
   </fieldset>
 </template>
