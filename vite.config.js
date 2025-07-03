@@ -29,7 +29,6 @@ export default defineConfig(({ mode }) => {
             ],
             utils: [
               "dayjs",
-              "ical-generator",
               "japanese-holidays",
             ],
           },
