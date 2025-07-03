@@ -93,11 +93,11 @@ export function createCalendar(events, url) {
       icsContent.push(`DTEND:${formatICSDate(end)}`);
     } else {
       // All-day event
-      const adjustedDate = eventDate.add(1, "day");
-      const startDate = adjustedDate.toDate();
+      const startDate = eventDate.add(1, "day").toDate();
+      const endDate = eventDate.add(2, "day").toDate();
       
       icsContent.push(`DTSTART;VALUE=DATE:${formatICSDateOnly(startDate)}`);
-      icsContent.push(`DTEND;VALUE=DATE:${formatICSDateOnly(startDate)}`);
+      icsContent.push(`DTEND;VALUE=DATE:${formatICSDateOnly(endDate)}`);
     }
 
     icsContent.push('END:VEVENT');
