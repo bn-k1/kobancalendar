@@ -4,6 +4,7 @@
     <header>
       <h1>{{ pageTitle }}</h1>
       <div class="header-controls">
+	<Share />
         <QrButton />
         <DarkModeToggle />
       </div>
@@ -64,8 +65,9 @@ import { computed } from "vue";
 import { formatAsISODate } from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
 import { useCalendar } from "@/composables/useCalendar";
-import DarkModeToggle from "@/components/DarkModeToggle.vue";
+import Share from "@/components/Share.vue";
 import QrButton from "@/components/QrButton.vue";
+import DarkModeToggle from "@/components/DarkModeToggle.vue";
 
 const props = defineProps({
   title: {
