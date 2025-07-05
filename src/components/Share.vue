@@ -1,7 +1,6 @@
 <!-- src/components/Share.vue -->
 <template>
   <button
-    v-if="isShareSupported"
     class="share-button"
     @click="shareCurrentPage"
     aria-label="現在のページを共有"
@@ -39,8 +38,8 @@ async function shareCurrentPage() {
   if (!navigator.share) return;
   
   await navigator.share({
-  title: document.title,
-  url: window.location.href
+    title: document.title,
+    url: window.location.href
   });
 }
 </script>
@@ -71,5 +70,6 @@ async function shareCurrentPage() {
 .share-icon {
   width: 24px;
   height: 24px;
+  transform: translateX(-2px);
 }
 </style>
