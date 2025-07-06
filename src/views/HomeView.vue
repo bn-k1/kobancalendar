@@ -43,6 +43,16 @@
       </Suspense>
     </template>
 
+    <!-- Search section -->
+    <template #search>
+      <Suspense v-if="isLoaded">
+        <SearchSection />
+        <template #fallback>
+          <div class="loading-placeholder">Loading...</div>
+        </template>
+      </Suspense>
+    </template>
+
     <!-- Export section -->
     <template #export>
       <ExportSection
@@ -70,6 +80,9 @@ const CalendarView = defineAsyncComponent(
 );
 const ExportSection = defineAsyncComponent(
   () => import("@/components/ExportSection.vue"),
+);
+const SearchSection = defineAsyncComponent(
+  () => import("@/components/SearchSection.vue"),
 );
 
 // Composables

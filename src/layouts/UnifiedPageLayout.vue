@@ -18,6 +18,9 @@
         <section class="calendar-section">
           <slot name="calendar"></slot>
         </section>
+        <section class="search-section">
+          <slot name="search"></slot>
+        </section>
         <section class="export-section">
           <slot name="export"></slot>
         </section>
