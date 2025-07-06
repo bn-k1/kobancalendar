@@ -1,4 +1,4 @@
-<!-- src/components/Share.vue -->
+<!-- src/components/ShareButton.vue -->
 <template>
   <button
     class="share-button"
@@ -24,14 +24,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-
-const isShareSupported = ref(false);
-
-onMounted(() => {
-  // Check if Web Share API is supported
-  isShareSupported.value = 'share' in navigator;
-});
 
 // Share current page using Web Share API
 async function shareCurrentPage() {

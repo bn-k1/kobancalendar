@@ -4,7 +4,7 @@
     <header>
       <h1>{{ pageTitle }}</h1>
       <div class="header-controls">
-	<Share />
+	<ShareButton />
         <QrButton />
         <DarkModeToggle />
       </div>
@@ -68,7 +68,7 @@ import { computed } from "vue";
 import { formatAsISODate } from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
 import { useCalendar } from "@/composables/useCalendar";
-import Share from "@/components/Share.vue";
+import ShareButton from "@/components/ShareButton.vue";
 import QrButton from "@/components/QrButton.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
 
