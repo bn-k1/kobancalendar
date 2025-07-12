@@ -48,6 +48,7 @@
       <button
         id="exportButton"
         class="export-button"
+        :class="{ 'export-button-enabled': canExport }"
         aria-label="ICSをダウンロード"
         :disabled="!canExport"
         @click="handleExportICS"
@@ -109,20 +110,7 @@ const startDay = computed(() => {
 });
 
 // Default start date (today or base date, whichever is later)
-const defaultStartDate = computed(() => formatAsISODate(startDay.value));
-
-// Default end date (1 month from start, or limited by nextBaseDate)
-const defaultEndDate = computed(() => {
-  const endDate = addDays(addMonths(startDay.value, 1), -1);
-
-  // Apply nextBaseDate limit if applicable
-  if (hasEndDateLimit.value) {
-    const limitDate = addDays(props.nextBaseDate, -1);
-    return formatAsISODate(isBefore(endDate, limitDate) ? endDate : limitDate);
-  }
-
-  return formatAsISODate(endDate);
-});
+const defaultStartDate = computed(() => formatAsISODate(today()));
 
 // Check if end date should be limited by nextBaseDate
 const hasEndDateLimit = computed(() => {
@@ -143,7 +131,7 @@ const maxEndDate = computed(() => {
     return addDays(props.nextBaseDate, -1);
   }
 
-  // No limit: 90 days from start
+  // No limit
   return addDays(startDay.value, APP_CONFIG.EXPORT_MAX_DAYS - 1);
 });
 
@@ -198,17 +186,17 @@ const canExport = computed(() => {
   return selectedStartDate.value && selectedEndDate.value;
 });
 
-// Reset dates to defaults when dependencies change
-function resetToDefaults() {
+// Initialize with default start date 
+function initializeDefaults() {
   selectedStartDate.value = defaultStartDate.value;
-  selectedEndDate.value = defaultEndDate.value;
+  selectedEndDate.value = "";
 }
 
 // Watch for changes in dependencies and reset dates
 watch(
   [() => props.baseDate, () => props.nextBaseDate, () => props.startPosition],
   () => {
-    resetToDefaults();
+    initializeDefaults();
   },
   { immediate: true },
 );
@@ -265,26 +253,35 @@ function handleExportICS() {
 }
 
 .export-button {
-  background-color: var(--success-color);
+  background-color: var(--gray-400);
   color: white;
   border: none;
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--border-radius-md);
-  cursor: pointer;
+  cursor: not-allowed;
   font-weight: var(--font-weight-medium);
   transition: all var(--transition-normal);
   white-space: nowrap;
+  opacity: 0.6;
 }
 
-.export-button:hover:not(:disabled) {
+.export-button-enabled {
+  background-color: var(--success-color) !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
+
+.export-button-enabled:hover {
   background-color: var(--success-color);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
 .export-button:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .date-select {

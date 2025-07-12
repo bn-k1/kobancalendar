@@ -56,7 +56,7 @@
     <!-- Export section -->
     <template #export>
       <ExportSection
-        v-if="isLoaded && activeBaseDate"
+        v-if="isLoaded && activeBaseDate && startPosition"
         :base-date="activeBaseDate"
         :next-base-date="nextBaseDate"
         :start-position="startPosition"

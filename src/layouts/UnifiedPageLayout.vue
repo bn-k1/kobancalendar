@@ -2,9 +2,9 @@
 <template>
   <div class="page-layout">
     <header>
-      <h1>{{ pageTitle }}</h1>
+      <h1 @click="handleTitleClick" class="clickable-title">{{ pageTitle }}</h1>
       <div class="header-controls">
-	<ShareButton />
+        <ShareButton />
         <QrButton />
         <DarkModeToggle />
       </div>
@@ -126,6 +126,17 @@ const pageTitle = computed(() => {
   }
   return "KobanCalendar🚨";
 });
+
+// Handle title click - navigate to respective clean top page
+function handleTitleClick() {
+  if (isHomePage.value) {
+    window.location.href = '/kobancalendar/#/';
+  } else if (isMeetupPage.value) {
+    window.location.href = '/kobancalendar/#/meetup';
+  } else {
+    window.location.href = '/kobancalendar/#/';
+  }
+}
 </script>
 
 <style scoped>
@@ -133,5 +144,23 @@ const pageTitle = computed(() => {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+}
+
+.clickable-title {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin: calc(-1 * var(--spacing-xs)) calc(-1 * var(--spacing-sm));
+}
+
+.clickable-title:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.clickable-title:active {
+  transform: translateY(0);
 }
 </style>
