@@ -55,7 +55,7 @@ export const ERROR_MESSAGES = {
   UNKNOWN_CSV_FORMAT: "不明な形式のCSVです",
   NO_BASE_DATE: "URLパラメータに基準日が含まれていません",
   BASEDATE_CONFIGURATION_ERROR: "基準日設定失敗",
-  INVALID_BASE_DATE: "無効な基準日です",
+  INVALID_BASE_DATE: "無効な基準日です。あるいは基準日が更新されました。「基準日のコマ位置」を正しく選択してアドレスを登録しなおしてください",
   INVALID_STARTNUMBER: "無効なコマ位置です",
   INVALID_URL_PARAM: "無効なURLパラメータです",
   PARAM_OUT_OF_RANGE: "パラメータが有効範囲外です",
