@@ -1,7 +1,7 @@
 {
   "default_base_date": "2025-07-16",
-  "schedule_update": "2025-08-01",
   "custom_holidays": [
+    "08-12",
     "08-13",
     "08-14",
     "08-15",

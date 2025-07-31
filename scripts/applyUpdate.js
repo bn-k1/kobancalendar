@@ -58,7 +58,12 @@ try {
   process.exit(1);
 }
 
-const todayStr = new Date().toISOString().slice(0, 10);
+const todayStr = new Date().toLocaleDateString('ja-JP', {
+  timeZone: 'Asia/Tokyo',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit'
+}).replace(/\//g, '-');
 const hasScheduleUpdate = Object.prototype.hasOwnProperty.call(config, 'schedule_update');
 const hasNextBaseDate = Object.prototype.hasOwnProperty.call(config, 'next_base_date');
 
@@ -88,32 +93,24 @@ function moveCsvFiles() {
 }
 
 async function main() {
-  if (hasScheduleUpdate && hasNextBaseDate) {
-    console.log('Both schedule_update and next_base_date found.');
-    const confirm = await askConfirmation('Remove schedule_update?');
-    if (confirm) {
-      delete config.schedule_update;
-      updated = true;
-      console.log('schedule_update removed.');
-    }
-  } else if (hasScheduleUpdate && !hasNextBaseDate) {
-    if (config.schedule_update <= todayStr) {
-      console.log(`schedule_update (${config.schedule_update}) is today or earlier.`);
-      const confirmUpdate = await askConfirmation('Remove schedule_update?');
-      if (confirmUpdate) {
-        delete config.schedule_update;
-        updated = true;
-        console.log('schedule_update removed.');
-        
-        const confirmMove = await askConfirmation('Move CSV files?');
-        if (confirmMove) {
-          moveCsvFiles();
-        }
+    if (hasScheduleUpdate) {
+      if (config.schedule_update <= todayStr) {
+	console.log(`schedule_update (${config.schedule_update}) is today or earlier.`);
+	const confirmUpdate = await askConfirmation('Remove schedule_update?');
+	if (confirmUpdate) {
+	  delete config.schedule_update;
+	  updated = true;
+	  console.log('schedule_update removed.');
+	  
+	  const confirmMove = await askConfirmation('Move CSV files?');
+	  if (confirmMove) {
+	    moveCsvFiles();
+	  }
       }
     } else {
       console.log('schedule_update date is in the future. No changes applied.');
     }
-  } else if (hasNextBaseDate && !hasScheduleUpdate) {
+  } else if (hasNextBaseDate) {
     if (config.next_base_date <= todayStr) {
       console.log(`next_base_date (${config.next_base_date}) is today or earlier.`);
       const confirmUpdate = await askConfirmation('Apply next_base_date as new default_base_date?');
