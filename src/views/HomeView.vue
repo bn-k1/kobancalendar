@@ -4,6 +4,7 @@
     <!-- Controls section -->
     <template #controls>
       <div class="horizontal-fields" v-if="isLoaded && selectedBaseDate">
+        <!-- Base date selector component -->
         <BaseSelector
           id="baseDate"
           legend="基準日"
@@ -16,12 +17,14 @@
           @change="handleBaseDateChange"
         />
 
-        <BaseSelector
+        <!-- Position selector component (refactored from inline fieldset) -->
+        <PositionSelector
           id="startNumber"
           legend="基準日のコマ位置"
           aria-label="コマ位置を選択"
           v-model="startPosition"
           :options="positionOptions"
+          :show-home-screen-notice="true"
           @change="handlePositionChange"
         />
       </div>
@@ -73,6 +76,7 @@ import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 // Layout component (always loaded)
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
+import PositionSelector from "@/components/Controls/PositionSelector.vue";
 
 // Lazy load components that aren't needed immediately
 const CalendarView = defineAsyncComponent(
@@ -135,6 +139,11 @@ const {
 } = useSchedule();
 
 // Computed values
+
+/**
+ * Generate formatted options for base date selector
+ * Includes both default and next base dates when available
+ */
 const formattedBaseDates = computed(() => {
   const dates = [];
 
@@ -166,6 +175,10 @@ const formattedBaseDates = computed(() => {
   return dates;
 });
 
+/**
+ * Generate position options based on rotation cycle length
+ * Creates numbered options from 1 to rotationCycleLength
+ */
 const positionOptions = computed(() => {
   return Array.from({ length: rotationCycleLength.value }, (_, i) => ({
     value: i + 1,
@@ -173,6 +186,10 @@ const positionOptions = computed(() => {
   }));
 });
 
+/**
+ * Format schedule update notice for display
+ * Shows the schedule update date if available
+ */
 const scheduleUpdateNotice = computed(() => {
   if (scheduleUpdateDate.value) {
     return formatAsDisplayDate(scheduleUpdateDate.value);
@@ -180,7 +197,10 @@ const scheduleUpdateNotice = computed(() => {
   return "";
 });
 
-// Initial date for the calendar
+/**
+ * Calculate initial date for calendar display
+ * Uses active base date or current date, whichever is later
+ */
 const initialDate = computed(() => {
   if (!activeBaseDate.value) return undefined;
 
@@ -190,9 +210,15 @@ const initialDate = computed(() => {
     : toDate(currentDay);
 });
 
+// Local reactive state for position
 const startPosition = ref(undefined);
 
 // Event handlers
+
+/**
+ * Handle base date selection change
+ * Updates the active base date and resets position selection
+ */
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
   updateActiveBaseDate(newDate);
@@ -203,6 +229,10 @@ function handleBaseDateChange(newDateStr) {
   updateCalendarParams(newDate, startPosition.value);
 }
 
+/**
+ * Handle position selection change
+ * Updates the start position and URL parameters
+ */
 function handlePositionChange(newPosition) {
   const positionValue = parseInt(newPosition, 10);
   startPosition.value = positionValue;
@@ -211,17 +241,28 @@ function handlePositionChange(newPosition) {
   updateCalendarParams(selectedBaseDate.value, positionValue);
 }
 
+/**
+ * Handle calendar date range changes
+ * Regenerates calendar events for the new date range
+ */
 function handleDatesSet({ start, end }) {
   generateCalendarEvents(start, end);
 }
 
+/**
+ * Handle export completion
+ * Shows error message if export failed
+ */
 function handleExportComplete({ success, error }) {
   if (!success && error) {
     alert(ERROR_MESSAGES.ICS_EXPORT_ERROR);
   }
 }
 
-// Initialize application
+/**
+ * Initialize application with configuration data
+ * Sets up all necessary data and applies URL parameters
+ */
 async function initialize() {
   try {
     // Initialize app with shared logic and consolidated data
@@ -278,13 +319,22 @@ async function initialize() {
   }
 }
 
-// Watch for base date changes from composable
+// Watchers
+
+/**
+ * Watch for base date changes from composable
+ * Updates local selectedBaseDate when activeBaseDate changes
+ */
 watch(activeBaseDate, (newBaseDate) => {
   if (newBaseDate) {
     selectedBaseDate.value = formatAsISODate(newBaseDate);
   }
 });
 
+/**
+ * Watch for start position changes from composable
+ * Updates local startPosition when computedStartPosition changes
+ */
 watch(computedStartPosition, (newValue) => {
   if (newValue && newValue !== startPosition.value) {
     startPosition.value = newValue;
