@@ -42,9 +42,9 @@
    ```json
    {
      "default_base_date": "2025-01-15",
+     "position_shift": 60,
      "next_base_date": "2025-04-01",
      "schedule_update": "2025-06-15",
-     "position_shift": 60,
      "custom_holidays": ["08-15","12-31"],
      "url": "https://bn-k1.github.io/kobancalendar/"
    }
