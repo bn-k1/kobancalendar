@@ -271,10 +271,16 @@ async function initialize() {
     }
 
     // Get URL parameters
-    const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
-      Boolean,
-    );
-    const baseDateParam = getDateParam("baseDate", undefined, validBaseDates);
+		const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
+			Boolean,
+		);
+		const baseDateParam = getDateParam(
+			"baseDate",
+			undefined,
+			validBaseDates,
+			config,
+			rotationCycleLength.value
+		);
     const participantsFromUrl = getParticipantsFromParams();
     const startTimeParam = getStringParam("startTime", meetupStartTime.value);
     const periodParam = getNumberParam(

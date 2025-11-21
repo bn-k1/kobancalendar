@@ -60,6 +60,28 @@ export function useUrlParams() {
   enforceValidBaseDate();
 
   /**
+   * Calculate new position when base date changes
+   * @param {number} currentStartNumber - Current start number from URL
+   * @param {number} positionShift - Magic number from config
+   * @param {number} rotationCycleLength - Rotation cycle length
+   * @returns {number} New position
+   */
+  function calculateNewPosition(currentStartNumber, positionShift, rotationCycleLength) {
+    if (!currentStartNumber || !positionShift || !rotationCycleLength) {
+      return null;
+    }
+
+    let newPosition = currentStartNumber + positionShift;
+    
+    // If exceeds rotation cycle length, wrap around
+    if (newPosition > rotationCycleLength) {
+      newPosition = newPosition - rotationCycleLength;
+    }
+    
+    return newPosition;
+  }
+
+  /**
    * Update URL parameters without reloading the page
    * @param {Object} params - Parameters to update
    */
@@ -92,8 +114,13 @@ export function useUrlParams() {
 
   /**
    * Get and validate a date parameter from URL
+   * @param {string} paramName - Parameter name
+   * @param {*} defaultValue - Default value
+   * @param {Array} validDates - Valid dates to check against
+   * @param {Object} config - Config object (optional, for position_shift support)
+   * @param {number} rotationCycleLength - Rotation cycle length (optional, for position_shift support)
    */
-  function getDateParam(paramName, defaultValue, validDates = []) {
+  function getDateParam(paramName, defaultValue, validDates = [], config = null, rotationCycleLength = null) {
     const dateStr = getURLParam(paramName);
 
     if (!dateStr) {
@@ -114,7 +141,27 @@ export function useUrlParams() {
       const dateExists = validDates.some((date) => isSameDay(date, dateObj));
 
       if (!dateExists) {
-        alert(ERROR_MESSAGES.INVALID_BASE_DATE);
+        // Build error message
+        let errorMessage = ERROR_MESSAGES.INVALID_BASE_DATE;
+        
+        // If position_shift is configured, calculate and show new position
+        if (config && config.position_shift && rotationCycleLength) {
+          const currentStartNumber = getNumberParam("startNumber", null);
+          
+          if (currentStartNumber) {
+            const newPosition = calculateNewPosition(
+              currentStartNumber,
+              config.position_shift,
+              rotationCycleLength
+            );
+            
+            if (newPosition) {
+              errorMessage += `\n\n多分ですが、表に書いてあるであろうコマ位置は"${newPosition}"です。"${newPosition}"を選んで登録しなおしてください（※要確認！）`;
+            }
+          }
+        }
+        
+        alert(errorMessage);
         resetURL();
         return defaultValue;
       }
@@ -214,5 +261,6 @@ export function useUrlParams() {
     getParticipantsFromParams,
     updateCalendarParams,
     updateMeetupParams,
+    calculateNewPosition,
   };
 }

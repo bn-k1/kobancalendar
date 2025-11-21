@@ -41,15 +41,17 @@
 
    ```json
    {
-     "default_base_date": "YYYY-MM-DD",
-     "schedule_update": "YYYY-MM-DD",
-     "next_base_date": "YYYY-MM-DD",
-     "custom_holidays": ["MM-DD", "MM-DD"],
+     "default_base_date": "2025-01-15",
+     "next_base_date": "2025-04-01",
+     "schedule_update": "2025-06-15",
+     "position_shift": 60,
+     "custom_holidays": ["08-15","12-31"],
      "url": "https://bn-k1.github.io/kobancalendar/"
    }
    ```
 
    - `default_base_date`: シフト計算の基準日。
+   - `position_shift`: コマ位置の入れ替え時に全員が同じ数だけコマ位置を移動する場合に設定します。設定しなくても動作します。
    - `schedule_update`: 交番表の内容の変更予定日。設定しなくても動作します。
    - `next_base_date`: コマ位置の入れ替え予定日。設定しなくても動作します。
    - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
