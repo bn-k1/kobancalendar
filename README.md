@@ -109,7 +109,7 @@
    # または本番ビルド
    npm run build
 
-   # github-pages場合
+   # github-pagesで公開する場合
    npm run build-gh-pages
    ```
 
