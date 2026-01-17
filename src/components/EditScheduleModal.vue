@@ -7,9 +7,6 @@
     @click="closeModalOnOutsideClick"
   >
     <div class="modal-content edit-modal-content">
-      <button class="close-modal remove-edit-btn" @click="handleRemoveEdit" aria-label="編集を解除">
-        ✕
-      </button>
       <h3 class="modal-title">{{ modalTitle }}</h3>
       
       <div class="edit-form">
@@ -88,10 +85,10 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close", "save", "remove"]);
+const emit = defineEmits(["close", "save"]);
 
 const { scheduleDataSets, scheduleUpdateDate } = useSchedule();
-const { saveEditedSchedule, removeEditedSchedule } = useEditedSchedules();
+const { saveEditedSchedule } = useEditedSchedules();
 
 const selectedSubject = ref("");
 const selectedStartTime = ref("");
@@ -169,11 +166,6 @@ function handleSave() {
   window.location.reload();
 }
 
-function handleRemoveEdit() {
-  removeEditedSchedule(props.date);
-  window.location.reload();
-}
-
 function closeModalOnOutsideClick(event) {
   if (event.target.id === "editScheduleModal") {
     emit("close");
@@ -203,7 +195,6 @@ watch([() => props.show, () => props.date], ([newShow]) => {
   color: var(--primary-color);
   margin-bottom: var(--spacing-lg);
   text-align: center;
-  padding-right: var(--spacing-xl);
 }
 
 .edit-form {
@@ -305,15 +296,6 @@ watch([() => props.show, () => props.date], ([newShow]) => {
   background-color: var(--gray-400);
   cursor: not-allowed;
   opacity: 0.6;
-}
-
-.remove-edit-btn {
-  background-color: var(--error-color) !important;
-  color: white !important;
-}
-
-.remove-edit-btn:hover {
-  background-color: #d91a6a !important;
 }
 
 .hidden {

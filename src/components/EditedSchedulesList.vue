@@ -1,8 +1,11 @@
 <!-- src/components/EditedSchedulesList.vue -->
 <template>
   <fieldset id="editedSchedulesSection" class="control-group" v-if="hasAnyEdits">
-    <legend>編集済み</legend>
-    <div class="edited-list">
+    <legend @click="toggleExpanded" class="clickable-legend">
+      編集済み ({{ editedSchedulesList.length }})
+      <span class="toggle-icon">{{ isExpanded ? '▼' : '▶' }}</span>
+    </legend>
+    <div v-show="isExpanded" class="edited-list">
       <div
         v-for="item in editedSchedulesList"
         :key="item.dateStr"
@@ -16,9 +19,15 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
 
 const { editedSchedulesList, hasAnyEdits, removeEditedSchedule } = useEditedSchedules();
+const isExpanded = ref(false);
+
+function toggleExpanded() {
+  isExpanded.value = !isExpanded.value;
+}
 
 function handleRemove(dateStr) {
   removeEditedSchedule(dateStr);
@@ -27,10 +36,28 @@ function handleRemove(dateStr) {
 </script>
 
 <style scoped>
+.clickable-legend {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clickable-legend:hover {
+  opacity: 0.8;
+}
+
+.toggle-icon {
+  font-size: 0.8em;
+  transition: transform 0.2s ease;
+}
+
 .edited-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-top: 8px;
 }
 
 .edited-line {
