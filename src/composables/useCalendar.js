@@ -3,53 +3,39 @@ import { computed } from "vue";
 import { useCalendarStore } from "@/stores/calendar";
 import { useSchedule } from "@/composables/useSchedule";
 import { useHolidays } from "@/composables/useHolidays";
-import { createDate, addDays, isBefore, parseTime } from "@/utils/date";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
+import { createDate, addDays, isBefore, parseTime, formatAsISODate } from "@/utils/date";
+
+// Pink/magenta color for edited schedules - distinct from existing colors
+const EDITED_COLOR = "#e91e63";
 
 /**
  * Calendar functionality composable
  * Contains all calendar-related logic
  */
 export function useCalendar() {
-  // Get store for state management only
   const calendarStore = useCalendarStore();
 
-  // Use other composables for business logic
   const { getScheduleForDate } = useSchedule();
   const { getHolidayName } = useHolidays();
+  const { getEditedSchedule } = useEditedSchedules();
 
-  // Local cached references to avoid recursion
   const storeCalendarEvents = computed(() => calendarStore.calendarEvents);
   const storeStartPosition = computed(() => calendarStore.startPosition);
   const storeEventConfig = computed(() => calendarStore.eventConfig);
 
-  /**
-   * Set the starting position (shift number)
-   * @param {number} position - Position in rotation
-   */
   function setStartPosition(position) {
     calendarStore.setStartPosition(position);
   }
 
-  /**
-   * Set the export months
-   * @param {number} months - Number of months to export
-   */
   function setExportMonths(months) {
     calendarStore.setExportMonths(months);
   }
 
-  /**
-   * Set calendar events
-   * @param {Array} events - Calendar events
-   */
   function setCalendarEvents(events) {
     calendarStore.setCalendarEvents(events);
   }
 
-  /**
-   * Set the event configuration
-   * @param {Object} config - Event configuration
-   */
   function setEventConfig(config) {
     calendarStore.setEventConfig(config);
   }
@@ -57,9 +43,20 @@ export function useCalendar() {
   /**
    * Determine event type and styling based on subject
    * @param {string} subject - Event subject
+   * @param {boolean} isEdited - Whether this is an edited schedule
    * @returns {Object} Event type and configuration
    */
-  function getEventType(subject) {
+  function getEventType(subject, isEdited = false) {
+    if (isEdited) {
+      return {
+        type: "edited",
+        config: {
+          color: EDITED_COLOR,
+          showTime: true,
+        },
+      };
+    }
+
     const eventConfig = storeEventConfig.value;
 
     if (!eventConfig || !eventConfig.events) {
@@ -69,7 +66,6 @@ export function useCalendar() {
       };
     }
 
-    // Check against all event types in config
     for (const [type, config] of Object.entries(eventConfig.events)) {
       if (
         type !== "default" &&
@@ -80,7 +76,6 @@ export function useCalendar() {
       }
     }
 
-    // Default event type
     return {
       type: "default",
       config: eventConfig.events.default,
@@ -89,9 +84,6 @@ export function useCalendar() {
 
   /**
    * Determine if a person can attend a meetup based on their schedule
-   * @param {Object} schedule - Schedule information
-   * @param {string} meetupStartTime - Meetup start time (HH:MM)
-   * @returns {boolean} True if can attend
    */
   function canAttendMeetup(schedule, meetupStartTime) {
     if (!schedule) return false;
@@ -99,7 +91,6 @@ export function useCalendar() {
     const { subject, endTime } = schedule;
     const eventConfig = storeEventConfig.value;
 
-    // Check if this is a rest day
     if (eventConfig && eventConfig.events) {
       const restDayConfig = eventConfig.events.restDay;
       if (restDayConfig && restDayConfig.keywords) {
@@ -109,24 +100,18 @@ export function useCalendar() {
       }
     }
 
-    // Can't attend if no end time is set
     if (!endTime) {
       return false;
     }
 
-    // Parse times
     const endTimeObj = parseTime(endTime);
     const meetupTimeObj = parseTime(meetupStartTime);
 
-    // Can attend if shift ends before meetup starts
     return endTimeObj.isBefore(meetupTimeObj);
   }
 
   /**
    * Generate calendar events for the date range
-   * @param {dayjs} startDate - Range start date
-   * @param {dayjs} endDate - Range end date
-   * @returns {Array} Generated events
    */
   function generateCalendarEvents(startDate, endDate) {
     const generatedEvents = [];
@@ -136,63 +121,91 @@ export function useCalendar() {
     const end = createDate(endDate);
 
     while (isBefore(currentDate, end)) {
-      const scheduleInfo = getScheduleForDate(currentDate, startPosition);
+      const dateStr = formatAsISODate(currentDate);
+      
+      // Check for edited schedule first (highest priority)
+      const editedSchedule = getEditedSchedule(dateStr);
+      
+      if (editedSchedule) {
+        const scheduleInfo = getScheduleForDate(currentDate, startPosition);
+        const shiftIndex = scheduleInfo?.shiftIndex ?? 0;
+        
+        const { config } = getEventType(editedSchedule.subject, true);
+        const title = config.showTime && (editedSchedule.startTime || editedSchedule.endTime)
+          ? `${editedSchedule.subject}\n${editedSchedule.startTime} - \n${editedSchedule.endTime}`
+          : editedSchedule.subject;
 
-      if (!scheduleInfo) {
-        currentDate = addDays(currentDate, 1);
-        continue;
-      }
+        generatedEvents.push({
+          title,
+          start: dateStr,
+          color: config.color,
+          extendedProps: {
+            startTime: editedSchedule.startTime,
+            endTime: editedSchedule.endTime,
+            isShift: true,
+            isHoliday: scheduleInfo?.isHoliday || false,
+            isSaturday: scheduleInfo?.isSaturday || false,
+            shiftIndex,
+            holidayName: getHolidayName(currentDate),
+            isEdited: true,
+            editedSubject: editedSchedule.subject,
+          },
+        });
+      } else {
+        const scheduleInfo = getScheduleForDate(currentDate, startPosition);
 
-      const {
-        dateStr,
-        subject,
-        startTime,
-        endTime,
-        isHoliday,
-        isSaturday,
-        shiftIndex,
-      } = scheduleInfo;
+        if (!scheduleInfo) {
+          currentDate = addDays(currentDate, 1);
+          continue;
+        }
 
-      const { config } = getEventType(subject);
-      generatedEvents.push({
-        title: config.showTime
-          ? `${subject}\n${startTime} - \n${endTime}`
-          : subject,
-        start: dateStr,
-        color: config.color,
-        extendedProps: {
+        const {
+          subject,
           startTime,
           endTime,
-          isShift: true,
           isHoliday,
           isSaturday,
           shiftIndex,
-          holidayName: getHolidayName(currentDate),
-        },
-      });
+        } = scheduleInfo;
+
+        const { config } = getEventType(subject, false);
+        generatedEvents.push({
+          title: config.showTime
+            ? `${subject}\n${startTime} - \n${endTime}`
+            : subject,
+          start: dateStr,
+          color: config.color,
+          extendedProps: {
+            startTime,
+            endTime,
+            isShift: true,
+            isHoliday,
+            isSaturday,
+            shiftIndex,
+            holidayName: getHolidayName(currentDate),
+            isEdited: false,
+          },
+        });
+      }
 
       currentDate = addDays(currentDate, 1);
     }
 
-    // Update events in store
     setCalendarEvents(generatedEvents);
     return generatedEvents;
   }
 
   return {
-    // Computed state from store
     calendarEvents: storeCalendarEvents,
     startPosition: storeStartPosition,
     eventConfig: storeEventConfig,
     isConfigLoaded: computed(() => storeEventConfig.value !== undefined),
 
-    // Store action wrappers
     setStartPosition,
     setExportMonths,
     setCalendarEvents,
     setEventConfig,
 
-    // Business logic functions
     getEventType,
     canAttendMeetup,
     generateCalendarEvents,

@@ -4,7 +4,6 @@
     <!-- Controls section -->
     <template #controls>
       <div class="horizontal-fields" v-if="isLoaded && selectedBaseDate">
-        <!-- Base date selector component -->
         <BaseSelector
           id="baseDate"
           legend="基準日"
@@ -17,7 +16,6 @@
           @change="handleBaseDateChange"
         />
 
-        <!-- Position selector component (refactored from inline fieldset) -->
         <PositionSelector
           id="startNumber"
           legend="基準日のコマ位置"
@@ -49,6 +47,13 @@
     <!-- Search section -->
     <template #search>
       <Suspense v-if="isLoaded">
+        <EditedSchedulesList />
+        <template #fallback>
+          <div class="loading-placeholder">Loading...</div>
+        </template>
+      </Suspense>
+      
+      <Suspense v-if="isLoaded">
         <SearchSection />
         <template #fallback>
           <div class="loading-placeholder">Loading...</div>
@@ -73,12 +78,10 @@
 <script setup>
 import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 
-// Layout component (always loaded)
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
 import PositionSelector from "@/components/Controls/PositionSelector.vue";
 
-// Lazy load components that aren't needed immediately
 const CalendarView = defineAsyncComponent(
   () => import("@/components/CalendarView.vue"),
 );
@@ -88,14 +91,15 @@ const ExportSection = defineAsyncComponent(
 const SearchSection = defineAsyncComponent(
   () => import("@/components/SearchSection.vue"),
 );
+const EditedSchedulesList = defineAsyncComponent(
+  () => import("@/components/EditedSchedulesList.vue"),
+);
 
-// Composables
 import { useCalendar } from "@/composables/useCalendar";
 import { useSchedule } from "@/composables/useSchedule";
 import { useAppInitializer } from "@/composables/useAppInitializer";
 import { useUrlParams } from "@/composables/useUrlParams";
 
-// Utils
 import {
   createDate,
   formatAsISODate,
@@ -105,22 +109,18 @@ import {
   toDate,
 } from "@/utils/date";
 
-// Config
 import { ERROR_MESSAGES } from "@/utils/constants";
 
-// Import consolidated JSON data
 import defaultScheduleData from "@data/default/default.json";
 import nextScheduleData from "@data/next/next.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
-// Composables initialization
 const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
 const { isLoaded, initializeApp } = useAppInitializer();
 const calendarRef = ref(undefined);
 const selectedBaseDate = ref("");
 
-// Calendar composable
 const {
   calendarEvents,
   startPosition: computedStartPosition,
@@ -128,7 +128,6 @@ const {
   setStartPosition,
 } = useCalendar();
 
-// Schedule composable
 const {
   defaultBaseDate,
   activeBaseDate,
@@ -138,16 +137,9 @@ const {
   updateActiveBaseDate,
 } = useSchedule();
 
-// Computed values
-
-/**
- * Generate formatted options for base date selector
- * Includes both default and next base dates when available
- */
 const formattedBaseDates = computed(() => {
   const dates = [];
 
-  // Add default base date
   if (defaultBaseDate.value) {
     dates.push({
       value: formatAsISODate(defaultBaseDate.value),
@@ -155,7 +147,6 @@ const formattedBaseDates = computed(() => {
     });
   }
 
-  // Add next base date if it exists, is valid, and is different from default
   if (
     nextBaseDate.value &&
     nextBaseDate.value.isValid &&
@@ -175,10 +166,6 @@ const formattedBaseDates = computed(() => {
   return dates;
 });
 
-/**
- * Generate position options based on rotation cycle length
- * Creates numbered options from 1 to rotationCycleLength
- */
 const positionOptions = computed(() => {
   return Array.from({ length: rotationCycleLength.value }, (_, i) => ({
     value: i + 1,
@@ -186,10 +173,6 @@ const positionOptions = computed(() => {
   }));
 });
 
-/**
- * Format schedule update notice for display
- * Shows the schedule update date if available
- */
 const scheduleUpdateNotice = computed(() => {
   if (scheduleUpdateDate.value) {
     return formatAsDisplayDate(scheduleUpdateDate.value);
@@ -197,10 +180,6 @@ const scheduleUpdateNotice = computed(() => {
   return "";
 });
 
-/**
- * Calculate initial date for calendar display
- * Uses active base date or current date, whichever is later
- */
 const initialDate = computed(() => {
   if (!activeBaseDate.value) return undefined;
 
@@ -210,29 +189,17 @@ const initialDate = computed(() => {
     : toDate(currentDay);
 });
 
-// Local reactive state for position
 const startPosition = ref(undefined);
 
-// Event handlers
-
-/**
- * Handle base date selection change
- * Updates the active base date and resets position selection
- */
 function handleBaseDateChange(newDateStr) {
   const newDate = createDate(newDateStr);
   updateActiveBaseDate(newDate);
   startPosition.value = undefined;
   setStartPosition(undefined);
 
-  // Update URL params
   updateCalendarParams(newDate, startPosition.value);
 }
 
-/**
- * Handle position selection change
- * Updates the start position and URL parameters
- */
 function handlePositionChange(newPosition) {
   const positionValue = parseInt(newPosition, 10);
   startPosition.value = positionValue;
@@ -241,31 +208,18 @@ function handlePositionChange(newPosition) {
   updateCalendarParams(selectedBaseDate.value, positionValue);
 }
 
-/**
- * Handle calendar date range changes
- * Regenerates calendar events for the new date range
- */
 function handleDatesSet({ start, end }) {
   generateCalendarEvents(start, end);
 }
 
-/**
- * Handle export completion
- * Shows error message if export failed
- */
 function handleExportComplete({ success, error }) {
   if (!success && error) {
     alert(ERROR_MESSAGES.ICS_EXPORT_ERROR);
   }
 }
 
-/**
- * Initialize application with configuration data
- * Sets up all necessary data and applies URL parameters
- */
 async function initialize() {
   try {
-    // Initialize app with shared logic and consolidated data
     const result = await initializeApp({
       defaultScheduleData,
       nextScheduleData,
@@ -278,16 +232,16 @@ async function initialize() {
       return;
     }
 
-		const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
-			Boolean,
-		);
-		const baseDateParam = getDateParam(
-			"baseDate", 
-			undefined, 
-			validBaseDates,
-			config,
-			result.scheduleData.rotationCycleLength
-		);
+    const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
+      Boolean,
+    );
+    const baseDateParam = getDateParam(
+      "baseDate", 
+      undefined, 
+      validBaseDates,
+      config,
+      result.scheduleData.rotationCycleLength
+    );
     const startNumberParam = getNumberParam(
       "startNumber",
       undefined,
@@ -295,7 +249,6 @@ async function initialize() {
       result.scheduleData.rotationCycleLength,
     );
 
-    // Set active base date
     let validBaseDate;
     if (baseDateParam) {
       validBaseDate = baseDateParam;
@@ -324,29 +277,18 @@ async function initialize() {
   }
 }
 
-// Watchers
-
-/**
- * Watch for base date changes from composable
- * Updates local selectedBaseDate when activeBaseDate changes
- */
 watch(activeBaseDate, (newBaseDate) => {
   if (newBaseDate) {
     selectedBaseDate.value = formatAsISODate(newBaseDate);
   }
 });
 
-/**
- * Watch for start position changes from composable
- * Updates local startPosition when computedStartPosition changes
- */
 watch(computedStartPosition, (newValue) => {
   if (newValue && newValue !== startPosition.value) {
     startPosition.value = newValue;
   }
 });
 
-// Initialize on mount
 onMounted(async () => {
   await initialize();
 });

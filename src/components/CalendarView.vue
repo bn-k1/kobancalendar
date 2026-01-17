@@ -2,18 +2,30 @@
 <template>
   <div class="calendar-container">
     <FullCalendar ref="calendarRef" :options="calendarOptions" />
+    
+    <EditScheduleModal
+      :show="showEditModal"
+      :date="editingDate"
+      :day-type="editingDayType"
+      :current-schedule="editingCurrentSchedule"
+      @close="closeEditModal"
+      @save="handleSaveEdit"
+      @remove="handleRemoveEdit"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, onUnmounted } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
 import { useHolidays } from "@/composables/useHolidays";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { CALENDAR_CONFIG } from "@/utils/constants";
-import { createDate, isSameDay, today } from "@/utils/date";
+import { createDate, isSameDay, today, formatAsISODate } from "@/utils/date";
+import EditScheduleModal from "@/components/EditScheduleModal.vue";
 
-// Props
 const props = defineProps({
   initialDate: {
     type: [Date, Object],
@@ -28,28 +40,148 @@ const props = defineProps({
   },
 });
 
-// Emits
-const emit = defineEmits(["datesSet"]);
+const emit = defineEmits(["datesSet", "scheduleEdited"]);
 
-// Composables
 const { isHoliday, getHolidayName } = useHolidays();
+const { hasEditedSchedule, getEditedSchedule, saveEditedSchedule, removeEditedSchedule } = useEditedSchedules();
 
-// Local state
 const calendarRef = ref(undefined);
 const viewStart = ref(undefined);
 const viewEnd = ref(undefined);
 
-// Calendar options
+const showEditModal = ref(false);
+const editingDate = ref(null);
+const editingDayType = ref("weekday");
+const editingCurrentSchedule = ref({});
+
+let longPressTimer = null;
+let pressedEventInfo = null;
+const LONG_PRESS_DURATION = 500;
+
+// Edited schedule color - pink/magenta that doesn't conflict with existing colors
+const EDITED_COLOR = "#e91e63";
+
+const mergedEvents = computed(() => {
+  return props.events.map(event => {
+    const dateStr = formatAsISODate(event.start);
+    const editedSchedule = getEditedSchedule(dateStr);
+    
+    if (editedSchedule) {
+      const title = editedSchedule.startTime || editedSchedule.endTime
+        ? `${editedSchedule.subject}\n${editedSchedule.startTime} - \n${editedSchedule.endTime}`
+        : editedSchedule.subject;
+      
+      return {
+        ...event,
+        title,
+        color: EDITED_COLOR,
+        extendedProps: {
+          ...event.extendedProps,
+          isEdited: true,
+          editedSubject: editedSchedule.subject,
+          startTime: editedSchedule.startTime,
+          endTime: editedSchedule.endTime,
+        },
+      };
+    }
+    
+    return {
+      ...event,
+      extendedProps: {
+        ...event.extendedProps,
+        isEdited: false,
+      },
+    };
+  });
+});
+
+function handlePressStart(info, event) {
+  pressedEventInfo = { event: info.event, jsEvent: event };
+  
+  longPressTimer = setTimeout(() => {
+    if (pressedEventInfo) {
+      openEditModal(pressedEventInfo.event);
+    }
+  }, LONG_PRESS_DURATION);
+}
+
+function handlePressEnd() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+  pressedEventInfo = null;
+}
+
+function openEditModal(event) {
+  const dateObj = createDate(event.start);
+  const dateStr = formatAsISODate(dateObj);
+  
+  let dayType = "weekday";
+  if (isHoliday(dateObj) || dateObj.day() === 0) {
+    dayType = "holiday";
+  } else if (dateObj.day() === 6) {
+    dayType = "saturday";
+  }
+  
+  const extendedProps = event.extendedProps || {};
+  let currentSchedule = {};
+  
+  if (extendedProps.isEdited) {
+    currentSchedule = {
+      subject: extendedProps.editedSubject,
+      startTime: extendedProps.startTime,
+      endTime: extendedProps.endTime,
+    };
+  } else {
+    const titleParts = event.title.split("\n");
+    currentSchedule = {
+      subject: titleParts[0] || "",
+      startTime: extendedProps.startTime || "",
+      endTime: extendedProps.endTime || "",
+    };
+  }
+  
+  editingDate.value = dateStr;
+  editingDayType.value = dayType;
+  editingCurrentSchedule.value = currentSchedule;
+  showEditModal.value = true;
+}
+
+function closeEditModal() {
+  showEditModal.value = false;
+  editingDate.value = null;
+  editingCurrentSchedule.value = {};
+}
+
+function handleSaveEdit(editData) {
+  saveEditedSchedule(editData.date, {
+    subject: editData.subject,
+    startTime: editData.startTime,
+    endTime: editData.endTime,
+  });
+  
+  closeEditModal();
+  emit("scheduleEdited", editData);
+}
+
+function handleRemoveEdit(dateStr) {
+  removeEditedSchedule(dateStr);
+  closeEditModal();
+  emit("scheduleEdited", { date: dateStr, removed: true });
+}
+
 const calendarOptions = computed(() => ({
-  plugins: [dayGridPlugin],
+  plugins: [dayGridPlugin, interactionPlugin],
   initialView: CALENDAR_CONFIG.INITIAL_VIEW,
   initialDate: props.initialDate ? props.initialDate : undefined,
   locale: CALENDAR_CONFIG.LOCALE,
-  events: props.events,
+  events: mergedEvents.value,
   aspectRatio: CALENDAR_CONFIG.DEFAULT_ASPECT_RATIO,
   height: CALENDAR_CONFIG.HEIGHT,
+  selectable: false,
+  editable: false,
 
-  // Custom day cell class names
   dayCellClassNames: (arg) => {
     const date = createDate(arg.date);
     const classNames = [];
@@ -70,11 +202,10 @@ const calendarOptions = computed(() => ({
     return classNames;
   },
 
-  // Custom event content rendering
   eventContent: (arg) => {
     const { event } = arg;
     let [title, startTime = "", endTime = ""] = event.title.split("\n");
-    const { shiftIndex } = event.extendedProps;
+    const { shiftIndex, isEdited } = event.extendedProps;
     const date = createDate(event.start);
 
     const holidayName = getHolidayName(date);
@@ -82,9 +213,11 @@ const calendarOptions = computed(() => ({
       ? `${shiftIndex + 1} ${holidayName}`
       : `${shiftIndex + 1}`;
 
+    const editedIndicator = isEdited ? '✎ ' : '';
+
     return {
       html: `
-        <div class="event-title">${title}</div>
+        <div class="event-title">${editedIndicator}${title}</div>
         ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
         ${endTime ? `<div class="event-time">${endTime}</div>` : ""}
         <div class="event-meta">${komaichi}</div>
@@ -92,12 +225,24 @@ const calendarOptions = computed(() => ({
     };
   },
 
-  // Handler for date range changes
+  eventDidMount: (info) => {
+    const el = info.el;
+    
+    el.addEventListener("mousedown", (e) => handlePressStart(info, e));
+    el.addEventListener("mouseup", handlePressEnd);
+    el.addEventListener("mouseleave", handlePressEnd);
+    
+    el.addEventListener("touchstart", (e) => handlePressStart(info, e), { passive: true });
+    el.addEventListener("touchend", handlePressEnd);
+    el.addEventListener("touchcancel", handlePressEnd);
+    
+    el.classList.add("long-press-enabled");
+  },
+
   datesSet: (info) => {
     const newStart = createDate(info.start);
     const newEnd = createDate(info.end);
 
-    // Only update if view range has changed
     if (
       !viewStart.value ||
       !viewEnd.value ||
@@ -111,16 +256,19 @@ const calendarOptions = computed(() => ({
   },
 }));
 
-// Watch for changes to start position or initialDate
 watch([() => props.startPosition, () => props.initialDate], () => {
   if (viewStart.value && viewEnd.value) {
     emit("datesSet", { start: viewStart.value, end: viewEnd.value });
   }
 });
 
-// Initialize
+onUnmounted(() => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+  }
+});
+
 onMounted(() => {
-  // Use setTimeout to ensure calendar is fully rendered
   setTimeout(() => {
     if (calendarRef.value) {
       const api = calendarRef.value.getApi();
@@ -133,7 +281,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Calendar-specific styles with :deep() selector */
 .calendar-container {
   width: 100%;
   margin: var(--spacing-lg) auto;
@@ -236,5 +383,16 @@ onMounted(() => {
   pointer-events: none;
   z-index: 2;
   border-radius: 2px;
+}
+
+:deep(.long-press-enabled) {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+:deep(.long-press-enabled:active) {
+  opacity: 0.8;
 }
 </style>
