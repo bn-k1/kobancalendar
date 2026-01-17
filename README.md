@@ -75,9 +75,9 @@
    ```
 
    - `default_base_date`: シフト計算の基準日。
-   - `next_base_date`: 各員のコマ位置の移動予定日。
-   - `schedule_update`: 交番表の内容の変更予定日。
-   - `position_shift`: 全員のコマ位置の移動になる数。
+   - `next_base_date`: 各員のコマ位置の移動予定日。設定しなくても動作します。
+   - `schedule_update`: 交番表の内容の変更予定日。設定しなくても動作します。
+   - `position_shift`: 全員のコマ位置の移動になる数。設定しなくても動作します。
    - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
    - `url`にはURLを記述します(QRコードに使います)。
 
