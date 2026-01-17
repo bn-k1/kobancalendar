@@ -8,7 +8,7 @@
         <a v-if="isMeetupPage" class="mode-link" href="/kobancalendar/#/" aria-label="勤務モードへ">🚨</a>
         <a
           class="help-link"
-          href="guide.html"
+          href="https://github.com/bn-k1/kobancalendar?tab=readme-ov-file#kobancalendar"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="使い方ガイドを開く"
@@ -61,7 +61,7 @@
       <p>
         KobanCalendar -
         <a
-          href="https://github.com/bn-k1/kobancalendar?tab=readme-ov-file#kobancalendar"
+          href="https://github.com/bn-k1/kobancalendar"
           target="_blank"
           rel="noopener noreferrer"
         >
