@@ -27,11 +27,12 @@
             >
               {{ option.subject }}
             </option>
+            <option :value="CUSTOM_VALUE">任意入力</option>
           </select>
         </div>
 
         <!-- Time display (read-only, auto-filled) -->
-        <div class="form-group time-display" v-if="selectedSubject">
+        <div class="form-group time-display" v-if="selectedSubject && !isCustomSelected">
           <div class="time-info">
             <span class="time-label">開始:</span>
             <span class="time-value">{{ selectedStartTime || "なし" }}</span>
@@ -39,6 +40,38 @@
           <div class="time-info">
             <span class="time-label">終了:</span>
             <span class="time-value">{{ selectedEndTime || "なし" }}</span>
+          </div>
+        </div>
+
+        <!-- Custom inputs -->
+        <div v-if="isCustomSelected" class="custom-inputs">
+          <div class="form-group">
+            <label for="customSubject">予定名:</label>
+            <input
+              id="customSubject"
+              v-model="customSubject"
+              type="text"
+              class="edit-input"
+              placeholder="予定名を入力"
+            />
+          </div>
+          <div class="form-group time-inputs">
+            <label for="customStartTime">開始時間:</label>
+            <input
+              id="customStartTime"
+              v-model="customStartTime"
+              type="time"
+              class="edit-input"
+            />
+          </div>
+          <div class="form-group time-inputs">
+            <label for="customEndTime">終了時間:</label>
+            <input
+              id="customEndTime"
+              v-model="customEndTime"
+              type="time"
+              class="edit-input"
+            />
           </div>
         </div>
 
@@ -50,7 +83,7 @@
           <button 
             class="save-btn" 
             @click="handleSave"
-            :disabled="!selectedSubject"
+            :disabled="!canSave"
           >
             保存
           </button>
@@ -90,9 +123,21 @@ const emit = defineEmits(["close", "save"]);
 const { scheduleDataSets, scheduleUpdateDate } = useSchedule();
 const { saveEditedSchedule } = useEditedSchedules();
 
+const CUSTOM_VALUE = "__custom__";
 const selectedSubject = ref("");
 const selectedStartTime = ref("");
 const selectedEndTime = ref("");
+const customSubject = ref("");
+const customStartTime = ref("");
+const customEndTime = ref("");
+
+const isCustomSelected = computed(() => selectedSubject.value === CUSTOM_VALUE);
+const canSave = computed(() => {
+  if (isCustomSelected.value) {
+    return customSubject.value.trim() !== "";
+  }
+  return selectedSubject.value !== "";
+});
 
 const modalTitle = computed(() => {
   if (!props.date) return "予定を編集";
@@ -144,6 +189,11 @@ const subjectOptions = computed(() => {
 });
 
 function handleSubjectChange() {
+  if (selectedSubject.value === CUSTOM_VALUE) {
+    selectedStartTime.value = "";
+    selectedEndTime.value = "";
+    return;
+  }
   const selected = subjectOptions.value.find(opt => opt.subject === selectedSubject.value);
   if (selected) {
     selectedStartTime.value = selected.startTime;
@@ -155,13 +205,21 @@ function handleSubjectChange() {
 }
 
 function handleSave() {
-  if (!selectedSubject.value) return;
-  
-  saveEditedSchedule(props.date, {
-    subject: selectedSubject.value,
-    startTime: selectedStartTime.value,
-    endTime: selectedEndTime.value,
-  });
+  if (!canSave.value) return;
+
+  const schedule = isCustomSelected.value
+    ? {
+        subject: customSubject.value.trim(),
+        startTime: customStartTime.value,
+        endTime: customEndTime.value,
+      }
+    : {
+        subject: selectedSubject.value,
+        startTime: selectedStartTime.value,
+        endTime: selectedEndTime.value,
+      };
+
+  saveEditedSchedule(props.date, schedule);
   
   window.location.reload();
 }
@@ -172,15 +230,38 @@ function closeModalOnOutsideClick(event) {
   }
 }
 
-watch([() => props.show, () => props.date], ([newShow]) => {
+watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
   if (newShow && props.currentSchedule) {
-    selectedSubject.value = props.currentSchedule.subject || "";
-    selectedStartTime.value = props.currentSchedule.startTime || "";
-    selectedEndTime.value = props.currentSchedule.endTime || "";
+    const currentSubject = props.currentSchedule.subject || "";
+    const matchingOption = subjectOptions.value.find(opt => opt.subject === currentSubject);
+    const isKnownSubject = Boolean(matchingOption);
+    const isCustomByTime =
+      isKnownSubject &&
+      ((props.currentSchedule.startTime || "") !== (matchingOption.startTime || "") ||
+        (props.currentSchedule.endTime || "") !== (matchingOption.endTime || ""));
+
+    if (currentSubject && (!isKnownSubject || isCustomByTime)) {
+      selectedSubject.value = CUSTOM_VALUE;
+      customSubject.value = currentSubject;
+      customStartTime.value = props.currentSchedule.startTime || "";
+      customEndTime.value = props.currentSchedule.endTime || "";
+      selectedStartTime.value = "";
+      selectedEndTime.value = "";
+    } else {
+      selectedSubject.value = currentSubject;
+      selectedStartTime.value = matchingOption?.startTime || props.currentSchedule.startTime || "";
+      selectedEndTime.value = matchingOption?.endTime || props.currentSchedule.endTime || "";
+      customSubject.value = "";
+      customStartTime.value = "";
+      customEndTime.value = "";
+    }
   } else if (!newShow) {
     selectedSubject.value = "";
     selectedStartTime.value = "";
     selectedEndTime.value = "";
+    customSubject.value = "";
+    customStartTime.value = "";
+    customEndTime.value = "";
   }
 });
 </script>
@@ -225,10 +306,36 @@ watch([() => props.show, () => props.date], ([newShow]) => {
   font-size: 1rem;
 }
 
+.edit-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius-md);
+  background-color: var(--background-light);
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
 .edit-select:focus {
   border-color: var(--primary-light);
   outline: none;
   box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.3);
+}
+
+.edit-input:focus {
+  border-color: var(--primary-light);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.3);
+}
+
+.custom-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.time-inputs {
+  gap: var(--spacing-xs);
 }
 
 .time-display {
