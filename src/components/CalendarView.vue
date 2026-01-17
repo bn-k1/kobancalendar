@@ -23,7 +23,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useHolidays } from "@/composables/useHolidays";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
-import { CALENDAR_CONFIG } from "@/utils/constants";
+import { CALENDAR_CONFIG, LONG_PRESS_DURATION } from "@/utils/constants";
 import { createDate, isSameDay, today, formatAsISODate } from "@/utils/date";
 import EditScheduleModal from "@/components/EditScheduleModal.vue";
 import { useCalendarStore } from "@/stores/calendar";
@@ -67,7 +67,6 @@ const editingCurrentSchedule = ref({});
 
 let longPressTimer = null;
 let pressedEventInfo = null;
-const LONG_PRESS_DURATION = 500;
 
 const editedEventConfig = computed(() => {
   const events = eventConfig.value?.events;

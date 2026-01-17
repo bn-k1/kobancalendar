@@ -20,6 +20,8 @@ export const CALENDAR_CONFIG = {
   INITIAL_VIEW: "dayGridMonth",
 };
 
+export const LONG_PRESS_DURATION = 500;
+
 export const CUSTOM_HOLIDAY = "設定祝日";
 
 export const TIMEOPTIONS = [
