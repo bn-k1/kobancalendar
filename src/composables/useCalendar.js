@@ -6,9 +6,6 @@ import { useHolidays } from "@/composables/useHolidays";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { createDate, addDays, isBefore, parseTime, formatAsISODate } from "@/utils/date";
 
-// Pink/magenta color for edited schedules - distinct from existing colors
-const EDITED_COLOR = "#e91e63";
-
 /**
  * Calendar functionality composable
  * Contains all calendar-related logic
@@ -48,11 +45,15 @@ export function useCalendar() {
    */
   function getEventType(subject, isEdited = false) {
     if (isEdited) {
+      const eventConfig = storeEventConfig.value;
+      const defaultConfig = eventConfig?.events?.default || {};
+      const editedConfig = eventConfig?.events?.edited || {};
+
       return {
         type: "edited",
         config: {
-          color: EDITED_COLOR,
-          showTime: true,
+          ...defaultConfig,
+          ...editedConfig,
         },
       };
     }

@@ -1,6 +1,11 @@
 <!-- src/components/EditedSchedulesList.vue -->
 <template>
-  <fieldset id="editedSchedulesSection" class="control-group" v-if="hasAnyEdits">
+  <fieldset
+    id="editedSchedulesSection"
+    class="control-group"
+    v-if="hasAnyEdits"
+    :style="editedColorStyle"
+  >
     <legend @click="toggleExpanded" class="clickable-legend">
       編集済み ({{ editedSchedulesList.length }})
       <span class="toggle-icon">{{ isExpanded ? '▼' : '▶' }}</span>
@@ -30,8 +35,10 @@
 
 <script setup>
 import { computed, ref } from 'vue';
+import { storeToRefs } from "pinia";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import EyeToggleIcon from "@/components/Icons/EyeToggleIcon.vue";
+import { useCalendarStore } from "@/stores/calendar";
 
 const {
   editedSchedulesList,
@@ -42,6 +49,14 @@ const {
 } = useEditedSchedules();
 const isExpanded = ref(false);
 const showList = computed(() => isExpanded.value && !isEditsHidden.value);
+
+const calendarStore = useCalendarStore();
+const { eventConfig } = storeToRefs(calendarStore);
+
+const editedColorStyle = computed(() => {
+  const color = eventConfig.value?.events?.edited?.color;
+  return color ? { "--edited-color": color } : undefined;
+});
 
 function toggleExpanded() {
   isExpanded.value = !isExpanded.value;
@@ -116,7 +131,7 @@ function handleRemove(dateStr) {
 }
 
 .edited-text {
-  color: #e91e63;
+  color: var(--edited-color, #e91e63);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;

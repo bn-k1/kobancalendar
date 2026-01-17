@@ -15,6 +15,11 @@
       "color": "orange",
       "showTime": true
     },
+    "edited": {
+      "keywords": [],
+      "color": "magenta",
+      "showTime": true
+    },
     "default": {
       "keywords": [],
       "color": "deepskyblue",

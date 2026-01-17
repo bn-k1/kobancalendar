@@ -17,6 +17,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, onUnmounted } from "vue";
+import { storeToRefs } from "pinia";
 import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -25,6 +26,7 @@ import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { CALENDAR_CONFIG } from "@/utils/constants";
 import { createDate, isSameDay, today, formatAsISODate } from "@/utils/date";
 import EditScheduleModal from "@/components/EditScheduleModal.vue";
+import { useCalendarStore } from "@/stores/calendar";
 
 const props = defineProps({
   initialDate: {
@@ -51,6 +53,9 @@ const {
   isEditsHidden,
 } = useEditedSchedules();
 
+const calendarStore = useCalendarStore();
+const { eventConfig } = storeToRefs(calendarStore);
+
 const calendarRef = ref(undefined);
 const viewStart = ref(undefined);
 const viewEnd = ref(undefined);
@@ -64,8 +69,14 @@ let longPressTimer = null;
 let pressedEventInfo = null;
 const LONG_PRESS_DURATION = 500;
 
-// Edited schedule color - pink/magenta that doesn't conflict with existing colors
-const EDITED_COLOR = "#e91e63";
+const editedEventConfig = computed(() => {
+  const events = eventConfig.value?.events;
+  if (!events) return {};
+  return {
+    ...events.default,
+    ...events.edited,
+  };
+});
 
 const mergedEvents = computed(() => {
   return props.events.map(event => {
@@ -86,11 +97,12 @@ const mergedEvents = computed(() => {
       const title = editedSchedule.startTime || editedSchedule.endTime
         ? `${editedSchedule.subject}\n${editedSchedule.startTime} - \n${editedSchedule.endTime}`
         : editedSchedule.subject;
+      const editedColor = editedEventConfig.value?.color || event.color;
       
       return {
         ...event,
         title,
-        color: EDITED_COLOR,
+        color: editedColor,
         extendedProps: {
           ...event.extendedProps,
           isEdited: true,
