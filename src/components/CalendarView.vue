@@ -123,6 +123,8 @@ const mergedEvents = computed(() => {
 });
 
 function handlePressStart(info, event) {
+  if (event?.isPrimary === false) return;
+  if (event?.pointerType === "mouse" && event?.button !== 0) return;
   pressedEventInfo = { event: info.event, jsEvent: event };
   
   longPressTimer = setTimeout(() => {
@@ -255,13 +257,10 @@ const calendarOptions = computed(() => ({
   eventDidMount: (info) => {
     const el = info.el;
     
-    el.addEventListener("mousedown", (e) => handlePressStart(info, e));
-    el.addEventListener("mouseup", handlePressEnd);
-    el.addEventListener("mouseleave", handlePressEnd);
-    
-    el.addEventListener("touchstart", (e) => handlePressStart(info, e), { passive: true });
-    el.addEventListener("touchend", handlePressEnd);
-    el.addEventListener("touchcancel", handlePressEnd);
+    el.addEventListener("pointerdown", (e) => handlePressStart(info, e));
+    el.addEventListener("pointerup", handlePressEnd);
+    el.addEventListener("pointerleave", handlePressEnd);
+    el.addEventListener("pointercancel", handlePressEnd);
     
     el.classList.add("long-press-enabled");
   },

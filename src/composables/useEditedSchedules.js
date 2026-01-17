@@ -1,15 +1,42 @@
 // src/composables/useEditedSchedules.js
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
+import { defineStore } from "pinia";
 import { formatAsISODate, formatAsDisplayDate, getWeekdayName } from "@/utils/date";
 
 const STORAGE_KEY = "kobancalendar_edited_schedules";
 const HIDDEN_KEY = "kobancalendar_edited_schedules_hidden";
 
+function normalizeSchedule(schedule) {
+  return {
+    subject: schedule?.subject || "",
+    startTime: schedule?.startTime || "",
+    endTime: schedule?.endTime || "",
+  };
+}
+
+function parseLegacyCsv(stored) {
+  const lines = stored.split("\n").filter(line => line.trim());
+  const schedules = {};
+
+  lines.forEach(line => {
+    const [dateStr, subject, startTime, endTime] = line.split(",");
+    if (dateStr) {
+      schedules[dateStr] = normalizeSchedule({
+        subject,
+        startTime,
+        endTime,
+      });
+    }
+  });
+
+  return schedules;
+}
+
 /**
- * Composable for managing user-edited schedules
+ * Store for managing user-edited schedules
  * Stores edits in localStorage and provides methods to manage them
  */
-export function useEditedSchedules() {
+export const useEditedSchedules = defineStore("editedSchedules", () => {
   // Reactive state
   const editedSchedules = ref({});
   const isInitialized = ref(false);
@@ -19,30 +46,36 @@ export function useEditedSchedules() {
    * Load edited schedules from localStorage
    */
   function loadFromStorage() {
+    if (typeof window === "undefined") return;
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const lines = stored.split("\n").filter(line => line.trim());
-        const schedules = {};
-        
-        lines.forEach(line => {
-          const [dateStr, subject, startTime, endTime] = line.split(",");
-          if (dateStr) {
-            schedules[dateStr] = {
-              subject: subject || "",
-              startTime: startTime || "",
-              endTime: endTime || "",
-            };
-          }
-        });
-        
-        editedSchedules.value = schedules;
+      if (!stored) {
+        editedSchedules.value = {};
+        return;
       }
-      isInitialized.value = true;
+
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const normalized = {};
+          Object.entries(parsed).forEach(([dateStr, schedule]) => {
+            if (dateStr) {
+              normalized[dateStr] = normalizeSchedule(schedule);
+            }
+          });
+          editedSchedules.value = normalized;
+          return;
+        }
+      } catch (parseError) {
+        editedSchedules.value = parseLegacyCsv(stored);
+        return;
+      }
+
+      editedSchedules.value = {};
     } catch (error) {
       console.error("Failed to load edited schedules from localStorage:", error);
       editedSchedules.value = {};
-      isInitialized.value = true;
     }
   }
 
@@ -50,6 +83,8 @@ export function useEditedSchedules() {
    * Load hidden flag from localStorage
    */
   function loadHiddenFromStorage() {
+    if (typeof window === "undefined") return;
+
     try {
       isEditsHidden.value = localStorage.getItem(HIDDEN_KEY) === "on";
     } catch (error) {
@@ -59,11 +94,28 @@ export function useEditedSchedules() {
   }
 
   /**
+   * Initialize store state from localStorage
+   */
+  function initEditedSchedules() {
+    if (isInitialized.value) return;
+    if (typeof window === "undefined") {
+      isInitialized.value = true;
+      return;
+    }
+
+    loadFromStorage();
+    loadHiddenFromStorage();
+    isInitialized.value = true;
+  }
+
+  /**
    * Save hidden flag to localStorage
    * @param {boolean} hidden
    */
   function setEditsHidden(hidden) {
     isEditsHidden.value = !!hidden;
+    if (typeof window === "undefined") return;
+
     try {
       localStorage.setItem(HIDDEN_KEY, isEditsHidden.value ? "on" : "off");
     } catch (error) {
@@ -75,15 +127,15 @@ export function useEditedSchedules() {
    * Save edited schedules to localStorage
    */
   function saveToStorage() {
+    if (typeof window === "undefined") return;
+
     try {
-      const lines = Object.entries(editedSchedules.value)
-        .map(([dateStr, schedule]) => {
-          return `${dateStr},${schedule.subject},${schedule.startTime},${schedule.endTime}`;
-        })
-        .join("\n");
-      
-      if (lines) {
-        localStorage.setItem(STORAGE_KEY, lines);
+      const hasEdits = Object.keys(editedSchedules.value).length > 0;
+      if (hasEdits) {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(editedSchedules.value),
+        );
       } else {
         localStorage.removeItem(STORAGE_KEY);
       }
@@ -119,11 +171,7 @@ export function useEditedSchedules() {
    */
   function saveEditedSchedule(date, schedule) {
     const dateStr = typeof date === "string" ? date : formatAsISODate(date);
-    editedSchedules.value[dateStr] = {
-      subject: schedule.subject || "",
-      startTime: schedule.startTime || "",
-      endTime: schedule.endTime || "",
-    };
+    editedSchedules.value[dateStr] = normalizeSchedule(schedule);
     saveToStorage();
   }
 
@@ -169,19 +217,14 @@ export function useEditedSchedules() {
     return Object.keys(editedSchedules.value).length > 0;
   });
 
-  // Initialize on first use
-  if (!isInitialized.value) {
-    loadFromStorage();
-    loadHiddenFromStorage();
-  }
-
   return {
     editedSchedules,
     editedSchedulesList,
     hasAnyEdits,
     isInitialized,
     isEditsHidden,
-    
+
+    initEditedSchedules,
     hasEditedSchedule,
     getEditedSchedule,
     saveEditedSchedule,
@@ -190,4 +233,4 @@ export function useEditedSchedules() {
     loadFromStorage,
     setEditsHidden,
   };
-}
+});

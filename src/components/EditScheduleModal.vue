@@ -97,7 +97,6 @@
 import { ref, computed, watch } from "vue";
 import { formatAsDisplayDate, getWeekdayName, createDate, isSameOrAfter } from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
-import { useEditedSchedules } from "@/composables/useEditedSchedules";
 
 const props = defineProps({
   show: {
@@ -121,7 +120,6 @@ const props = defineProps({
 const emit = defineEmits(["close", "save"]);
 
 const { scheduleDataSets, scheduleUpdateDate } = useSchedule();
-const { saveEditedSchedule } = useEditedSchedules();
 
 const CUSTOM_VALUE = "__custom__";
 const selectedSubject = ref("");
@@ -219,9 +217,12 @@ function handleSave() {
         endTime: selectedEndTime.value,
       };
 
-  saveEditedSchedule(props.date, schedule);
-  
-  window.location.reload();
+  emit("save", {
+    date: props.date,
+    subject: schedule.subject,
+    startTime: schedule.startTime,
+    endTime: schedule.endTime,
+  });
 }
 
 function closeModalOnOutsideClick(event) {

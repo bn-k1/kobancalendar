@@ -37,6 +37,7 @@
           :start-position="startPosition"
           :events="calendarEvents"
           @dates-set="handleDatesSet"
+          @schedule-edited="handleEditedChanged"
         />
         <template #fallback>
           <div class="loading-placeholder">Loading...</div>
@@ -47,7 +48,7 @@
     <!-- Search section -->
     <template #search>
       <Suspense v-if="isLoaded">
-        <EditedSchedulesList />
+        <EditedSchedulesList @edited-changed="handleEditedChanged" />
         <template #fallback>
           <div class="loading-placeholder">Loading...</div>
         </template>
@@ -82,6 +83,7 @@ const EditedSchedulesList = defineAsyncComponent(
 );
 
 import { useCalendar } from "@/composables/useCalendar";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { useSchedule } from "@/composables/useSchedule";
 import { useAppInitializer } from "@/composables/useAppInitializer";
 import { useUrlParams } from "@/composables/useUrlParams";
@@ -104,8 +106,12 @@ import config from "@config/config.json";
 
 const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
 const { isLoaded, initializeApp } = useAppInitializer();
+const { initEditedSchedules } = useEditedSchedules();
 const calendarRef = ref(undefined);
 const selectedBaseDate = ref("");
+const viewRange = ref({ start: null, end: null });
+
+initEditedSchedules();
 
 const {
   calendarEvents,
@@ -195,7 +201,14 @@ function handlePositionChange(newPosition) {
 }
 
 function handleDatesSet({ start, end }) {
+  viewRange.value = { start, end };
   generateCalendarEvents(start, end);
+}
+
+function handleEditedChanged() {
+  if (viewRange.value.start && viewRange.value.end) {
+    generateCalendarEvents(viewRange.value.start, viewRange.value.end);
+  }
 }
 
 async function initialize() {

@@ -47,6 +47,7 @@ const {
   isEditsHidden,
   setEditsHidden,
 } = useEditedSchedules();
+const emit = defineEmits(["editedChanged"]);
 const isExpanded = ref(false);
 const showList = computed(() => isExpanded.value && !isEditsHidden.value);
 
@@ -64,12 +65,12 @@ function toggleExpanded() {
 
 function toggleHidden() {
   setEditsHidden(!isEditsHidden.value);
-  window.location.reload();
+  emit("editedChanged");
 }
 
 function handleRemove(dateStr) {
   removeEditedSchedule(dateStr);
-  window.location.reload();
+  emit("editedChanged");
 }
 </script>
 
