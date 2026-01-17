@@ -43,7 +43,13 @@ const props = defineProps({
 const emit = defineEmits(["datesSet", "scheduleEdited"]);
 
 const { isHoliday, getHolidayName } = useHolidays();
-const { hasEditedSchedule, getEditedSchedule, saveEditedSchedule, removeEditedSchedule } = useEditedSchedules();
+const {
+  hasEditedSchedule,
+  getEditedSchedule,
+  saveEditedSchedule,
+  removeEditedSchedule,
+  isEditsHidden,
+} = useEditedSchedules();
 
 const calendarRef = ref(undefined);
 const viewStart = ref(undefined);
@@ -63,6 +69,16 @@ const EDITED_COLOR = "#e91e63";
 
 const mergedEvents = computed(() => {
   return props.events.map(event => {
+    if (isEditsHidden.value) {
+      return {
+        ...event,
+        extendedProps: {
+          ...event.extendedProps,
+          isEdited: false,
+        },
+      };
+    }
+
     const dateStr = formatAsISODate(event.start);
     const editedSchedule = getEditedSchedule(dateStr);
     

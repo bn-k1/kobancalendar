@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { formatAsISODate, formatAsDisplayDate, getWeekdayName } from "@/utils/date";
 
 const STORAGE_KEY = "kobancalendar_edited_schedules";
+const HIDDEN_KEY = "kobancalendar_edited_schedules_hidden";
 
 /**
  * Composable for managing user-edited schedules
@@ -12,6 +13,7 @@ export function useEditedSchedules() {
   // Reactive state
   const editedSchedules = ref({});
   const isInitialized = ref(false);
+  const isEditsHidden = ref(false);
 
   /**
    * Load edited schedules from localStorage
@@ -41,6 +43,31 @@ export function useEditedSchedules() {
       console.error("Failed to load edited schedules from localStorage:", error);
       editedSchedules.value = {};
       isInitialized.value = true;
+    }
+  }
+
+  /**
+   * Load hidden flag from localStorage
+   */
+  function loadHiddenFromStorage() {
+    try {
+      isEditsHidden.value = localStorage.getItem(HIDDEN_KEY) === "on";
+    } catch (error) {
+      console.error("Failed to load edited schedules hidden flag:", error);
+      isEditsHidden.value = false;
+    }
+  }
+
+  /**
+   * Save hidden flag to localStorage
+   * @param {boolean} hidden
+   */
+  function setEditsHidden(hidden) {
+    isEditsHidden.value = !!hidden;
+    try {
+      localStorage.setItem(HIDDEN_KEY, isEditsHidden.value ? "on" : "off");
+    } catch (error) {
+      console.error("Failed to save edited schedules hidden flag:", error);
     }
   }
 
@@ -145,6 +172,7 @@ export function useEditedSchedules() {
   // Initialize on first use
   if (!isInitialized.value) {
     loadFromStorage();
+    loadHiddenFromStorage();
   }
 
   return {
@@ -152,6 +180,7 @@ export function useEditedSchedules() {
     editedSchedulesList,
     hasAnyEdits,
     isInitialized,
+    isEditsHidden,
     
     hasEditedSchedule,
     getEditedSchedule,
@@ -159,5 +188,6 @@ export function useEditedSchedules() {
     removeEditedSchedule,
     clearAllEditedSchedules,
     loadFromStorage,
+    setEditsHidden,
   };
 }

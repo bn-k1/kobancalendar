@@ -4,8 +4,18 @@
     <legend @click="toggleExpanded" class="clickable-legend">
       編集済み ({{ editedSchedulesList.length }})
       <span class="toggle-icon">{{ isExpanded ? '▼' : '▶' }}</span>
+      <button
+        type="button"
+        class="visibility-icon"
+        :class="{ 'is-hidden': isEditsHidden }"
+        @click.stop="toggleHidden"
+        :aria-label="isEditsHidden ? '編集済み予定を表示する' : '編集済み予定を非表示にする'"
+        :title="isEditsHidden ? '編集済み予定を表示する' : '編集済み予定を非表示にする'"
+      >
+        <EyeToggleIcon :hidden="isEditsHidden" />
+      </button>
     </legend>
-    <div v-show="isExpanded" class="edited-list">
+    <div v-show="showList" class="edited-list">
       <div
         v-for="item in editedSchedulesList"
         :key="item.dateStr"
@@ -19,14 +29,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
+import EyeToggleIcon from "@/components/icons/EyeToggleIcon.vue";
 
-const { editedSchedulesList, hasAnyEdits, removeEditedSchedule } = useEditedSchedules();
+const {
+  editedSchedulesList,
+  hasAnyEdits,
+  removeEditedSchedule,
+  isEditsHidden,
+  setEditsHidden,
+} = useEditedSchedules();
 const isExpanded = ref(false);
+const showList = computed(() => isExpanded.value && !isEditsHidden.value);
 
 function toggleExpanded() {
   isExpanded.value = !isExpanded.value;
+}
+
+function toggleHidden() {
+  setEditsHidden(!isEditsHidden.value);
+  window.location.reload();
 }
 
 function handleRemove(dateStr) {
@@ -51,6 +74,30 @@ function handleRemove(dateStr) {
 .toggle-icon {
   font-size: 0.8em;
   transition: transform 0.2s ease;
+}
+
+.visibility-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.visibility-icon:hover {
+  border-color: var(--primary-color);
+  background: var(--gray-100);
+}
+
+.visibility-icon.is-hidden {
+  color: var(--error-color);
 }
 
 .edited-list {

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KobanCalendar 使い方ガイド</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f7f5;
+        --card: #ffffff;
+        --text: #111827;
+        --muted: #6b7280;
+        --accent: #e11d48;
+        --line: #e5e7eb;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+      }
+      header {
+        padding: 24px 20px;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        letter-spacing: 0.02em;
+      }
+      main {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 24px 20px 64px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px 18px;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+        margin-bottom: 18px;
+      }
+      h2 {
+        margin: 0 0 10px;
+        font-size: 1.1rem;
+      }
+      p { margin: 8px 0; line-height: 1.7; }
+      ol { margin: 8px 0 0 18px; line-height: 1.7; }
+      li { margin-bottom: 6px; }
+      .tip {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .accent {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #ffe4e6;
+        color: #be123c;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-right: 6px;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>KobanCalendar 使い方ガイド</h1>
+    </header>
+    <main>
+      <section class="card">
+        <h2>まずやること</h2>
+        <ol>
+          <li>「<span class="accent">基準日</span>」を選ぶ</li>
+          <li>「<span class="accent">基準日のコマ位置</span>」を選ぶ</li>
+          <li>カレンダーに勤務が表示されたら完了</li>
+        </ol>
+        <p class="tip">※ 迷ったら職場の掲示にある「基準日」と「コマ位置」を確認してください。</p>
+      </section>
+
+      <section class="card">
+        <h2>予定を編集する</h2>
+        <p><span class="badge">長押し</span>カレンダーの日付を長押しすると編集画面が開きます。</p>
+        <ol>
+          <li>勤務名・開始/終了時刻を入力</li>
+          <li>保存を押す</li>
+        </ol>
+        <p class="tip">編集した予定には「✎」が付きます。</p>
+      </section>
+
+      <section class="card">
+        <h2>編集済み予定の表示/非表示</h2>
+        <p>「編集済み」欄の<span class="accent">目のアイコン</span>で切り替えできます。</p>
+        <p class="tip">非表示にしてもデータは消えません。再表示できます。</p>
+      </section>
+
+      <section class="card">
+        <h2>カレンダーをアプリっぽく使う</h2>
+        <ol>
+          <li>右上の共有から「ホーム画面に追加」</li>
+          <li>以後はアプリのように起動できます</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>カレンダーに取り込む（.ics）</h2>
+        <ol>
+          <li>下の「エクスポート」からファイルをダウンロード</li>
+          <li>スマホのカレンダーに読み込む</li>
+        </ol>
+      </section>
+
+      <footer>
+        うまく表示されない場合は、ページを再読み込みしてください。
+      </footer>
+    </main>
+  </body>
+</html>

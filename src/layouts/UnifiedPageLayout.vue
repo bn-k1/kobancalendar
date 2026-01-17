@@ -4,6 +4,18 @@
     <header>
       <h1 @click="handleTitleClick" class="clickable-title">{{ pageTitle }}</h1>
       <div class="header-controls">
+        <a v-if="isHomePage" class="mode-link" :href="meetupLink" aria-label="飲み会モードへ">🍻</a>
+        <a v-if="isMeetupPage" class="mode-link" href="/kobancalendar/#/" aria-label="勤務モードへ">🚨</a>
+        <a
+          class="help-link"
+          href="guide.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="使い方ガイドを開く"
+          title="使い方ガイド"
+        >
+          <HelpIcon />
+        </a>
         <ShareButton />
         <QrButton />
         <DarkModeToggle />
@@ -55,9 +67,6 @@
         >
           GitHub
         </a>
-        -
-        <a v-if="isHomePage" :href="meetupLink">🍻</a>
-        <a v-if="isMeetupPage" href="/kobancalendar/#/">🚨</a>
       </p>
     </footer>
   </div>
@@ -71,6 +80,7 @@ import { useCalendar } from "@/composables/useCalendar";
 import ShareButton from "@/components/ShareButton.vue";
 import QrButton from "@/components/QrButton.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
+import HelpIcon from "@/components/icons/HelpIcon.vue";
 
 const props = defineProps({
   title: {
@@ -144,6 +154,43 @@ function handleTitleClick() {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+}
+
+.mode-link {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-light);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  font-size: 1rem;
+}
+
+.mode-link:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.help-link {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-light);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.help-link:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .clickable-title {

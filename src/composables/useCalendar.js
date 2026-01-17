@@ -18,7 +18,7 @@ export function useCalendar() {
 
   const { getScheduleForDate } = useSchedule();
   const { getHolidayName } = useHolidays();
-  const { getEditedSchedule } = useEditedSchedules();
+  const { getEditedSchedule, isEditsHidden } = useEditedSchedules();
 
   const storeCalendarEvents = computed(() => calendarStore.calendarEvents);
   const storeStartPosition = computed(() => calendarStore.startPosition);
@@ -123,8 +123,8 @@ export function useCalendar() {
     while (isBefore(currentDate, end)) {
       const dateStr = formatAsISODate(currentDate);
       
-      // Check for edited schedule first (highest priority)
-      const editedSchedule = getEditedSchedule(dateStr);
+      // Check for edited schedule first (highest priority), unless hidden
+      const editedSchedule = isEditsHidden.value ? null : getEditedSchedule(dateStr);
       
       if (editedSchedule) {
         const scheduleInfo = getScheduleForDate(currentDate, startPosition);
