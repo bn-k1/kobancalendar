@@ -3,7 +3,6 @@
   <fieldset
     id="editedSchedulesSection"
     class="control-group"
-    v-if="hasAnyEdits"
     :style="editedColorStyle"
   >
     <legend @click="toggleExpanded" class="clickable-legend">
@@ -41,8 +40,7 @@ import EyeToggleIcon from "@/components/Icons/EyeToggleIcon.vue";
 import { useCalendarStore } from "@/stores/calendar";
 
 const editedSchedulesStore = useEditedSchedules();
-const { editedSchedulesList, hasAnyEdits, isEditsHidden } =
-  storeToRefs(editedSchedulesStore);
+const { editedSchedulesList, isEditsHidden } = storeToRefs(editedSchedulesStore);
 const { removeEditedSchedule, setEditsHidden } = editedSchedulesStore;
 const emit = defineEmits(["editedChanged"]);
 const isExpanded = ref(false);
