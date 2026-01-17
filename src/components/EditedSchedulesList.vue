@@ -34,19 +34,16 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import EyeToggleIcon from "@/components/Icons/EyeToggleIcon.vue";
 import { useCalendarStore } from "@/stores/calendar";
 
-const {
-  editedSchedulesList,
-  hasAnyEdits,
-  removeEditedSchedule,
-  isEditsHidden,
-  setEditsHidden,
-} = useEditedSchedules();
+const editedSchedulesStore = useEditedSchedules();
+const { editedSchedulesList, hasAnyEdits, isEditsHidden } =
+  storeToRefs(editedSchedulesStore);
+const { removeEditedSchedule, setEditsHidden } = editedSchedulesStore;
 const emit = defineEmits(["editedChanged"]);
 const isExpanded = ref(false);
 const showList = computed(() => isExpanded.value && !isEditsHidden.value);

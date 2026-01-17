@@ -45,13 +45,10 @@ const props = defineProps({
 const emit = defineEmits(["datesSet", "scheduleEdited"]);
 
 const { isHoliday, getHolidayName } = useHolidays();
-const {
-  hasEditedSchedule,
-  getEditedSchedule,
-  saveEditedSchedule,
-  removeEditedSchedule,
-  isEditsHidden,
-} = useEditedSchedules();
+const editedSchedulesStore = useEditedSchedules();
+const { getEditedSchedule, saveEditedSchedule, removeEditedSchedule } =
+  editedSchedulesStore;
+const { isEditsHidden } = storeToRefs(editedSchedulesStore);
 
 const calendarStore = useCalendarStore();
 const { eventConfig } = storeToRefs(calendarStore);
