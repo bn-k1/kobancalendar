@@ -1,4 +1,4 @@
-<!-- src/components/icons/QrIcon.vue -->
+<!-- src/components/Icons/QrIcon.vue -->
 <template>
   <svg
     class="qr-icon"

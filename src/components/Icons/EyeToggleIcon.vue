@@ -1,4 +1,4 @@
-<!-- src/components/icons/EyeToggleIcon.vue -->
+<!-- src/components/Icons/EyeToggleIcon.vue -->
 <template>
   <svg v-if="hidden" class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
     <path

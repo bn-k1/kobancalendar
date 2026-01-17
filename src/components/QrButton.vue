@@ -27,7 +27,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import config from "@config/config.json";
-import QrIcon from "@/components/icons/QrIcon.vue";
+import QrIcon from "@/components/Icons/QrIcon.vue";
 
 const showModal = ref(false);
 const url = ref("");

@@ -1,4 +1,4 @@
-<!-- src/components/icons/ShareIcon.vue -->
+<!-- src/components/Icons/ShareIcon.vue -->
 <template>
   <svg
     class="share-icon"

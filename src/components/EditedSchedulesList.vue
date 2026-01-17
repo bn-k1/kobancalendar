@@ -31,7 +31,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
-import EyeToggleIcon from "@/components/icons/EyeToggleIcon.vue";
+import EyeToggleIcon from "@/components/Icons/EyeToggleIcon.vue";
 
 const {
   editedSchedulesList,

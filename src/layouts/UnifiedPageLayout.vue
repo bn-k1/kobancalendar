@@ -6,16 +6,7 @@
       <div class="header-controls">
         <a v-if="isHomePage" class="mode-link" :href="meetupLink" aria-label="飲み会モードへ">🍻</a>
         <a v-if="isMeetupPage" class="mode-link" href="/kobancalendar/#/" aria-label="勤務モードへ">🚨</a>
-        <a
-          class="help-link"
-          href="https://github.com/bn-k1/kobancalendar?tab=readme-ov-file#kobancalendar"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="使い方ガイドを開く"
-          title="使い方ガイド"
-        >
-          <HelpIcon />
-        </a>
+        <HelpButton />
         <ShareButton />
         <QrButton />
         <DarkModeToggle />
@@ -77,7 +68,7 @@ import { useCalendar } from "@/composables/useCalendar";
 import ShareButton from "@/components/ShareButton.vue";
 import QrButton from "@/components/QrButton.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
-import HelpIcon from "@/components/icons/HelpIcon.vue";
+import HelpButton from "@/components/HelpButton.vue";
 
 const props = defineProps({
   title: {
@@ -154,40 +145,20 @@ function handleTitleClick() {
 }
 
 .mode-link {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.2);
   color: var(--text-light);
   text-decoration: none;
   transition: all var(--transition-fast);
-  font-size: 1rem;
+  font-size: 1.6rem;
+  line-height: 1;
+  padding: 0;
 }
 
 .mode-link:hover {
-  background-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
-}
-
-.help-link {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: var(--text-light);
-  text-decoration: none;
-  transition: all var(--transition-fast);
-}
-
-.help-link:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  opacity: 0.9;
 }
 
 .clickable-title {

@@ -1,4 +1,4 @@
-<!-- src/components/icons/HelpIcon.vue -->
+<!-- src/components/Icons/HelpIcon.vue -->
 <template>
   <svg class="help-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path

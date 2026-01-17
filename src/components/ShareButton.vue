@@ -10,7 +10,7 @@
 </template>
 
 <script setup>
-import ShareIcon from "@/components/icons/ShareIcon.vue";
+import ShareIcon from "@/components/Icons/ShareIcon.vue";
 
 // Share current page using Web Share API
 async function shareCurrentPage() {
