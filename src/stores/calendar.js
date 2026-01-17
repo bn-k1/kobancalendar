@@ -8,7 +8,6 @@ import { ref, computed } from "vue";
  */
 export const useCalendarStore = defineStore("calendar", () => {
   const startPosition = ref(undefined);
-  const exportMonths = ref(undefined);
   const calendarEvents = ref([]);
   const eventConfig = ref(undefined);
 
@@ -18,10 +17,6 @@ export const useCalendarStore = defineStore("calendar", () => {
 
   function setStartPosition(position) {
     startPosition.value = position;
-  }
-
-  function setExportMonths(months) {
-    exportMonths.value = months;
   }
 
   function setCalendarEvents(events) {
@@ -34,14 +29,12 @@ export const useCalendarStore = defineStore("calendar", () => {
 
   return {
     startPosition,
-    exportMonths,
     calendarEvents,
     eventConfig,
 
     isConfigLoaded,
 
     setStartPosition,
-    setExportMonths,
     setCalendarEvents,
     setEventConfig,
   };

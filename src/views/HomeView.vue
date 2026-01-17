@@ -61,17 +61,6 @@
       </Suspense>
     </template>
 
-    <!-- Export section -->
-    <template #export>
-      <ExportSection
-        v-if="isLoaded && activeBaseDate && startPosition"
-        :base-date="activeBaseDate"
-        :next-base-date="nextBaseDate"
-        :start-position="startPosition"
-        :url="config.url"
-        @export-complete="handleExportComplete"
-      />
-    </template>
   </UnifiedPageLayout>
 </template>
 
@@ -84,9 +73,6 @@ import PositionSelector from "@/components/Controls/PositionSelector.vue";
 
 const CalendarView = defineAsyncComponent(
   () => import("@/components/CalendarView.vue"),
-);
-const ExportSection = defineAsyncComponent(
-  () => import("@/components/ExportSection.vue"),
 );
 const SearchSection = defineAsyncComponent(
   () => import("@/components/SearchSection.vue"),
@@ -210,12 +196,6 @@ function handlePositionChange(newPosition) {
 
 function handleDatesSet({ start, end }) {
   generateCalendarEvents(start, end);
-}
-
-function handleExportComplete({ success, error }) {
-  if (!success && error) {
-    alert(ERROR_MESSAGES.ICS_EXPORT_ERROR);
-  }
 }
 
 async function initialize() {

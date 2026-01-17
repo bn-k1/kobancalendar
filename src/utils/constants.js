@@ -1,7 +1,6 @@
 export const TIMEZONE = "Asia/Tokyo";
 export const APP_CONFIG = {
   DEFAULT_HOLIDAY_YEARS: 5,
-  EXPORT_MAX_DAYS: 45,
   DEFAULT_SEARCH_PERIOD: 30,
   DEFAULT_MEETUP_START_TIME: "17:00",
 };
@@ -22,11 +21,6 @@ export const CALENDAR_CONFIG = {
 };
 
 export const CUSTOM_HOLIDAY = "設定祝日";
-
-export const ICS_CONFIG = {
-  PRODUCT_NAME: "kobancalendar",
-  LANGUAGE: "EN",
-};
 
 export const TIMEOPTIONS = [
   "12:00",
@@ -65,7 +59,6 @@ export const ERROR_MESSAGES = {
   SCHEDULE_DATA_ERROR: "スケジュールデータの読み込みに失敗しました",
   NO_NEXT_SCHEDULE_DATA: "次回基準日用のスケジュールデータがありません",
   HOLIDAYS_LOAD_ERROR: "祝日データの取得に失敗しました",
-  ICS_EXPORT_ERROR: "ICSファイルのエクスポート中にエラーが発生しました",
   NO_PARTICIPANTS: "参加者を1人以上選択してください",
   GOAHEAD: "行ってらっしゃいませ",
 };

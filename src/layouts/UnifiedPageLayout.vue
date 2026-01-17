@@ -33,9 +33,6 @@
         <section class="search-section">
           <slot name="search"></slot>
         </section>
-        <section class="export-section">
-          <slot name="export"></slot>
-        </section>
       </div>
       <!-- Meetup layout -->
       <div v-else-if="layout === 'meetup'" class="meetup-page-layout">
