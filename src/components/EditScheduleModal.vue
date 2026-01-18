@@ -20,6 +20,7 @@
             class="edit-select"
           >
             <option value="" disabled>予定を選択</option>
+            <option :value="CUSTOM_VALUE">カスタム(自分で入力)</option>
             <option
               v-for="option in subjectOptions"
               :key="option.subject"
@@ -27,7 +28,6 @@
             >
               {{ option.subject }}
             </option>
-            <option :value="CUSTOM_VALUE">任意入力</option>
           </select>
         </div>
 

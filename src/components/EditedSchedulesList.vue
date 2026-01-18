@@ -19,6 +19,9 @@
         <EyeToggleIcon :hidden="isEditsHidden" />
       </button>
     </legend>
+    <div v-if="showEmptyNotice" class="edited-empty-notice">
+      {{ EDITED_SCHEDULE_EMPTY_NOTICE }}
+    </div>
     <div v-show="showList" class="edited-list">
       <div
         v-for="item in editedSchedulesList"
@@ -38,6 +41,7 @@ import { storeToRefs } from "pinia";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import EyeToggleIcon from "@/components/Icons/EyeToggleIcon.vue";
 import { useCalendarStore } from "@/stores/calendar";
+import { EDITED_SCHEDULE_EMPTY_NOTICE } from "@/utils/constants";
 
 const editedSchedulesStore = useEditedSchedules();
 const { editedSchedulesList, isEditsHidden } = storeToRefs(editedSchedulesStore);
@@ -45,6 +49,9 @@ const { removeEditedSchedule, setEditsHidden } = editedSchedulesStore;
 const emit = defineEmits(["editedChanged"]);
 const isExpanded = ref(false);
 const showList = computed(() => isExpanded.value && !isEditsHidden.value);
+const showEmptyNotice = computed(() => {
+  return isExpanded.value && editedSchedulesList.value.length === 0;
+});
 
 const calendarStore = useCalendarStore();
 const { eventConfig } = storeToRefs(calendarStore);
@@ -116,6 +123,13 @@ function handleRemove(dateStr) {
   flex-direction: column;
   gap: 4px;
   margin-top: 8px;
+}
+
+.edited-empty-notice {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
 }
 
 .edited-line {
