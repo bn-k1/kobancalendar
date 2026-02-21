@@ -72,9 +72,6 @@ export function useUrlParams() {
     }
   }
 
-  resetURLIfUnknownParams();
-  enforceValidBaseDate();
-
   /**
    * Calculate new position when base date changes
    * @param {number} currentStartNumber - Current start number from URL
@@ -294,5 +291,7 @@ export function useUrlParams() {
     updateCalendarParams,
     updateMeetupParams,
     calculateNewPosition,
+    resetURLIfUnknownParams,
+    enforceValidBaseDate,
   };
 }

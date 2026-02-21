@@ -154,6 +154,8 @@ const {
   getStringParam,
   getParticipantsFromParams,
   updateMeetupParams,
+  resetURLIfUnknownParams,
+  enforceValidBaseDate,
 } = useUrlParams();
 const { searchResults, findMeetupDates } = useMeetupSearch();
 
@@ -256,6 +258,9 @@ function findDates() {
 
 // Initialize application
 async function initialize() {
+  resetURLIfUnknownParams();
+  enforceValidBaseDate();
+
   try {
     // Initialize app with shared logic and consolidated data
     const result = await initializeApp({

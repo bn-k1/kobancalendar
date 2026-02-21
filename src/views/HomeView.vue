@@ -111,7 +111,13 @@ import nextScheduleData from "@data/next/next.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
-const { getDateParam, getNumberParam, updateCalendarParams } = useUrlParams();
+const {
+  getDateParam,
+  getNumberParam,
+  updateCalendarParams,
+  resetURLIfUnknownParams,
+  enforceValidBaseDate,
+} = useUrlParams();
 const { isLoaded, initializeApp } = useAppInitializer();
 const { initEditedSchedules } = useEditedSchedules();
 const calendarRef = ref(undefined);
@@ -242,6 +248,9 @@ function applySuggestedStartNumber(event) {
 }
 
 async function initialize() {
+  resetURLIfUnknownParams();
+  enforceValidBaseDate();
+
   try {
     const result = await initializeApp({
       defaultScheduleData,
