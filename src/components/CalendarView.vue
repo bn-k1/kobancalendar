@@ -22,7 +22,7 @@ import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useHolidays } from "@/composables/useHolidays";
-import { useEditedSchedules } from "@/composables/useEditedSchedules";
+import { useEditedSchedules } from "@/stores/editedSchedules";
 import { CALENDAR_CONFIG, LONG_PRESS_DURATION } from "@/utils/constants";
 import { createDate, isSameDay, today, formatAsISODate } from "@/utils/date";
 import EditScheduleModal from "@/components/EditScheduleModal.vue";

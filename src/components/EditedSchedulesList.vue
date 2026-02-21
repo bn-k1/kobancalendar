@@ -38,7 +38,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
-import { useEditedSchedules } from "@/composables/useEditedSchedules";
+import { useEditedSchedules } from "@/stores/editedSchedules";
 import EyeToggleIcon from "@/components/Icons/EyeToggleIcon.vue";
 import { useCalendarStore } from "@/stores/calendar";
 import { EDITED_SCHEDULE_EMPTY_NOTICE } from "@/utils/constants";

@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import { useCalendarStore } from "@/stores/calendar";
 import { useSchedule } from "@/composables/useSchedule";
 import { useHolidays } from "@/composables/useHolidays";
-import { useEditedSchedules } from "@/composables/useEditedSchedules";
+import { useEditedSchedules } from "@/stores/editedSchedules";
 import { createDate, addDays, isBefore, parseTime, formatAsISODate } from "@/utils/date";
 
 /**

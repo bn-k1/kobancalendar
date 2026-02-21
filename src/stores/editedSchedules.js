@@ -1,4 +1,4 @@
-// src/composables/useEditedSchedules.js
+// src/stores/editedSchedules.js
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import { formatAsISODate, formatAsDisplayDate, getWeekdayName } from "@/utils/date";

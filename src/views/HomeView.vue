@@ -89,7 +89,7 @@ const EditedSchedulesList = defineAsyncComponent(
 );
 
 import { useCalendar } from "@/composables/useCalendar";
-import { useEditedSchedules } from "@/composables/useEditedSchedules";
+import { useEditedSchedules } from "@/stores/editedSchedules";
 import { useSchedule } from "@/composables/useSchedule";
 import { useAppInitializer } from "@/composables/useAppInitializer";
 import { useUrlParams } from "@/composables/useUrlParams";
