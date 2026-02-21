@@ -16,7 +16,7 @@
           @change="handleBaseDateChange"
         />
 
-        <PositionSelector
+        <BaseSelector
           id="startNumber"
           legend="基準日のコマ位置"
           aria-label="コマ位置を選択"
@@ -77,7 +77,6 @@ import {
 
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
-import PositionSelector from "@/components/Controls/PositionSelector.vue";
 
 const CalendarView = defineAsyncComponent(
   () => import("@/components/CalendarView.vue"),
