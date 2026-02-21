@@ -70,6 +70,7 @@
           @input="handleSearchInput"
           @focus="showSuggestions = true"
           @blur="handleBlur"
+          @keydown="handleKeydown"
           placeholder="予定名で検索..."
           class="search-input"
           autocomplete="off"
