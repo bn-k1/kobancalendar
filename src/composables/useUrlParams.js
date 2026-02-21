@@ -1,7 +1,7 @@
 // src/composables/useUrlParams.js
 import { createDate, formatAsISODate, isSameDay } from "@/utils/date";
 import { ERROR_MESSAGES } from "@/utils/constants";
-import { useAlertModal } from "@/components/AlertModal.vue";
+import { useAlertModalStore } from "@/stores/alertModal";
 import config from "@config/config.json";
 
 /**
@@ -9,7 +9,7 @@ import config from "@config/config.json";
  * Handles retrieving and updating URL parameters for both views
  */
 export function useUrlParams() {
-  const { openAlertModal } = useAlertModal();
+  const { open } = useAlertModalStore();
 
   const validParams = [
     "baseDate",
@@ -187,7 +187,7 @@ export function useUrlParams() {
             }
           }
 
-          openAlertModal({
+          open({
             title: "基準日を更新しました",
             message: ERROR_MESSAGES.INVALID_BASE_DATE,
             suggestedNumber,
