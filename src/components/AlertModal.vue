@@ -19,11 +19,11 @@
         v-if="Number.isInteger(alertModalSuggestedNumber)"
         class="alert-suggestion"
       >
-        多分ですが番号は
+        おそらくですが番号は
         <a href="#" class="suggested-number-link" @click.prevent="applySuggestedNumber">
           {{ alertModalSuggestedNumber }}
         </a>
-        です。
+        です
       </p>
       <div class="alert-actions">
         <button class="primary-btn" @click="closeAlertModal">閉じる</button>
