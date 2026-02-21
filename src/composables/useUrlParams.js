@@ -1,12 +1,16 @@
 // src/composables/useUrlParams.js
 import { createDate, formatAsISODate, isSameDay } from "@/utils/date";
 import { ERROR_MESSAGES } from "@/utils/constants";
+import { useAlertModal } from "@/composables/useAlertModal";
+import config from "@config/config.json";
 
 /**
  * URL parameters handling composable
  * Handles retrieving and updating URL parameters for both views
  */
 export function useUrlParams() {
+  const { openAlertModal } = useAlertModal();
+
   const validParams = [
     "baseDate",
     "startNumber",
@@ -141,27 +145,37 @@ export function useUrlParams() {
       const dateExists = validDates.some((date) => isSameDay(date, dateObj));
 
       if (!dateExists) {
-        // Build error message
-        let errorMessage = ERROR_MESSAGES.INVALID_BASE_DATE;
-        
-        // If position_shift is configured, calculate and show new position
-        if (config && config.position_shift && rotationCycleLength) {
-          const currentStartNumber = getNumberParam("startNumber", null);
-          
-          if (currentStartNumber) {
-            const newPosition = calculateNewPosition(
-              currentStartNumber,
-              config.position_shift,
-              rotationCycleLength
-            );
-            
-            if (newPosition) {
-              errorMessage += `\n\n多分ですが、表に書いてあるであろうコマ位置は"${newPosition}"です。"${newPosition}"を選んで登録しなおしてください（※要確認！）`;
+        const lastBaseDate = createDate(config.last_base_date);
+        const shouldAlertInvalidBaseDate =
+          lastBaseDate.isValid() && isSameDay(dateObj, lastBaseDate);
+
+        if (shouldAlertInvalidBaseDate) {
+          let suggestedNumber = null;
+
+          // If position_shift is configured, calculate and show new position
+          if (config && config.position_shift && rotationCycleLength) {
+            const currentStartNumber = getNumberParam("startNumber", null);
+
+            if (currentStartNumber) {
+              const newPosition = calculateNewPosition(
+                currentStartNumber,
+                config.position_shift,
+                rotationCycleLength,
+              );
+
+              if (newPosition) {
+                suggestedNumber = newPosition;
+              }
             }
           }
+
+          openAlertModal({
+            title: "基準日を更新しました",
+            message: ERROR_MESSAGES.INVALID_BASE_DATE,
+            suggestedNumber,
+          });
         }
-        
-        alert(errorMessage);
+
         resetURL();
         return defaultValue;
       }

@@ -66,7 +66,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  watch,
+  defineAsyncComponent,
+} from "vue";
 
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
@@ -98,6 +105,7 @@ import {
 } from "@/utils/date";
 
 import { ERROR_MESSAGES } from "@/utils/constants";
+import { ALERT_MODAL_SUGGESTED_NUMBER_EVENT } from "@/composables/useAlertModal";
 
 import defaultScheduleData from "@data/default/default.json";
 import nextScheduleData from "@data/next/next.json";
@@ -211,6 +219,29 @@ function handleEditedChanged() {
   }
 }
 
+function applySuggestedStartNumber(event) {
+  const suggestedStartNumber = parseInt(event.detail?.startNumber, 10);
+
+  if (
+    isNaN(suggestedStartNumber) ||
+    suggestedStartNumber < 1 ||
+    suggestedStartNumber > rotationCycleLength.value
+  ) {
+    return;
+  }
+
+  startPosition.value = suggestedStartNumber;
+  setStartPosition(suggestedStartNumber);
+
+  if (selectedBaseDate.value) {
+    updateCalendarParams(selectedBaseDate.value, suggestedStartNumber);
+  }
+
+  if (viewRange.value.start && viewRange.value.end) {
+    generateCalendarEvents(viewRange.value.start, viewRange.value.end);
+  }
+}
+
 async function initialize() {
   try {
     const result = await initializeApp({
@@ -283,7 +314,18 @@ watch(computedStartPosition, (newValue) => {
 });
 
 onMounted(async () => {
+  window.addEventListener(
+    ALERT_MODAL_SUGGESTED_NUMBER_EVENT,
+    applySuggestedStartNumber,
+  );
   await initialize();
+});
+
+onUnmounted(() => {
+  window.removeEventListener(
+    ALERT_MODAL_SUGGESTED_NUMBER_EVENT,
+    applySuggestedStartNumber,
+  );
 });
 </script>
 
