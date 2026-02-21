@@ -1,7 +1,7 @@
 // src/composables/useUrlParams.js
 import { createDate, formatAsISODate, isSameDay } from "@/utils/date";
 import { ERROR_MESSAGES } from "@/utils/constants";
-import { useAlertModal } from "@/composables/useAlertModal";
+import { useAlertModal } from "@/components/AlertModal.vue";
 import config from "@config/config.json";
 
 /**
@@ -19,8 +19,20 @@ export function useUrlParams() {
     "period",
   ];
 
+  function getNormalizedHash(hash = window.location.hash) {
+    if (!hash || hash === "#") {
+      return "#/";
+    }
+    return hash;
+  }
+
   function resetURL() {
-    window.history.replaceState({}, "", window.location.pathname);
+    const normalizedHash = getNormalizedHash();
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}${normalizedHash}`,
+    );
   }
 
   /**
@@ -101,8 +113,14 @@ export function useUrlParams() {
       }
     });
 
-    // Update history without reloading
-    window.history.replaceState({}, "", url);
+    const normalizedHash = getNormalizedHash(url.hash);
+
+    // Update history without reloading and keep hash route for GitHub Pages
+    window.history.replaceState(
+      {},
+      "",
+      `${url.pathname}${url.search}${normalizedHash}`,
+    );
   }
 
   /**
@@ -145,9 +163,9 @@ export function useUrlParams() {
       const dateExists = validDates.some((date) => isSameDay(date, dateObj));
 
       if (!dateExists) {
-        const lastBaseDate = createDate(config.last_base_date);
+        const oldBaseDate = createDate(config.old_base_date);
         const shouldAlertInvalidBaseDate =
-          lastBaseDate.isValid() && isSameDay(dateObj, lastBaseDate);
+          oldBaseDate.isValid() && isSameDay(dateObj, oldBaseDate);
 
         if (shouldAlertInvalidBaseDate) {
           let suggestedNumber = null;

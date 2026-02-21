@@ -67,7 +67,7 @@
    {
      "default_base_date": "YYYY-MM-DD",
      "position_shift": "XX",
-     "last_base_date": "YYYY-MM-DD",
+     "old_base_date": "YYYY-MM-DD",
      "next_base_date": "YYYY-MM-DD",
      "schedule_update": "YYYY-MM-DD",
      "custom_holidays": ["MM-DD","MM-DD"],
@@ -78,7 +78,7 @@
    - `default_base_date`: シフト計算の基準日。このパラメータのみ設定必須です。以下は設定しなくても動作します。
 
    - `position_shift`: 全員のコマ位置の移動になる数。
-   - `last_base_date`: 旧基準日。
+   - `old_base_date`: 旧基準日。
    - `next_base_date`: 各員のコマ位置の移動予定日。
    - `schedule_update`: 交番表の内容の変更予定日。
    - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
@@ -161,9 +161,9 @@
 
 **設定手順：**
 1. `config.json`の`default_base_date`を設定しなおす
-2. `config.json`の`position_shift`に、全員が移動になるコマ数を入力、および`last_base_date`に旧基準日を入力(任意)
+2. `config.json`の`position_shift`に、全員が移動になるコマ数を入力、および`old_base_date`に旧基準日を入力(任意)
 
-`position_shift`と`last_base_date`を入力することで、URLに`last_base_date`が含まれている場合にのみ、新しいコマ位置のアラートが生成されます。新しい表が見られない職員も、それまで通り予定を確認することができます。
+`position_shift`と`old_base_date`を入力することで、URLに`old_base_date`が含まれている場合にのみ、新しいコマ位置のアラートが生成されます。新しい表が見られない職員も、それまで通り予定を確認することができます。
 
 ### データ更新時の注意点
 

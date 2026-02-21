@@ -105,7 +105,7 @@ import {
 } from "@/utils/date";
 
 import { ERROR_MESSAGES } from "@/utils/constants";
-import { ALERT_MODAL_SUGGESTED_NUMBER_EVENT } from "@/composables/useAlertModal";
+import { ALERT_MODAL_SUGGESTED_NUMBER_EVENT } from "@/components/AlertModal.vue";
 
 import defaultScheduleData from "@data/default/default.json";
 import nextScheduleData from "@data/next/next.json";

@@ -19,7 +19,7 @@
         v-if="Number.isInteger(alertModalSuggestedNumber)"
         class="alert-suggestion"
       >
-        番号は
+        多分ですが番号は
         <a href="#" class="suggested-number-link" @click.prevent="applySuggestedNumber">
           {{ alertModalSuggestedNumber }}
         </a>
@@ -32,8 +32,61 @@
   </div>
 </template>
 
+<script>
+import { ref } from "vue";
+
+export const ALERT_MODAL_SUGGESTED_NUMBER_EVENT =
+  "alert-modal:suggested-start-number";
+
+const isAlertModalVisible = ref(false);
+const alertModalTitle = ref("Notification");
+const alertModalMessage = ref("");
+const alertModalSuggestedNumber = ref(null);
+
+export function useAlertModal() {
+  function openAlertModal({
+    title = "Notification",
+    message = "",
+    suggestedNumber = null,
+  } = {}) {
+    alertModalTitle.value = title;
+    alertModalMessage.value = message;
+    alertModalSuggestedNumber.value = Number.isInteger(suggestedNumber)
+      ? suggestedNumber
+      : null;
+    isAlertModalVisible.value = true;
+  }
+
+  function closeAlertModal() {
+    isAlertModalVisible.value = false;
+    alertModalSuggestedNumber.value = null;
+  }
+
+  function emitSuggestedStartNumber() {
+    if (!Number.isInteger(alertModalSuggestedNumber.value)) {
+      return;
+    }
+
+    window.dispatchEvent(
+      new CustomEvent(ALERT_MODAL_SUGGESTED_NUMBER_EVENT, {
+        detail: { startNumber: alertModalSuggestedNumber.value },
+      }),
+    );
+  }
+
+  return {
+    isAlertModalVisible,
+    alertModalTitle,
+    alertModalMessage,
+    alertModalSuggestedNumber,
+    openAlertModal,
+    closeAlertModal,
+    emitSuggestedStartNumber,
+  };
+}
+</script>
+
 <script setup>
-import { useAlertModal } from "@/composables/useAlertModal";
 
 const {
   isAlertModalVisible,
