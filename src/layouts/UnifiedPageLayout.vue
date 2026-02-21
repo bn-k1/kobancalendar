@@ -15,13 +15,13 @@
       </div>
     </header>
     <div v-if="showCafeteriaMenu" class="cafeteria-menu-retro" :class="{ 'is-unavailable': !hasTodayMenu }">
-      <p class="retro-title">★★★ 本日の食堂メニュー速報 ★★★</p>
+      <p class="retro-title">本日の食堂メニュー</p>
       <template v-if="hasTodayMenu">
         <div class="retro-row">
-          <span class="retro-item">A定食 >>> {{ todayMenu.a }} ｜ B定食 >>> {{ todayMenu.b }}</span>
+          <span class="retro-item">A定食: {{ todayMenu.a }} ｜ B定食: {{ todayMenu.b }}</span>
         </div>
       </template>
-      <p v-else class="retro-empty">只今準備中... メニュー情報は未登録です...</p>
+      <p v-else class="retro-empty">本日のメニューは未登録です</p>
     </div>
     <main>
       <!-- Calendar layout -->
@@ -186,48 +186,38 @@ header {
 
 .cafeteria-menu-retro {
   width: 100%;
-  background: #e4e4e4;
-  border-top: 3px solid #000;
-  border-bottom: 3px solid #000;
-  color: #000;
-  padding: 0.45rem 0.8rem;
-  font-family: "MS UI Gothic", "MS PGothic", "Courier New", monospace;
-  box-shadow: inset 0 0 0 2px #f9f9f9, inset 0 0 0 4px #7a7a7a;
+  background: var(--background-light);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: var(--spacing-sm) var(--spacing-lg);
 }
 
 .retro-title {
-  margin: 0 0 0.3rem;
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #000080;
-  text-shadow: 1px 1px 0 #fff;
-  letter-spacing: 0.08em;
+  margin: 0 0 var(--spacing-xs);
+  font-weight: var(--font-weight-bold);
+  font-size: 0.9rem;
+  color: var(--gray-700);
 }
 
 .retro-row {
   display: flex;
   align-items: center;
-  font-size: 0.92rem;
-  margin-bottom: 0.1rem;
+  font-size: 0.95rem;
 }
 
 .retro-item {
-  font-weight: 700;
-  color: #111;
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px dotted #000080;
-  padding: 0.06rem 0.35rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
 }
 
 .retro-empty {
   margin: 0;
   font-size: 0.9rem;
-  color: #8b0000;
-  font-weight: 700;
+  color: var(--gray-600);
 }
 
 .cafeteria-menu-retro.is-unavailable {
-  background: #d6d6d6;
+  background: var(--gray-100);
 }
 
 .mode-link {
@@ -271,15 +261,15 @@ header {
   }
 
   .cafeteria-menu-retro {
-    padding: 0.4rem 0.5rem;
+    padding: var(--spacing-sm) var(--spacing-md);
   }
 
   .retro-title {
-    font-size: 0.84rem;
+    font-size: 0.82rem;
   }
 
   .retro-row {
-    font-size: 0.83rem;
+    font-size: 0.88rem;
   }
 
   .retro-item {
