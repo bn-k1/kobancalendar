@@ -9,7 +9,6 @@ import {
   isBefore,
   addDays,
   toUnix,
-  isSameDay,
   isSameOrAfter,
 } from "@/utils/date";
 
@@ -33,18 +32,13 @@ export function useSchedule() {
 
   // Determine which schedule data to use based on target date
   const getScheduleDataForDate = (targetDate) => {
-    // If schedule_update date is set, use next data for dates on or after that date
-    if (storeScheduleUpdateDate.value && isSameOrAfter(targetDate, storeScheduleUpdateDate.value)) {
+    if (
+      storeScheduleUpdateDate.value &&
+      isSameOrAfter(targetDate, storeScheduleUpdateDate.value)
+    ) {
       return storeScheduleDataSets.value.next;
     }
 
-    // Legacy logic: if activeBaseDate equals nextBaseDate, use next data
-    if (storeActiveBaseDate.value && storeNextBaseDate.value && 
-        isSameDay(storeActiveBaseDate.value, storeNextBaseDate.value)) {
-      return storeScheduleDataSets.value.next;
-    }
-
-    // Default to using default data
     return storeScheduleDataSets.value.default;
   };
 
@@ -180,19 +174,6 @@ export function useSchedule() {
    */
   function loadScheduleData(defaultData, nextData) {
     try {
-      const {
-        holiday: defaultHoliday,
-        saturday: defaultSaturday,
-        weekday: defaultWeekday,
-        rotationCycleLength: defaultCycleLength,
-      } = defaultData;
-      const {
-        holiday: nextHoliday,
-        saturday: nextSaturday,
-        weekday: nextWeekday,
-        rotationCycleLength: nextCycleLength,
-      } = nextData;
-
       // Create data sets with validated data
       const dataSets = {
         default: {
