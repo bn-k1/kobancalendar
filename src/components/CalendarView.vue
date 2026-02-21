@@ -64,6 +64,7 @@ const editingCurrentSchedule = ref({});
 
 let longPressTimer = null;
 let pressedEventInfo = null;
+const pointerDownHandlerMap = new WeakMap();
 
 const editedEventConfig = computed(() => {
   const events = eventConfig.value?.events;
@@ -253,13 +254,29 @@ const calendarOptions = computed(() => ({
 
   eventDidMount: (info) => {
     const el = info.el;
+    const pointerDownHandler = (e) => handlePressStart(info, e);
     
-    el.addEventListener("pointerdown", (e) => handlePressStart(info, e));
+    pointerDownHandlerMap.set(el, pointerDownHandler);
+    el.addEventListener("pointerdown", pointerDownHandler);
     el.addEventListener("pointerup", handlePressEnd);
     el.addEventListener("pointerleave", handlePressEnd);
     el.addEventListener("pointercancel", handlePressEnd);
     
     el.classList.add("long-press-enabled");
+  },
+
+  eventWillUnmount: (info) => {
+    const el = info.el;
+    const pointerDownHandler = pointerDownHandlerMap.get(el);
+
+    if (pointerDownHandler) {
+      el.removeEventListener("pointerdown", pointerDownHandler);
+      pointerDownHandlerMap.delete(el);
+    }
+
+    el.removeEventListener("pointerup", handlePressEnd);
+    el.removeEventListener("pointerleave", handlePressEnd);
+    el.removeEventListener("pointercancel", handlePressEnd);
   },
 
   datesSet: (info) => {
