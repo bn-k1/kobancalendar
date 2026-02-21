@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
+import { ref, computed, onMounted, watch, defineAsyncComponent, nextTick } from "vue";
 
 // Essential components loaded immediately
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
@@ -325,10 +325,8 @@ async function initialize() {
       .filter((p) => !isNaN(p));
 
     if (validParticipants.length >= 2) {
-      // Use setTimeout to ensure the component is fully mounted and reactive
-      setTimeout(() => {
-        findDates();
-      }, 0);
+      await nextTick();
+      findDates();
     }
 
     return true;
