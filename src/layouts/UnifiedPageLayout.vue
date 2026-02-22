@@ -151,7 +151,12 @@ const todayMenu = computed(() => {
   };
 });
 const hasTodayMenu = computed(() => todayMenu.value !== null);
-const showCafeteriaMenu = computed(() => props.layout !== "meetup" && !isMeetupPage.value);
+const hasAnyMenuData = computed(() => {
+  return menuData && typeof menuData === "object" && Object.keys(menuData).length > 0;
+});
+const showCafeteriaMenu = computed(() => {
+  return props.layout !== "meetup" && !isMeetupPage.value && hasAnyMenuData.value;
+});
 
 // Handle title click - navigate to respective clean top page
 function handleTitleClick() {
