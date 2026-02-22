@@ -95,7 +95,7 @@ export function useSchedule() {
         dateStr >= nextStr) ||
       dateStr < baseStr
     ) {
-      return {};
+      return undefined;
     }
 
     // Get appropriate schedule data based on target date and schedule_update logic
