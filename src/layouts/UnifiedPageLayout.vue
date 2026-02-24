@@ -7,7 +7,7 @@
         <div class="header-controls">
           <a v-if="isHomePage" class="mode-link" :href="meetupLink" aria-label="飲み会モードへ">🍻</a>
           <a v-if="isMeetupPage" class="mode-link" href="/kobancalendar/#/" aria-label="勤務モードへ">🚨</a>
-          <HelpButton />
+          <HelpButton :href="config.manual_url" />
           <ShareButton />
           <QrButton />
           <DarkModeToggle />
@@ -81,6 +81,7 @@ import QrButton from "@/components/QrButton.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
 import HelpButton from "@/components/HelpButton.vue";
 import menuData from "@data/menu/menu.json";
+import config from "@config/config.json";
 
 const props = defineProps({
   title: {
