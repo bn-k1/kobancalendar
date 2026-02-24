@@ -1,189 +1,194 @@
 # KobanCalendar
 
-## 概要
+周期的な交番表（シフト表）をWebカレンダーとして公開する、Vue 3製のSPAです。管理者がデータを設定・ビルドし、静的ホスティングで配信する想定です。
 
-交番表に基づいた勤務スケジュールを自動生成・公開・閲覧するためのツールです。
+**デモ:** https://bn-k1.github.io/kobancalendar/
 
-周期的なシフト表で動いている職場であれば、管理者がこれをセットアップし公開することで、職員が自分の勤務日程を確認、編集などできるようになります。
+---
 
-## まずはじめに
+## 技術スタック
 
-1. 「基準日」時点での「コマ位置」を選択します。わからない場合は、職場の掲示物を確認するか、管理者に聞いてみましょう。
-2. あなたの予定が表示されたら、一度**リロード**します。リロードは更新ボタンを押すか、上から下にスワイプすることで実行できます。**リロードしないと次のステップで、空のページが登録されてしまいます。**
-3. スマホのホーム画面に追加します。ホーム画面に追加の仕方は、機種やブラウザによります。職場のわかる人に聞いてみましょう。あるいは、ブラウザのブックマークに登録してください。
-4. スマホのホーム画面のアイコンやブラウザのブックマークから、いつでも勤務日程を確認できます。
+| 用途 | ライブラリ |
+|------|-----------|
+| UIフレームワーク | Vue 3 + Pinia |
+| カレンダー | FullCalendar 6 |
+| 日付処理 | dayjs + japanese-holidays |
+| ビルド | Vite 6 |
 
-## 機能
+---
 
-### 予定の編集
+## セットアップ
 
-- 例えば休日出勤が決まった場合などに、変更したい日付を長押しして、他の予定に書き換えることができます。
-- 選択肢以外の内容に書き換えたい場合は、**カスタム**を選択してください。
-- 編集した予定の削除や非表示化は、「編集済み」から行うことができます。
-- **編集した予定はあなたのスマホでしか見れません。ブラウザのローカルストレージを削除した場合、書き込んだ予定が消失します。機種変更なども同様です。**
+```bash
+git clone https://github.com/bn-k1/kobancalendar.git
+cd kobancalendar
+npm install
+```
 
-### 飲みに行くンダー
+---
 
-ビールのアイコンをクリックすると、同僚の方と飲み会できる日を検索できます。
+## データ構成
 
-**使い方：**
-1. 飲み会が何時以降に始まるか、何ヶ月先まで検索するかを選択します。
-2. 掲示物を見て、参加者全員の「基準日のコマ位置」を入力します。何人でもOKです。
-3. 全員が行ける日、あるいはそのうち数人が行ける日、があればリストアップされます。詳細を押すと当日、翌日の勤務内容がわかります。
+### `config/config.json`
 
-### 検索
+アプリ全体の設定ファイルです。
 
-予定名を入力すると、それが何時から何時までで、何コマ目なのかが判ります。
+```json
+{
+  "default_base_date": "YYYY-MM-DD",
+  "old_base_date":     "YYYY-MM-DD",
+  "position_shift":    31,
+  "next_base_date":    "YYYY-MM-DD",
+  "schedule_update":   "YYYY-MM-DD",
+  "custom_holidays":   ["08-12", "08-13", "12-31", "01-02"],
+  "url":               "https://yourname.github.io/yourcalendar/",
+  "manual_url":        "https://example.com/manual"
+}
+```
 
-### その他
+| フィールド | 必須 | 説明 |
+|-----------|------|------|
+| `default_base_date` | ✅ | シフト計算の基準日です。`(コマ位置-1 + 基準日からの日数差) % サイクル長` で当日のコマを決めます |
+| `old_base_date` | - | 旧基準日です。`position_shift` と併用して移行アラートを表示できます |
+| `position_shift` | - | 基準日更新時に全員へ加算するコマ数です |
+| `next_base_date` | - | コマ位置移動日です。設定すると基準日選択UIが表示され、移動前後を切り替えられます。`schedule_update` とは同時に設定できません |
+| `schedule_update` | - | 交番表の内容が切り替わる日付です。この日以降は `data/next/` のCSVが使われます。`next_base_date` とは同時に設定できません |
+| `custom_holidays` | - | 祝日ライブラリに含まれない独自休日（`MM-DD` 形式）です。毎年繰り返し適用されます |
+| `url` | - | QRコード生成に使うURLです |
+| `manual_url` | - | ヘルプボタンのリンク先URLです |
 
-- 共有ボタン - 自分の予定をLINEなどで友達に教えたりできます。
-- QRコードボタン - 職場内で、同僚にQRコードを見せてこのアプリを広めることができます。
-- ダークモード対応。
-- 食堂メニュー。
-- カレンダーのみの表示で印刷できます。
+### `data/default/` — 現行交番表CSV
 
-## 注意点
+`weekday.csv`（平日）、`saturday.csv`（土曜）、`holiday.csv`（日・祝）の3ファイルを使います。
 
-**基準日とコマ位置の組み合わせが正しいことを確認してご使用下さい。**
+フォーマットは `subject,startTime,endTime`（ヘッダー行なし）です。
 
-## インストール手順(管理者用)
+```csv
+公休,,
+法休,,
+早番,08:00,16:00
+遅番,16:00,00:00
+夜勤,00:00,08:00
+```
 
-1. リポジトリをクローンします。
+- 行数 = サイクル長（全ファイルでそろえてください）
+- 1行目が「コマ1」に対応
+- 休日などで時刻不要な行は `subject,,` とします
 
-   ```bash
-   git clone https://github.com/bn-k1/kobancalendar.git
-   cd kobancalendar
-   ```
+### `data/next/` — 次期交番表CSV
 
-2. 依存パッケージをインストールします。
+`schedule_update` または `next_base_date` を使う運用時に参照されます。フォーマットは `data/default/` と同じです。
 
-   ```bash
-   npm install
-   ```
+### `config/event.json` — イベント表示設定
 
-3. `config.json`ファイルを設定します。
+予定名のキーワードに応じて、カレンダー上の色や時刻表示を切り替えます。
 
-   ```json
-   {
-     "default_base_date": "YYYY-MM-DD",
-     "position_shift": "XX",
-     "old_base_date": "YYYY-MM-DD",
-     "next_base_date": "YYYY-MM-DD",
-     "schedule_update": "YYYY-MM-DD",
-     "custom_holidays": ["MM-DD","MM-DD"],
-     "url": "https://yourname.github.io/yourawesomecalendar/"
-   }
-   ```
+```json
+{
+  "events": {
+    "restDay": { "keywords": ["公休", "法休"], "color": "red",          "showTime": false },
+    "empty":   { "keywords": ["空"],           "color": "deepskyblue",  "showTime": false },
+    "special": { "keywords": ["特別"],         "color": "orange",       "showTime": true  },
+    "edited":  { "keywords": [],               "color": "magenta",      "showTime": true  },
+    "default": { "keywords": [],               "color": "deepskyblue",  "showTime": true  }
+  }
+}
+```
 
-   - `default_base_date`: シフト計算の基準日。このパラメータのみ設定必須です。以下は設定しなくても動作します。
+`edited`・`default` の `keywords` は空配列のままでOKです（アプリ内部で判定します）。
 
-   - `position_shift`: 全員のコマ位置の移動になる数。
-   - `old_base_date`: 旧基準日。
-   - `next_base_date`: 各員のコマ位置の移動予定日。
-   - `schedule_update`: 交番表の内容の変更予定日。
-   - `custom_holidays`: 独自に設定するカスタム祝日の配列。毎年のお盆休みや年末年始の休みなど。
-   - `url`にはURLを記述します(QRコードに使います)。
+### `data/menu/` — 食堂メニュー（任意）
 
-4. `data/default/`以下の.csv（`weekday.csv`:平日,`saturday.csv`:土曜,`holiday.csv`:日祝）を編集します。
+ファイル名: `YYYY-MM-a.txt`（A定食）、`YYYY-MM-b.txt`（B定食）
 
-   `subject,startTime,endTime`の形式で、ヘッダーなし、交番表のコマ数=.csvの行数になるように、1コマ目から順に一行ずつ記述してください。全てのファイルの行数は同じである必要があります。
+内容は1行1日のテキストです。月の1日から順に書いてください。
 
-   ```
-   遅番,16:00,00:00
-   早番,08:00,16:00
-   法休,,
-   夜勤,00:00,08:00
-   ```
+```
+定休日
+鶏肉の唐揚げ
+キムチチャーハン
+```
 
-5. `data/menu/`以下に、食堂メニューのテキストファイルを作成します（任意）。
+ファイルがない月は表示されません。
 
-   - ファイル名は`YYYY-MM-a.txt`（A定食）と`YYYY-MM-b.txt`（B定食）
+---
 
-6. `event.json`の公休、空、などを色分けしたい文字列に置き換えてください。
+## ビルドパイプライン
 
-7. .csvを.jsonに変換(`convertCsv.js`)、食堂メニューを.jsonに変換(`convertMenu.js`)、及びQRコードを生成(`createQr.js`)します。
+CSVやJSONをアプリが直接読むのではなく、ビルド前処理で中間JSONに変換してからViteでバンドルします。
 
-   ```bash
-   npm run build-prep
-   ```
+```
+data/**/*.csv  ──┐
+data/menu/*.txt ─┤  npm run build-prep  ├─→  data/**/default.json
+config.json ─────┘  (scripts/)          ├─→  data/menu/menu.json
+                                         └─→  public/qr.png
+```
 
-8. アプリケーションを実行します。
+**`config.json` やCSVを編集したら、`npm run build-prep` を忘れずに実行してください。**
 
-   ```bash
-   # 開発サーバー起動
-   npm run dev
+### コマンド一覧
 
-   # または本番ビルド
-   npm run build
+```bash
+npm run dev            # 開発サーバー起動 (http://localhost:5173)
+npm run build-prep     # CSV→JSON変換 + QR生成のみ
+npm run build          # build-prep + 本番ビルド → dist/
+npm run build-gh-pages # build-prep + GitHub Pages用ビルド → docs/
+npm run preview        # 直前のビルド結果をローカルでプレビュー
 
-   # github-pagesで公開する場合
-   npm run build-gh-pages
-   ```
+# 個別実行
+npm run convert-csv    # data/**/*.csv → JSON
+npm run convert-menu   # data/menu/*.txt → JSON
+npm run create-qr      # config.json の url フィールドからQR生成
+```
 
-   ブラウザで`http://localhost:5173`にアクセス。
+### デプロイ
 
-   またはビルドして`dist/`をウェブサーバーで配信。
+| 環境 | コマンド | 配信ディレクトリ |
+|------|---------|----------------|
+| 任意のWebサーバー | `npm run build` | `dist/` |
+| GitHub Pages | `npm run build-gh-pages` | `docs/` |
 
-   github-pagesの場合は`docs/`を配信。
+---
 
-## 運用方法
+## 運用: スケジュール移行パターン
 
-以下の方法で各員のコマ位置の入れ替え、交番表の内容の変更に対処できます。
+### パターン1 — 掲示物の貼り替え（基準日の単純更新）
 
-### 各員のコマ位置の移動の場合
+コマ表自体は変わらず、基準日だけを更新する場合です。
 
-**設定手順：**
-1. `config.json`の`next_base_date`に移動日を設定
-2. `data/default/`の内容を`data/next/`にコピー
+1. `config.json` の `default_base_date` を新しい基準日に変更
+2. （任意）`old_base_date` に旧基準日、`position_shift` に全員へのコマ加算数を設定
+   - 設定しておくと、旧URLにアクセスしたユーザーへ新コマ位置のアラートを表示できます
 
-**注意点：**
-- `schedule_update`は設定しないでください。
+### パターン2 — 各員のコマ位置のみ移動
 
-基準日選択により、移動前後のスケジュールを使い分けできます。
+コマ表の内容は変わらず、全員のコマ位置だけが一斉にずれる場合です。
 
-### 交番表の変更の場合
+1. `config.json` の `next_base_date` に移動日を設定
+2. `data/default/` の内容を `data/next/` にコピー
 
-**設定手順：**
-1. `config.json`の`schedule_update`に変更開始日を設定
-2. `data/next/`に新しい.csvを作成（形式はインストール手順4と同じ）
+> `schedule_update` は設定しません。ユーザーは基準日選択UIで移動前後を切り替えられます。
 
-**注意点：**
-- `next_base_date`は設定しないでください。
+### パターン3 — 交番表の内容のみ変更
 
-指定日以降は自動的に新しいスケジュールデータが適用されます。
+コマ番号は変わらず、各コマの勤務内容だけが変わる場合です。
 
-### 各員のコマ位置の移動及び交番表の変更
+1. `config.json` の `schedule_update` に変更開始日を設定
+2. `data/next/` に新しいCSVを作成
 
-**設定手順：**
-1. `config.json`の`next_base_date`に移動日を設定
-2. `data/next/`に新しい.csvを作成（形式はインストール手順4と同じ）
+> `next_base_date` は設定しません。`schedule_update` 以降は自動的に `data/next/` が参照されます。
 
-**注意点：**
-- `schedule_update`は設定しないでください。
+### パターン4 — コマ位置移動 + 交番表変更の同時実施
 
-### 掲示物の貼り替えなど、基準日の単純な変更
+1. `config.json` の `next_base_date` に移動日を設定
+2. `data/next/` に新しいCSVを作成
 
-**設定手順：**
-1. `config.json`の`default_base_date`を設定しなおす
-2. `config.json`の`position_shift`に、全員が移動になるコマ数を入力、および`old_base_date`に旧基準日を入力(任意)
+> `schedule_update` は設定しません（`next_base_date` が優先されます）。
 
-`position_shift`と`old_base_date`を入力することで、URLに`old_base_date`が含まれている場合にのみ、新しいコマ位置のアラートが生成されます。新しい表が見られない職員も、それまで通り予定を確認することができます。
-
-### データ更新時の注意点
-
-- `config.json`と.csv編集後は必ず`npm run build-prep`を実行してください。
-- 本番環境では`npm run build`でビルドし直してください。
-- 変更前にバックアップを取ることを推奨します。
-
-## デモ
-
-[https://bn-k1.github.io/kobancalendar/](https://bn-k1.github.io/kobancalendar/)
+---
 
 ## 備考
 
-本リポジトリの設定ファイル、交番表データはAIによって生成されたサンプルです。特定の組織や企業とは関係ありません。
-
-## ライセンス
-
-MIT License
+- テストスイートはまだありません。動作確認は `npm run dev` で手動でお願いします。
+- 本リポジトリのサンプルデータはAI生成で、特定の組織とは無関係です。
+- ライセンス: MIT
