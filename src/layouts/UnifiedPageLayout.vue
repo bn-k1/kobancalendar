@@ -200,7 +200,7 @@ header {
 .retro-title {
   margin: 0 0 var(--spacing-xs);
   font-weight: var(--font-weight-bold);
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--gray-700);
 }
 
@@ -270,7 +270,7 @@ header {
   }
 
   .retro-title {
-    font-size: 0.82rem;
+    font-size: 0.92rem;
   }
 
   .retro-row {
