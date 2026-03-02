@@ -42,7 +42,6 @@ npm install
   "schedule_update":   "YYYY-MM-DD",
   "custom_holidays":   ["08-12", "08-13", "12-31", "01-02"],
   "url":               "https://yourname.github.io/yourcalendar/",
-  "manual_url":        "https://example.com/manual"
 }
 ```
 
@@ -55,7 +54,6 @@ npm install
 | `schedule_update` | - | 交番表の内容が切り替わる日付です。この日以降は `data/next/` のCSVが使われます。`next_base_date` とは同時に設定できません |
 | `custom_holidays` | - | 祝日ライブラリに含まれない独自休日（`MM-DD` 形式）です。毎年繰り返し適用されます |
 | `url` | - | QRコード生成に使うURLです |
-| `manual_url` | - | ヘルプボタンのリンク先URLです |
 
 ### `data/default/` — 現行交番表CSV
 
