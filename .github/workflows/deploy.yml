@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  schedule:
+    - cron: '0 15 * * *'  # 毎日 0:00 JST (= 15:00 UTC)
+  workflow_dispatch:       # 手動実行も可能
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout prod branch
+        uses: actions/checkout@v4
+        with:
+          ref: prod
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build for GitHub Pages
+        run: npm run build-gh-pages
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages

@@ -1,11 +1,11 @@
 <template>
   <a
     class="help-link"
-    :href="href"
+    href="./manual.html"
     target="_blank"
     rel="noopener noreferrer"
-    :aria-label="ariaLabel"
-    :title="title"
+    aria-label="使い方ガイドを開く"
+    title="使い方ガイド"
   >
     <HelpIcon />
   </a>
@@ -13,21 +13,6 @@
 
 <script setup>
 import HelpIcon from "@/components/Icons/HelpIcon.vue";
-
-defineProps({
-  href: {
-    type: String,
-    default: "https://github.com/bn-k1/kobancalendar?tab=readme-ov-file#kobancalendar",
-  },
-  ariaLabel: {
-    type: String,
-    default: "使い方ガイドを開く",
-  },
-  title: {
-    type: String,
-    default: "使い方ガイド",
-  },
-});
 </script>
 
 <style scoped>

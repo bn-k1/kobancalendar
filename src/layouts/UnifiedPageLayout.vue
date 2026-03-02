@@ -7,7 +7,7 @@
         <div class="header-controls">
           <a v-if="isHomePage" class="mode-link" :href="meetupLink" aria-label="飲み会モードへ">🍻</a>
           <a v-if="isMeetupPage" class="mode-link" href="/kobancalendar/#/" aria-label="勤務モードへ">🚨</a>
-          <HelpButton :href="config.manual_url" />
+          <HelpButton />
           <ShareButton />
           <QrButton />
           <DarkModeToggle />
