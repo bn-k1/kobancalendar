@@ -12,10 +12,10 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout prod branch
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
-          ref: prod
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
