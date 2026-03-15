@@ -22,6 +22,12 @@
         </div>
       </template>
       <p v-else class="retro-empty">本日のメニューは未登録です</p>
+      <template v-if="hasTomorrowMenu">
+        <div class="retro-row retro-row--tomorrow">
+          <span class="retro-label">明日</span>
+          <span class="retro-item">{{ tomorrowMenu.a }} ｜ {{ tomorrowMenu.b }}</span>
+        </div>
+      </template>
     </div>
     <main>
       <!-- Calendar layout -->
@@ -73,7 +79,7 @@
 <script setup>
 import { useRoute } from "vue-router";
 import { computed } from "vue";
-import { formatAsISODate, today } from "@/utils/date";
+import { formatAsISODate, today, addDays } from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
 import { useCalendar } from "@/composables/useCalendar";
 import ShareButton from "@/components/ShareButton.vue";
@@ -152,6 +158,14 @@ const todayMenu = computed(() => {
   };
 });
 const hasTodayMenu = computed(() => todayMenu.value !== null);
+
+const tomorrowMenu = computed(() => {
+  const tomorrowKey = formatAsISODate(addDays(today(), 1));
+  const m = menuData[tomorrowKey];
+  if (!m) return null;
+  return { a: m.a || "未定", b: m.b || "未定" };
+});
+const hasTomorrowMenu = computed(() => tomorrowMenu.value !== null);
 const hasAnyMenuData = computed(() => {
   return menuData && typeof menuData === "object" && Object.keys(menuData).length > 0;
 });
@@ -220,6 +234,19 @@ header {
   margin: 0;
   font-size: 0.9rem;
   color: var(--gray-600);
+}
+
+.retro-row--tomorrow {
+  margin-top: var(--spacing-xs);
+  opacity: 0.55;
+  font-size: 0.88rem;
+}
+
+.retro-label {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  margin-right: var(--spacing-xs);
+  white-space: nowrap;
 }
 
 .cafeteria-menu-retro.is-unavailable {
