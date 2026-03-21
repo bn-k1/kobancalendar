@@ -413,7 +413,8 @@ button:focus {
   .action-btn,
   button,
   select,
-  .loading-placeholder {
+  .loading-placeholder,
+  .cafeteria-menu-retro {
     display: none !important;
   }
   body {
