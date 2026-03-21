@@ -1,4 +1,3 @@
-// src/composables/useLocalParams.js
 const CALENDAR_STORAGE_KEY = "kobancalendar.savedSelection.v1";
 const MEETUP_STORAGE_KEY = "kobancalendar.savedMeetup.v1";
 
@@ -25,6 +24,25 @@ function parseLegacyKeyValueString(stored) {
   }, {});
 }
 
+function readStoredObject(storageKey) {
+  const stored = localStorage.getItem(storageKey);
+  if (!stored) return null;
+
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return parseLegacyKeyValueString(stored);
+  }
+}
+
+function toValidIntegerArray(values) {
+  if (!Array.isArray(values)) return [];
+
+  return values
+    .map((value) => parseInt(value, 10))
+    .filter((value) => !isNaN(value));
+}
+
 export function useLocalParams() {
   function saveCalendarSelection(baseDate, startNumber) {
     if (!baseDate || !startNumber) return false;
@@ -37,15 +55,8 @@ export function useLocalParams() {
   }
 
   function loadCalendarSelection() {
-    const stored = localStorage.getItem(CALENDAR_STORAGE_KEY);
-    if (!stored) return null;
-
-    let parsed;
-    try {
-      parsed = JSON.parse(stored);
-    } catch {
-      parsed = parseLegacyKeyValueString(stored);
-    }
+    const parsed = readStoredObject(CALENDAR_STORAGE_KEY);
+    if (!parsed) return null;
 
     const baseDate = parsed?.baseDate;
     const startNumber = parseInt(parsed?.startNumber, 10);
@@ -79,24 +90,17 @@ export function useLocalParams() {
   }
 
   function loadMeetupParams() {
-    const stored = localStorage.getItem(MEETUP_STORAGE_KEY);
-    if (!stored) return null;
-
-    let parsed;
-    try {
-      parsed = JSON.parse(stored);
-    } catch {
-      parsed = parseLegacyKeyValueString(stored);
-    }
+    const parsed = readStoredObject(MEETUP_STORAGE_KEY);
+    if (!parsed) return null;
 
     const baseDate = parsed?.baseDate;
     const startTime = parsed?.startTime;
     const period = parseInt(parsed?.period, 10);
-    const participants = Array.isArray(parsed?.participants)
-      ? parsed.participants
-          .map((value) => parseInt(value, 10))
-          .filter((value) => !isNaN(value))
-      : parsePositions(parsed?.participants);
+    const participantsFromArray = toValidIntegerArray(parsed?.participants);
+    const participants =
+      participantsFromArray.length > 0
+        ? participantsFromArray
+        : parsePositions(parsed?.participants);
 
     if (
       !baseDate ||

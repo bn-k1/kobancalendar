@@ -1,4 +1,3 @@
-// src/composables/useUrlParams.js
 import { createDate, formatAsISODate, isSameDay } from "@/utils/date";
 import { ERROR_MESSAGES } from "@/utils/constants";
 import { useAlertModalStore } from "@/stores/alertModal";
@@ -33,6 +32,11 @@ export function useUrlParams() {
       "",
       `${window.location.pathname}${normalizedHash}`,
     );
+  }
+
+  function resetURLWithError(errorMessage) {
+    console.error(errorMessage);
+    resetURL();
   }
 
   /**
@@ -79,18 +83,22 @@ export function useUrlParams() {
    * @param {number} rotationCycleLength - Rotation cycle length
    * @returns {number} New position
    */
-  function calculateNewPosition(currentStartNumber, positionShift, rotationCycleLength) {
+  function calculateNewPosition(
+    currentStartNumber,
+    positionShift,
+    rotationCycleLength,
+  ) {
     if (!currentStartNumber || !positionShift || !rotationCycleLength) {
       return null;
     }
 
     let newPosition = currentStartNumber + positionShift;
-    
+
     // If exceeds rotation cycle length, wrap around
     if (newPosition > rotationCycleLength) {
       newPosition = newPosition - rotationCycleLength;
     }
-    
+
     return newPosition;
   }
 
@@ -131,6 +139,23 @@ export function useUrlParams() {
     return urlParams.has(paramName) ? urlParams.get(paramName) : defaultValue;
   }
 
+  function resolveSuggestedStartNumberForInvalidBaseDate(rotationCycleLength) {
+    if (!config || !config.position_shift || !rotationCycleLength) {
+      return null;
+    }
+
+    const currentStartNumber = getNumberParam("startNumber", null);
+    if (!currentStartNumber) {
+      return null;
+    }
+
+    return calculateNewPosition(
+      currentStartNumber,
+      config.position_shift,
+      rotationCycleLength,
+    );
+  }
+
   /**
    * Get and validate a date parameter from URL
    * @param {string} paramName - Parameter name
@@ -139,7 +164,13 @@ export function useUrlParams() {
    * @param {Object} config - Config object (optional, for position_shift support)
    * @param {number} rotationCycleLength - Rotation cycle length (optional, for position_shift support)
    */
-  function getDateParam(paramName, defaultValue, validDates = [], config = null, rotationCycleLength = null) {
+  function getDateParam(
+    paramName,
+    defaultValue,
+    validDates = [],
+    config = null,
+    rotationCycleLength = null,
+  ) {
     const dateStr = getURLParam(paramName);
 
     if (!dateStr) {
@@ -150,8 +181,7 @@ export function useUrlParams() {
 
     // Check date validity
     if (!dateObj.isValid()) {
-      console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
-      resetURL();
+      resetURLWithError(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
       return defaultValue;
     }
 
@@ -165,24 +195,9 @@ export function useUrlParams() {
           oldBaseDate.isValid() && isSameDay(dateObj, oldBaseDate);
 
         if (shouldAlertInvalidBaseDate) {
-          let suggestedNumber = null;
-
-          // If position_shift is configured, calculate and show new position
-          if (config && config.position_shift && rotationCycleLength) {
-            const currentStartNumber = getNumberParam("startNumber", null);
-
-            if (currentStartNumber) {
-              const newPosition = calculateNewPosition(
-                currentStartNumber,
-                config.position_shift,
-                rotationCycleLength,
-              );
-
-              if (newPosition) {
-                suggestedNumber = newPosition;
-              }
-            }
-          }
+          const suggestedNumber = resolveSuggestedStartNumberForInvalidBaseDate(
+            rotationCycleLength,
+          );
 
           open({
             title: "基準日を更新しました",
@@ -213,20 +228,17 @@ export function useUrlParams() {
 
     const value = parseInt(valueStr, 10);
     if (isNaN(value)) {
-      console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
-      resetURL();
+      resetURLWithError(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
       return defaultValue;
     }
 
     if (min !== undefined && value < min) {
-      console.error(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
-      resetURL();
+      resetURLWithError(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
       return defaultValue;
     }
 
     if (max !== undefined && value > max) {
-      console.error(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
-      resetURL();
+      resetURLWithError(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
       return defaultValue;
     }
 

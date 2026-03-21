@@ -1,4 +1,3 @@
-// src/views/MeetupView.vue
 <template>
   <UnifiedPageLayout layout="meetup" :show-results="showResults">
     <!-- Search controls section -->
@@ -95,7 +94,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, defineAsyncComponent, nextTick } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  watch,
+  defineAsyncComponent,
+  nextTick,
+} from "vue";
 
 // Essential components loaded immediately
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
@@ -169,6 +175,29 @@ const {
   updateActiveBaseDate,
 } = useSchedule();
 
+function toValidPositionNumbers(items) {
+  return items
+    .map((p) => parseInt(p.position, 10))
+    .filter((p) => !isNaN(p));
+}
+
+function applySelectedBaseDate(dateObj) {
+  updateActiveBaseDate(dateObj);
+  selectedBaseDate.value = formatAsISODate(dateObj);
+}
+
+function applyBaseDateFromParam(baseDateParam) {
+  if (baseDateParam) {
+    const dateObj = createDate(baseDateParam);
+    if (dateObj.isValid()) {
+      applySelectedBaseDate(dateObj);
+      return;
+    }
+  }
+
+  applySelectedBaseDate(defaultBaseDate.value);
+}
+
 // Computed values
 const formattedBaseDates = computed(() => {
   const dates = [];
@@ -221,9 +250,7 @@ function handleBaseDateChange(newDateStr) {
 // Find available dates
 function findDates() {
   // Get valid participant positions
-  const positions = participants.value
-    .map((p) => parseInt(p.position, 10))
-    .filter((p) => !isNaN(p));
+  const positions = toValidPositionNumbers(participants.value);
 
   // Validate
   if (positions.length === 0) {
@@ -276,39 +303,22 @@ async function initialize() {
     }
 
     // Get URL parameters
-		const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
-			Boolean,
-		);
-		const baseDateParam = getDateParam(
-			"baseDate",
-			undefined,
-			validBaseDates,
-			config,
-			rotationCycleLength.value
-		);
+    const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
+      Boolean,
+    );
+    const baseDateParam = getDateParam(
+      "baseDate",
+      undefined,
+      validBaseDates,
+      config,
+      rotationCycleLength.value,
+    );
     const participantsFromUrl = getParticipantsFromParams();
     const startTimeParam = getStringParam("startTime", meetupStartTime.value);
-    const periodParam = getNumberParam(
-      "period",
-      parseInt(searchPeriod.value, 10),
-    );
+    const periodParam = getNumberParam("period", parseInt(searchPeriod.value, 10));
 
     // Apply base date parameter
-    if (baseDateParam) {
-      const dateObj = createDate(baseDateParam);
-      if (dateObj.isValid()) {
-        updateActiveBaseDate(dateObj);
-        selectedBaseDate.value = formatAsISODate(dateObj);
-      } else {
-        // Use default
-        updateActiveBaseDate(defaultBaseDate.value);
-        selectedBaseDate.value = formatAsISODate(defaultBaseDate.value);
-      }
-    } else {
-      // Use default
-      updateActiveBaseDate(defaultBaseDate.value);
-      selectedBaseDate.value = formatAsISODate(defaultBaseDate.value);
-    }
+    applyBaseDateFromParam(baseDateParam);
 
     // Apply participants parameter
     if (participantsFromUrl.length > 0) {
@@ -320,9 +330,7 @@ async function initialize() {
     if (periodParam) searchPeriod.value = periodParam.toString();
 
     // Automatically run search if there are 2 or more participants
-    const validParticipants = participants.value
-      .map((p) => parseInt(p.position, 10))
-      .filter((p) => !isNaN(p));
+    const validParticipants = toValidPositionNumbers(participants.value);
 
     if (validParticipants.length >= 2) {
       await nextTick();

@@ -1,0 +1,610 @@
+diff --git a/src/components/SearchSection.vue b/src/components/SearchSection.vue
+index 7e803e6..4ecc1d2 100644
+--- a/src/components/SearchSection.vue
++++ b/src/components/SearchSection.vue
+@@ -142,6 +142,10 @@ const {
+ const showSuggestions = ref(false);
+ const highlightedIndex = ref(-1);
+ 
++function hasSearchQuery() {
++  return Boolean(searchQuery.value.trim());
++}
++
+ // Handle search input
+ function handleSearchInput() {
+   highlightedIndex.value = -1;
+@@ -151,7 +155,7 @@ function handleSearchInput() {
+ // Handle schedule type change
+ function handleScheduleTypeChange() {
+   updateScheduleType(selectedScheduleType.value);
+-  if (searchQuery.value.trim()) {
++  if (hasSearchQuery()) {
+     performSearch();
+   }
+ }
+@@ -159,7 +163,7 @@ function handleScheduleTypeChange() {
+ // Handle day type change
+ function handleDayTypeChange() {
+   updateDayType(selectedDayType.value);
+-  if (searchQuery.value.trim()) {
++  if (hasSearchQuery()) {
+     performSearch();
+   }
+ }
+diff --git a/src/composables/useLocalParams.js b/src/composables/useLocalParams.js
+index 751f8b0..3026bb5 100644
+--- a/src/composables/useLocalParams.js
++++ b/src/composables/useLocalParams.js
+@@ -1,4 +1,3 @@
+-// src/composables/useLocalParams.js
+ const CALENDAR_STORAGE_KEY = "kobancalendar.savedSelection.v1";
+ const MEETUP_STORAGE_KEY = "kobancalendar.savedMeetup.v1";
+ 
+@@ -25,6 +24,25 @@ function parseLegacyKeyValueString(stored) {
+   }, {});
+ }
+ 
++function readStoredObject(storageKey) {
++  const stored = localStorage.getItem(storageKey);
++  if (!stored) return null;
++
++  try {
++    return JSON.parse(stored);
++  } catch {
++    return parseLegacyKeyValueString(stored);
++  }
++}
++
++function toValidIntegerArray(values) {
++  if (!Array.isArray(values)) return [];
++
++  return values
++    .map((value) => parseInt(value, 10))
++    .filter((value) => !isNaN(value));
++}
++
+ export function useLocalParams() {
+   function saveCalendarSelection(baseDate, startNumber) {
+     if (!baseDate || !startNumber) return false;
+@@ -37,15 +55,8 @@ export function useLocalParams() {
+   }
+ 
+   function loadCalendarSelection() {
+-    const stored = localStorage.getItem(CALENDAR_STORAGE_KEY);
+-    if (!stored) return null;
+-
+-    let parsed;
+-    try {
+-      parsed = JSON.parse(stored);
+-    } catch {
+-      parsed = parseLegacyKeyValueString(stored);
+-    }
++    const parsed = readStoredObject(CALENDAR_STORAGE_KEY);
++    if (!parsed) return null;
+ 
+     const baseDate = parsed?.baseDate;
+     const startNumber = parseInt(parsed?.startNumber, 10);
+@@ -79,24 +90,17 @@ export function useLocalParams() {
+   }
+ 
+   function loadMeetupParams() {
+-    const stored = localStorage.getItem(MEETUP_STORAGE_KEY);
+-    if (!stored) return null;
+-
+-    let parsed;
+-    try {
+-      parsed = JSON.parse(stored);
+-    } catch {
+-      parsed = parseLegacyKeyValueString(stored);
+-    }
++    const parsed = readStoredObject(MEETUP_STORAGE_KEY);
++    if (!parsed) return null;
+ 
+     const baseDate = parsed?.baseDate;
+     const startTime = parsed?.startTime;
+     const period = parseInt(parsed?.period, 10);
+-    const participants = Array.isArray(parsed?.participants)
+-      ? parsed.participants
+-          .map((value) => parseInt(value, 10))
+-          .filter((value) => !isNaN(value))
+-      : parsePositions(parsed?.participants);
++    const participantsFromArray = toValidIntegerArray(parsed?.participants);
++    const participants =
++      participantsFromArray.length > 0
++        ? participantsFromArray
++        : parsePositions(parsed?.participants);
+ 
+     if (
+       !baseDate ||
+diff --git a/src/composables/useSearch.js b/src/composables/useSearch.js
+index 1266644..f19d5a2 100644
+--- a/src/composables/useSearch.js
++++ b/src/composables/useSearch.js
+@@ -1,4 +1,3 @@
+-// src/composables/useSearch.js
+ import { ref, computed, watch } from 'vue';
+ import { useSchedule } from '@/composables/useSchedule';
+ 
+@@ -17,6 +16,20 @@ export function useSearch() {
+   const selectedDayType = ref('weekday');
+   const hasSearched = ref(false);
+ 
++  function getNormalizedQuery() {
++    return searchQuery.value.trim();
++  }
++
++  function hasQuery() {
++    return Boolean(getNormalizedQuery());
++  }
++
++  function refreshSearchIfNeeded() {
++    if (hasQuery()) {
++      performSearch();
++    }
++  }
++
+   // Determine if schedule type selector should be shown
+   const showScheduleTypeSelector = computed(() => {
+     return scheduleUpdateDate.value !== undefined;
+@@ -25,20 +38,20 @@ export function useSearch() {
+   // Get current schedule data based on selected type
+   const currentScheduleData = computed(() => {
+     if (!scheduleDataSets.value) return null;
+-    
++
+     if (showScheduleTypeSelector.value) {
+-      return selectedScheduleType.value === 'next' 
+-        ? scheduleDataSets.value.next 
++      return selectedScheduleType.value === 'next'
++        ? scheduleDataSets.value.next
+         : scheduleDataSets.value.default;
+     }
+-    
++
+     return scheduleDataSets.value.default;
+   });
+ 
+   // Get current day type data
+   const currentDayTypeData = computed(() => {
+     if (!currentScheduleData.value) return [];
+-    
++
+     switch (selectedDayType.value) {
+       case 'saturday':
+         return currentScheduleData.value.saturday || [];
+@@ -52,48 +65,43 @@ export function useSearch() {
+   // Generate all unique subjects for autocomplete suggestions
+   const allSuggestions = computed(() => {
+     if (!currentDayTypeData.value) return [];
+-    
++
+     const subjects = new Set();
+-    
+-    currentDayTypeData.value.forEach(item => {
++
++    currentDayTypeData.value.forEach((item) => {
+       if (item.s && item.s.trim()) {
+         subjects.add(item.s.trim());
+       }
+     });
+-    
++
+     return Array.from(subjects).sort();
+   });
+ 
+   // Filter suggestions based on search query
+   const filteredSuggestions = computed(() => {
+-    if (!searchQuery.value.trim()) return [];
+-    
+-    const query = searchQuery.value.toLowerCase().trim();
+-    return allSuggestions.value.filter(suggestion =>
+-      suggestion.toLowerCase().includes(query)
+-    ).slice(0, 10); // Limit to 10 suggestions
++    const query = getNormalizedQuery().toLowerCase();
++    if (!query) return [];
++
++    return allSuggestions.value
++      .filter((suggestion) => suggestion.toLowerCase().includes(query))
++      .slice(0, 10); // Limit to 10 suggestions
+   });
+ 
+   /**
+    * Perform search based on current query and settings
+    */
+   function performSearch() {
+-    const query = searchQuery.value.trim();
++    const query = getNormalizedQuery();
+     hasSearched.value = true;
+-    
+-    if (!query) {
+-      searchResults.value = [];
+-      return;
+-    }
+-    
+-    if (!currentDayTypeData.value) {
++
++    if (!query || !currentDayTypeData.value) {
+       searchResults.value = [];
+       return;
+     }
+-    
++
+     const queryLower = query.toLowerCase();
+     const results = [];
+-    
++
+     currentDayTypeData.value.forEach((item, index) => {
+       if (item.s && item.s.toLowerCase().includes(queryLower)) {
+         results.push({
+@@ -102,14 +110,14 @@ export function useSearch() {
+           endTime: item.eT || '',
+           position: index + 1,
+           scheduleType: selectedScheduleType.value,
+-          dayType: selectedDayType.value
++          dayType: selectedDayType.value,
+         });
+       }
+     });
+-    
++
+     // Sort results by position
+     results.sort((a, b) => a.position - b.position);
+-    
++
+     searchResults.value = results;
+   }
+ 
+@@ -118,9 +126,7 @@ export function useSearch() {
+    */
+   function updateScheduleType(newType) {
+     selectedScheduleType.value = newType;
+-    if (searchQuery.value.trim()) {
+-      performSearch();
+-    }
++    refreshSearchIfNeeded();
+   }
+ 
+   /**
+@@ -128,9 +134,7 @@ export function useSearch() {
+    */
+   function updateDayType(newType) {
+     selectedDayType.value = newType;
+-    if (searchQuery.value.trim()) {
+-      performSearch();
+-    }
++    refreshSearchIfNeeded();
+   }
+ 
+   /**
+@@ -153,18 +157,20 @@ export function useSearch() {
+ 
+   // Watch for schedule data changes and reset if needed
+   watch(scheduleDataSets, () => {
+-    if (searchQuery.value.trim()) {
+-      performSearch();
+-    }
++    refreshSearchIfNeeded();
+   });
+ 
+   // Initialize default schedule type based on schedule update date
+-  watch(showScheduleTypeSelector, (newValue) => {
+-    if (newValue) {
+-      // If schedule update is available, default to 'current'
+-      selectedScheduleType.value = 'current';
+-    }
+-  }, { immediate: true });
++  watch(
++    showScheduleTypeSelector,
++    (newValue) => {
++      if (newValue) {
++        // If schedule update is available, default to 'current'
++        selectedScheduleType.value = 'current';
++      }
++    },
++    { immediate: true },
++  );
+ 
+   return {
+     // Reactive state
+@@ -173,19 +179,19 @@ export function useSearch() {
+     selectedScheduleType,
+     selectedDayType,
+     hasSearched,
+-    
++
+     // Computed properties
+     showScheduleTypeSelector,
+     filteredSuggestions,
+     allSuggestions,
+     currentScheduleData,
+     currentDayTypeData,
+-    
++
+     // Methods
+     performSearch,
+     updateScheduleType,
+     updateDayType,
+     clearSearch,
+-    resetSearch
++    resetSearch,
+   };
+-}
+\ No newline at end of file
++}
+diff --git a/src/composables/useUrlParams.js b/src/composables/useUrlParams.js
+index b1a41a5..9497f11 100644
+--- a/src/composables/useUrlParams.js
++++ b/src/composables/useUrlParams.js
+@@ -1,4 +1,3 @@
+-// src/composables/useUrlParams.js
+ import { createDate, formatAsISODate, isSameDay } from "@/utils/date";
+ import { ERROR_MESSAGES } from "@/utils/constants";
+ import { useAlertModalStore } from "@/stores/alertModal";
+@@ -35,6 +34,11 @@ export function useUrlParams() {
+     );
+   }
+ 
++  function resetURLWithError(errorMessage) {
++    console.error(errorMessage);
++    resetURL();
++  }
++
+   /**
+    * Reset URL if unknown params exist
+    */
+@@ -79,18 +83,22 @@ export function useUrlParams() {
+    * @param {number} rotationCycleLength - Rotation cycle length
+    * @returns {number} New position
+    */
+-  function calculateNewPosition(currentStartNumber, positionShift, rotationCycleLength) {
++  function calculateNewPosition(
++    currentStartNumber,
++    positionShift,
++    rotationCycleLength,
++  ) {
+     if (!currentStartNumber || !positionShift || !rotationCycleLength) {
+       return null;
+     }
+ 
+     let newPosition = currentStartNumber + positionShift;
+-    
++
+     // If exceeds rotation cycle length, wrap around
+     if (newPosition > rotationCycleLength) {
+       newPosition = newPosition - rotationCycleLength;
+     }
+-    
++
+     return newPosition;
+   }
+ 
+@@ -131,6 +139,23 @@ export function useUrlParams() {
+     return urlParams.has(paramName) ? urlParams.get(paramName) : defaultValue;
+   }
+ 
++  function resolveSuggestedStartNumberForInvalidBaseDate(rotationCycleLength) {
++    if (!config || !config.position_shift || !rotationCycleLength) {
++      return null;
++    }
++
++    const currentStartNumber = getNumberParam("startNumber", null);
++    if (!currentStartNumber) {
++      return null;
++    }
++
++    return calculateNewPosition(
++      currentStartNumber,
++      config.position_shift,
++      rotationCycleLength,
++    );
++  }
++
+   /**
+    * Get and validate a date parameter from URL
+    * @param {string} paramName - Parameter name
+@@ -139,7 +164,13 @@ export function useUrlParams() {
+    * @param {Object} config - Config object (optional, for position_shift support)
+    * @param {number} rotationCycleLength - Rotation cycle length (optional, for position_shift support)
+    */
+-  function getDateParam(paramName, defaultValue, validDates = [], config = null, rotationCycleLength = null) {
++  function getDateParam(
++    paramName,
++    defaultValue,
++    validDates = [],
++    config = null,
++    rotationCycleLength = null,
++  ) {
+     const dateStr = getURLParam(paramName);
+ 
+     if (!dateStr) {
+@@ -150,8 +181,7 @@ export function useUrlParams() {
+ 
+     // Check date validity
+     if (!dateObj.isValid()) {
+-      console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
+-      resetURL();
++      resetURLWithError(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
+       return defaultValue;
+     }
+ 
+@@ -165,24 +195,9 @@ export function useUrlParams() {
+           oldBaseDate.isValid() && isSameDay(dateObj, oldBaseDate);
+ 
+         if (shouldAlertInvalidBaseDate) {
+-          let suggestedNumber = null;
+-
+-          // If position_shift is configured, calculate and show new position
+-          if (config && config.position_shift && rotationCycleLength) {
+-            const currentStartNumber = getNumberParam("startNumber", null);
+-
+-            if (currentStartNumber) {
+-              const newPosition = calculateNewPosition(
+-                currentStartNumber,
+-                config.position_shift,
+-                rotationCycleLength,
+-              );
+-
+-              if (newPosition) {
+-                suggestedNumber = newPosition;
+-              }
+-            }
+-          }
++          const suggestedNumber = resolveSuggestedStartNumberForInvalidBaseDate(
++            rotationCycleLength,
++          );
+ 
+           open({
+             title: "基準日を更新しました",
+@@ -213,20 +228,17 @@ export function useUrlParams() {
+ 
+     const value = parseInt(valueStr, 10);
+     if (isNaN(value)) {
+-      console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
+-      resetURL();
++      resetURLWithError(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
+       return defaultValue;
+     }
+ 
+     if (min !== undefined && value < min) {
+-      console.error(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
+-      resetURL();
++      resetURLWithError(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
+       return defaultValue;
+     }
+ 
+     if (max !== undefined && value > max) {
+-      console.error(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
+-      resetURL();
++      resetURLWithError(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
+       return defaultValue;
+     }
+ 
+diff --git a/src/views/MeetupView.vue b/src/views/MeetupView.vue
+index f9161ce..3f3238e 100644
+--- a/src/views/MeetupView.vue
++++ b/src/views/MeetupView.vue
+@@ -1,4 +1,3 @@
+-// src/views/MeetupView.vue
+ <template>
+   <UnifiedPageLayout layout="meetup" :show-results="showResults">
+     <!-- Search controls section -->
+@@ -95,7 +94,14 @@
+ </template>
+ 
+ <script setup>
+-import { ref, computed, onMounted, watch, defineAsyncComponent, nextTick } from "vue";
++import {
++  ref,
++  computed,
++  onMounted,
++  watch,
++  defineAsyncComponent,
++  nextTick,
++} from "vue";
+ 
+ // Essential components loaded immediately
+ import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
+@@ -169,6 +175,29 @@ const {
+   updateActiveBaseDate,
+ } = useSchedule();
+ 
++function toValidPositionNumbers(items) {
++  return items
++    .map((p) => parseInt(p.position, 10))
++    .filter((p) => !isNaN(p));
++}
++
++function applySelectedBaseDate(dateObj) {
++  updateActiveBaseDate(dateObj);
++  selectedBaseDate.value = formatAsISODate(dateObj);
++}
++
++function applyBaseDateFromParam(baseDateParam) {
++  if (baseDateParam) {
++    const dateObj = createDate(baseDateParam);
++    if (dateObj.isValid()) {
++      applySelectedBaseDate(dateObj);
++      return;
++    }
++  }
++
++  applySelectedBaseDate(defaultBaseDate.value);
++}
++
+ // Computed values
+ const formattedBaseDates = computed(() => {
+   const dates = [];
+@@ -221,9 +250,7 @@ function handleBaseDateChange(newDateStr) {
+ // Find available dates
+ function findDates() {
+   // Get valid participant positions
+-  const positions = participants.value
+-    .map((p) => parseInt(p.position, 10))
+-    .filter((p) => !isNaN(p));
++  const positions = toValidPositionNumbers(participants.value);
+ 
+   // Validate
+   if (positions.length === 0) {
+@@ -276,39 +303,22 @@ async function initialize() {
+     }
+ 
+     // Get URL parameters
+-		const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
+-			Boolean,
+-		);
+-		const baseDateParam = getDateParam(
+-			"baseDate",
+-			undefined,
+-			validBaseDates,
+-			config,
+-			rotationCycleLength.value
+-		);
++    const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
++      Boolean,
++    );
++    const baseDateParam = getDateParam(
++      "baseDate",
++      undefined,
++      validBaseDates,
++      config,
++      rotationCycleLength.value,
++    );
+     const participantsFromUrl = getParticipantsFromParams();
+     const startTimeParam = getStringParam("startTime", meetupStartTime.value);
+-    const periodParam = getNumberParam(
+-      "period",
+-      parseInt(searchPeriod.value, 10),
+-    );
++    const periodParam = getNumberParam("period", parseInt(searchPeriod.value, 10));
+ 
+     // Apply base date parameter
+-    if (baseDateParam) {
+-      const dateObj = createDate(baseDateParam);
+-      if (dateObj.isValid()) {
+-        updateActiveBaseDate(dateObj);
+-        selectedBaseDate.value = formatAsISODate(dateObj);
+-      } else {
+-        // Use default
+-        updateActiveBaseDate(defaultBaseDate.value);
+-        selectedBaseDate.value = formatAsISODate(defaultBaseDate.value);
+-      }
+-    } else {
+-      // Use default
+-      updateActiveBaseDate(defaultBaseDate.value);
+-      selectedBaseDate.value = formatAsISODate(defaultBaseDate.value);
+-    }
++    applyBaseDateFromParam(baseDateParam);
+ 
+     // Apply participants parameter
+     if (participantsFromUrl.length > 0) {
+@@ -320,9 +330,7 @@ async function initialize() {
+     if (periodParam) searchPeriod.value = periodParam.toString();
+ 
+     // Automatically run search if there are 2 or more participants
+-    const validParticipants = participants.value
+-      .map((p) => parseInt(p.position, 10))
+-      .filter((p) => !isNaN(p));
++    const validParticipants = toValidPositionNumbers(participants.value);
+ 
+     if (validParticipants.length >= 2) {
+       await nextTick();

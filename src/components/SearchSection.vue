@@ -142,6 +142,10 @@ const {
 const showSuggestions = ref(false);
 const highlightedIndex = ref(-1);
 
+function hasSearchQuery() {
+  return Boolean(searchQuery.value.trim());
+}
+
 // Handle search input
 function handleSearchInput() {
   highlightedIndex.value = -1;
@@ -151,7 +155,7 @@ function handleSearchInput() {
 // Handle schedule type change
 function handleScheduleTypeChange() {
   updateScheduleType(selectedScheduleType.value);
-  if (searchQuery.value.trim()) {
+  if (hasSearchQuery()) {
     performSearch();
   }
 }
@@ -159,7 +163,7 @@ function handleScheduleTypeChange() {
 // Handle day type change
 function handleDayTypeChange() {
   updateDayType(selectedDayType.value);
-  if (searchQuery.value.trim()) {
+  if (hasSearchQuery()) {
     performSearch();
   }
 }
