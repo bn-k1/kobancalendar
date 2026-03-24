@@ -302,6 +302,14 @@ watch([() => props.startPosition, () => props.initialDate], () => {
   }
 });
 
+function gotoDate(date) {
+  if (calendarRef.value) {
+    calendarRef.value.getApi().gotoDate(date);
+  }
+}
+
+defineExpose({ gotoDate });
+
 onUnmounted(() => {
   if (longPressTimer) {
     clearTimeout(longPressTimer);

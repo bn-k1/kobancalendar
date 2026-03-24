@@ -203,6 +203,10 @@ function handleBaseDateChange(newDateStr) {
   setStartPosition(undefined);
 
   updateCalendarParams(newDate, startPosition.value);
+
+  if (isSameOrAfter(newDate, today())) {
+    calendarRef.value?.gotoDate(toDate(newDate));
+  }
 }
 
 function handlePositionChange(newPosition) {
