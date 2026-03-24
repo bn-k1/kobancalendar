@@ -206,6 +206,8 @@ function handleBaseDateChange(newDateStr) {
 
   if (isSameOrAfter(newDate, today())) {
     calendarRef.value?.gotoDate(toDate(newDate));
+  } else {
+    calendarRef.value?.gotoDate(toDate(today()));
   }
 }
 
