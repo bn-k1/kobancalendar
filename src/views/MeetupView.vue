@@ -17,7 +17,7 @@
         >
           <div v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr" class="version-link-row">
             <button class="version-btn" @click="switchToNextBaseDate">
-              新版: ~{{ formatAsDisplayDate(nextBaseDate) }}
+              新版: {{ formatAsDisplayDate(nextBaseDate) }}~
             </button>
           </div>
         </BaseSelector>
