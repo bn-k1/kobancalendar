@@ -138,51 +138,16 @@ const {
   activeBaseDate,
   nextBaseDate,
   rotationCycleLength,
-  scheduleUpdateDate,
   updateActiveBaseDate,
+  formattedBaseDates,
+  scheduleUpdateNotice,
 } = useSchedule();
-
-const formattedBaseDates = computed(() => {
-  const dates = [];
-
-  if (defaultBaseDate.value) {
-    dates.push({
-      value: formatAsISODate(defaultBaseDate.value),
-      text: formatAsDisplayDate(defaultBaseDate.value),
-    });
-  }
-
-  if (
-    nextBaseDate.value &&
-    nextBaseDate.value.isValid &&
-    nextBaseDate.value.isValid() &&
-    !(
-      defaultBaseDate.value &&
-      formatAsISODate(defaultBaseDate.value) ===
-        formatAsISODate(nextBaseDate.value)
-    )
-  ) {
-    dates.push({
-      value: formatAsISODate(nextBaseDate.value),
-      text: formatAsDisplayDate(nextBaseDate.value),
-    });
-  }
-
-  return dates;
-});
 
 const positionOptions = computed(() => {
   return Array.from({ length: rotationCycleLength.value }, (_, i) => ({
     value: i + 1,
     text: String(i + 1),
   }));
-});
-
-const scheduleUpdateNotice = computed(() => {
-  if (scheduleUpdateDate.value) {
-    return formatAsDisplayDate(scheduleUpdateDate.value);
-  }
-  return "";
 });
 
 const initialDate = computed(() => {

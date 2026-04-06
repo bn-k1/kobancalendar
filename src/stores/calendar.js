@@ -28,9 +28,9 @@ export const useCalendarStore = defineStore("calendar", () => {
   }
 
   return {
-    startPosition,
-    calendarEvents,
-    eventConfig,
+    startPosition: computed(() => startPosition.value),
+    calendarEvents: computed(() => calendarEvents.value),
+    eventConfig: computed(() => eventConfig.value),
 
     isConfigLoaded,
 

@@ -28,10 +28,6 @@ export function useCalendar() {
     calendarStore.setStartPosition(position);
   }
 
-  function setExportMonths(months) {
-    calendarStore.setExportMonths(months);
-  }
-
   function setCalendarEvents(events) {
     calendarStore.setCalendarEvents(events);
   }
@@ -73,6 +69,7 @@ export function useCalendar() {
     for (const [type, config] of Object.entries(eventConfig.events)) {
       if (
         type !== "default" &&
+        type !== "edited" &&
         config.keywords &&
         config.keywords.some((keyword) => subject?.includes(keyword))
       ) {
@@ -115,6 +112,21 @@ export function useCalendar() {
   }
 
   /**
+   * Build the event title string based on event config and schedule data
+   * @param {string} subject
+   * @param {string} startTime
+   * @param {string} endTime
+   * @param {Object} eventTypeConfig - config entry from eventConfig.events
+   * @returns {string}
+   */
+  function buildEventTitle(subject, startTime, endTime, eventTypeConfig) {
+    if (eventTypeConfig.showTime && (startTime || endTime)) {
+      return `${subject}\n${startTime} - \n${endTime}`;
+    }
+    return subject;
+  }
+
+  /**
    * Generate calendar events for the date range
    */
   function generateCalendarEvents(startDate, endDate) {
@@ -135,9 +147,7 @@ export function useCalendar() {
         const shiftIndex = scheduleInfo?.shiftIndex ?? 0;
         
         const { config } = getEventType(editedSchedule.subject, true);
-        const title = config.showTime && (editedSchedule.startTime || editedSchedule.endTime)
-          ? `${editedSchedule.subject}\n${editedSchedule.startTime} - \n${editedSchedule.endTime}`
-          : editedSchedule.subject;
+        const title = buildEventTitle(editedSchedule.subject, editedSchedule.startTime, editedSchedule.endTime, config);
 
         generatedEvents.push({
           title,
@@ -174,9 +184,7 @@ export function useCalendar() {
 
         const { config } = getEventType(subject, false);
         generatedEvents.push({
-          title: config.showTime
-            ? `${subject}\n${startTime} - \n${endTime}`
-            : subject,
+          title: buildEventTitle(subject, startTime, endTime, config),
           start: dateStr,
           color: config.color,
           extendedProps: {
@@ -206,7 +214,6 @@ export function useCalendar() {
     isConfigLoaded: computed(() => storeEventConfig.value !== undefined),
 
     setStartPosition,
-    setExportMonths,
     setCalendarEvents,
     setEventConfig,
 

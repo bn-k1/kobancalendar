@@ -6,6 +6,7 @@ import { ERROR_MESSAGES } from "@/utils/constants";
 import {
   createDate,
   formatAsISODate,
+  formatAsDisplayDate,
   isBefore,
   addDays,
   toUnix,
@@ -174,20 +175,9 @@ export function useSchedule() {
    */
   function loadScheduleData(defaultData, nextData) {
     try {
-      // Create data sets with validated data
       const dataSets = {
-        default: {
-          holiday: defaultData.holiday,
-          saturday: defaultData.saturday,
-          weekday: defaultData.weekday,
-          rotationCycleLength: defaultData.rotationCycleLength,
-        },
-        next: {
-          holiday: nextData.holiday,
-          saturday: nextData.saturday,
-          weekday: nextData.weekday,
-          rotationCycleLength: nextData.rotationCycleLength,
-        },
+        default: defaultData,
+        next: nextData,
       };
 
       // Update store
@@ -249,6 +239,39 @@ export function useSchedule() {
     ),
     rotationCycleLength: computed(
       () => storeScheduleData.value.rotationCycleLength,
+    ),
+
+    // Formatted base date options for selectors
+    formattedBaseDates: computed(() => {
+      const dates = [];
+      if (storeDefaultBaseDate.value) {
+        dates.push({
+          value: formatAsISODate(storeDefaultBaseDate.value),
+          text: formatAsDisplayDate(storeDefaultBaseDate.value),
+        });
+      }
+      if (
+        storeNextBaseDate.value &&
+        storeNextBaseDate.value.isValid &&
+        storeNextBaseDate.value.isValid() &&
+        !(
+          storeDefaultBaseDate.value &&
+          formatAsISODate(storeDefaultBaseDate.value) ===
+            formatAsISODate(storeNextBaseDate.value)
+        )
+      ) {
+        dates.push({
+          value: formatAsISODate(storeNextBaseDate.value),
+          text: formatAsDisplayDate(storeNextBaseDate.value),
+        });
+      }
+      return dates;
+    }),
+
+    scheduleUpdateNotice: computed(() =>
+      storeScheduleUpdateDate.value
+        ? formatAsDisplayDate(storeScheduleUpdateDate.value)
+        : "",
     ),
 
     // All business logic functions

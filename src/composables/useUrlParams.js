@@ -168,7 +168,7 @@ export function useUrlParams() {
     paramName,
     defaultValue,
     validDates = [],
-    config = null,
+    appConfig = null,
     rotationCycleLength = null,
   ) {
     const dateStr = getURLParam(paramName);
@@ -190,7 +190,7 @@ export function useUrlParams() {
       const dateExists = validDates.some((date) => isSameDay(date, dateObj));
 
       if (!dateExists) {
-        const oldBaseDate = createDate(config.old_base_date);
+        const oldBaseDate = createDate(appConfig.old_base_date);
         const shouldAlertInvalidBaseDate =
           oldBaseDate.isValid() && isSameDay(dateObj, oldBaseDate);
 

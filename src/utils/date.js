@@ -146,5 +146,6 @@ export function parseTime(timeStr) {
   return dayjs()
     .hour(parseInt(hours, 10))
     .minute(parseInt(minutes, 10))
-    .second(0);
+    .second(0)
+    .millisecond(0);
 }

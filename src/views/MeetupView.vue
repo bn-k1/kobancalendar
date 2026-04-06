@@ -96,7 +96,6 @@
 <script setup>
 import {
   ref,
-  computed,
   onMounted,
   watch,
   defineAsyncComponent,
@@ -171,8 +170,9 @@ const {
   activeBaseDate,
   nextBaseDate,
   rotationCycleLength,
-  scheduleUpdateDate,
   updateActiveBaseDate,
+  formattedBaseDates,
+  scheduleUpdateNotice,
 } = useSchedule();
 
 function toValidPositionNumbers(items) {
@@ -197,45 +197,6 @@ function applyBaseDateFromParam(baseDateParam) {
 
   applySelectedBaseDate(defaultBaseDate.value);
 }
-
-// Computed values
-const formattedBaseDates = computed(() => {
-  const dates = [];
-
-  // Add default base date
-  if (defaultBaseDate.value) {
-    dates.push({
-      value: formatAsISODate(defaultBaseDate.value),
-      text: formatAsDisplayDate(defaultBaseDate.value),
-    });
-  }
-
-  // Add next base date if it exists, is valid, and is different from default
-  if (
-    nextBaseDate.value &&
-    nextBaseDate.value.isValid &&
-    nextBaseDate.value.isValid() &&
-    !(
-      defaultBaseDate.value &&
-      formatAsISODate(defaultBaseDate.value) ===
-        formatAsISODate(nextBaseDate.value)
-    )
-  ) {
-    dates.push({
-      value: formatAsISODate(nextBaseDate.value),
-      text: formatAsDisplayDate(nextBaseDate.value),
-    });
-  }
-
-  return dates;
-});
-
-const scheduleUpdateNotice = computed(() => {
-  if (scheduleUpdateDate.value) {
-    return formatAsDisplayDate(scheduleUpdateDate.value);
-  }
-  return "";
-});
 
 // Event handlers
 function handleBaseDateChange(newDateStr) {
