@@ -106,10 +106,8 @@ export function useUrlParams() {
    * Update URL parameters without reloading the page
    * @param {Object} params - Parameters to update
    */
-  function updateURLParams(params) {
+  function buildUpdatedURL(params) {
     const url = new URL(window.location);
-
-    // Update or add each parameter
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
         url.searchParams.set(key, value);
@@ -117,15 +115,16 @@ export function useUrlParams() {
         url.searchParams.delete(key);
       }
     });
-
     const normalizedHash = getNormalizedHash(url.hash);
+    return `${url.pathname}${url.search}${normalizedHash}`;
+  }
 
-    // Update history without reloading and keep hash route for GitHub Pages
-    window.history.replaceState(
-      {},
-      "",
-      `${url.pathname}${url.search}${normalizedHash}`,
-    );
+  function updateURLParams(params) {
+    window.history.replaceState({}, "", buildUpdatedURL(params));
+  }
+
+  function pushURLParams(params) {
+    window.history.pushState({}, "", buildUpdatedURL(params));
   }
 
   /**
@@ -302,6 +301,7 @@ export function useUrlParams() {
     getParticipantsFromParams,
     updateCalendarParams,
     updateMeetupParams,
+    pushURLParams,
     calculateNewPosition,
     resetURLIfUnknownParams,
     enforceValidBaseDate,

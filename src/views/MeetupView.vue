@@ -9,13 +9,18 @@
           legend="基準日"
           aria-label="基準日を選択"
           v-model="selectedBaseDate"
-          :options="formattedBaseDates"
-          :formatter="formatAsDisplayDate"
-          :display-as-text="formattedBaseDates.length === 1"
+          :display-as-text="true"
+          :display-value="activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''"
+          :options="[]"
           :schedule-update-notice="scheduleUpdateNotice"
-          @change="handleBaseDateChange"
           v-if="isLoaded"
-        />
+        >
+          <div v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr" class="version-link-row">
+            <button class="version-btn" @click="switchToNextBaseDate">
+              新版: ~{{ formatAsDisplayDate(nextBaseDate) }}
+            </button>
+          </div>
+        </BaseSelector>
 
         <!-- Meetup settings -->
         <fieldset
@@ -96,7 +101,9 @@
 <script setup>
 import {
   ref,
+  computed,
   onMounted,
+  onUnmounted,
   watch,
   defineAsyncComponent,
   nextTick,
@@ -159,6 +166,7 @@ const {
   getStringParam,
   getParticipantsFromParams,
   updateMeetupParams,
+  pushURLParams,
   resetURLIfUnknownParams,
   enforceValidBaseDate,
 } = useUrlParams();
@@ -171,9 +179,15 @@ const {
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
-  formattedBaseDates,
   scheduleUpdateNotice,
 } = useSchedule();
+
+const nextBaseDateStr = computed(() => {
+  if (!nextBaseDate.value?.isValid?.()) return null;
+  if (!defaultBaseDate.value?.isValid?.()) return null;
+  if (formatAsISODate(nextBaseDate.value) === formatAsISODate(defaultBaseDate.value)) return null;
+  return formatAsISODate(nextBaseDate.value);
+});
 
 function toValidPositionNumbers(items) {
   return items
@@ -198,14 +212,22 @@ function applyBaseDateFromParam(baseDateParam) {
   applySelectedBaseDate(defaultBaseDate.value);
 }
 
-// Event handlers
-function handleBaseDateChange(newDateStr) {
-  const newDate = createDate(newDateStr);
-  updateActiveBaseDate(newDate);
+function switchToNextBaseDate() {
+  const nextDateObj = createDate(nextBaseDateStr.value);
+  updateActiveBaseDate(nextDateObj);
+  selectedBaseDate.value = nextBaseDateStr.value;
+  showResults.value = false;
+  pushURLParams({ baseDate: nextBaseDateStr.value });
+}
 
-  if (showResults.value) {
-    showResults.value = false;
-  }
+function handlePopstate() {
+  const params = new URLSearchParams(window.location.search);
+  const baseDateStr = params.get("baseDate");
+  const dateObj = baseDateStr ? createDate(baseDateStr) : null;
+  const baseToApply = dateObj?.isValid() ? dateObj : defaultBaseDate.value;
+  updateActiveBaseDate(baseToApply);
+  selectedBaseDate.value = formatAsISODate(baseToApply);
+  showResults.value = false;
 }
 
 // Find available dates
@@ -314,7 +336,12 @@ watch(activeBaseDate, (newBaseDate) => {
 
 // Initialize on mount
 onMounted(async () => {
+  window.addEventListener("popstate", handlePopstate);
   await initialize();
+});
+
+onUnmounted(() => {
+  window.removeEventListener("popstate", handlePopstate);
 });
 </script>
 
@@ -344,5 +371,25 @@ onMounted(async () => {
   font-size: 1.1rem;
   color: var(--gray-600);
   margin: var(--spacing-md) 0;
+}
+
+.version-link-row {
+  flex-basis: 100%;
+  margin-top: var(--spacing-xs);
+}
+.version-btn {
+  font-size: 0.78rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.version-btn:hover {
+  background: var(--primary-color);
+  color: var(--text-light);
 }
 </style>

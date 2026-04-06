@@ -9,12 +9,17 @@
           legend="基準日"
           aria-label="基準日を選択"
           v-model="selectedBaseDate"
-          :display-as-text="formattedBaseDates.length === 1"
-          :options="formattedBaseDates"
-          :formatter="formatAsDisplayDate"
+          :display-as-text="true"
+          :display-value="activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''"
+          :options="[]"
           :schedule-update-notice="scheduleUpdateNotice"
-          @change="handleBaseDateChange"
-        />
+        >
+          <div v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr" class="version-link-row">
+            <button class="version-btn" @click="switchToNextBaseDate">
+              新版: ~{{ formatAsDisplayDate(nextBaseDate) }}
+            </button>
+          </div>
+        </BaseSelector>
 
         <BaseSelector
           id="startNumber"
@@ -115,6 +120,7 @@ const {
   getDateParam,
   getNumberParam,
   updateCalendarParams,
+  pushURLParams,
   resetURLIfUnknownParams,
   enforceValidBaseDate,
 } = useUrlParams();
@@ -139,9 +145,15 @@ const {
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
-  formattedBaseDates,
   scheduleUpdateNotice,
 } = useSchedule();
+
+const nextBaseDateStr = computed(() => {
+  if (!nextBaseDate.value?.isValid?.()) return null;
+  if (!defaultBaseDate.value?.isValid?.()) return null;
+  if (formatAsISODate(nextBaseDate.value) === formatAsISODate(defaultBaseDate.value)) return null;
+  return formatAsISODate(nextBaseDate.value);
+});
 
 const positionOptions = computed(() => {
   return Array.from({ length: rotationCycleLength.value }, (_, i) => ({
@@ -161,18 +173,44 @@ const initialDate = computed(() => {
 
 const startPosition = ref(undefined);
 
-function handleBaseDateChange(newDateStr) {
-  const newDate = createDate(newDateStr);
-  updateActiveBaseDate(newDate);
-  startPosition.value = undefined;
-  setStartPosition(undefined);
-
-  updateCalendarParams(newDate, startPosition.value);
-
-  if (isSameOrAfter(newDate, today())) {
-    calendarRef.value?.gotoDate(toDate(newDate));
+function navigateCalendarTo(dateObj) {
+  if (isSameOrAfter(dateObj, today())) {
+    calendarRef.value?.gotoDate(toDate(dateObj));
   } else {
     calendarRef.value?.gotoDate(toDate(today()));
+  }
+  if (viewRange.value.start && viewRange.value.end) {
+    generateCalendarEvents(viewRange.value.start, viewRange.value.end);
+  }
+}
+
+function switchToNextBaseDate() {
+  const nextDateObj = createDate(nextBaseDateStr.value);
+  updateActiveBaseDate(nextDateObj);
+  selectedBaseDate.value = nextBaseDateStr.value;
+  startPosition.value = undefined;
+  setStartPosition(undefined);
+  pushURLParams({ baseDate: nextBaseDateStr.value, startNumber: undefined });
+  navigateCalendarTo(nextDateObj);
+}
+
+function handlePopstate() {
+  const params = new URLSearchParams(window.location.search);
+  const baseDateStr = params.get("baseDate");
+  const startNumberStr = params.get("startNumber");
+
+  const dateObj = baseDateStr ? createDate(baseDateStr) : null;
+  const baseToApply = dateObj?.isValid() ? dateObj : defaultBaseDate.value;
+  updateActiveBaseDate(baseToApply);
+  selectedBaseDate.value = formatAsISODate(baseToApply);
+
+  const startNum = parseInt(startNumberStr, 10);
+  const validStart = !isNaN(startNum) && startNum >= 1 ? startNum : undefined;
+  startPosition.value = validStart;
+  setStartPosition(validStart);
+
+  if (viewRange.value.start && viewRange.value.end) {
+    generateCalendarEvents(viewRange.value.start, viewRange.value.end);
   }
 }
 
@@ -293,22 +331,38 @@ watch(computedStartPosition, (newValue) => {
 });
 
 onMounted(async () => {
-  window.addEventListener(
-    ALERT_MODAL_SUGGESTED_NUMBER_EVENT,
-    applySuggestedStartNumber,
-  );
+  window.addEventListener(ALERT_MODAL_SUGGESTED_NUMBER_EVENT, applySuggestedStartNumber);
+  window.addEventListener("popstate", handlePopstate);
   await initialize();
 });
 
 onUnmounted(() => {
-  window.removeEventListener(
-    ALERT_MODAL_SUGGESTED_NUMBER_EVENT,
-    applySuggestedStartNumber,
-  );
+  window.removeEventListener(ALERT_MODAL_SUGGESTED_NUMBER_EVENT, applySuggestedStartNumber);
+  window.removeEventListener("popstate", handlePopstate);
 });
 </script>
 
 <style scoped>
+.version-link-row {
+  flex-basis: 100%;
+  margin-top: var(--spacing-xs);
+}
+.version-btn {
+  font-size: 0.78rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.version-btn:hover {
+  background: var(--primary-color);
+  color: var(--text-light);
+}
+
 .loading-placeholder {
   height: 400px;
   display: flex;
