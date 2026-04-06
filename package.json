@@ -11,7 +11,9 @@
     "build-prep": "npm run convert-csv && npm run convert-menu && npm run create-qr",
     "convert-csv": "node scripts/convertCsv.js",
     "convert-menu": "node scripts/convertMenu.js",
-    "create-qr": "node scripts/createQr.js"
+    "create-qr": "node scripts/createQr.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.9",
@@ -25,9 +27,13 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.8.9",
+    "jsdom": "^29.0.1",
     "papaparse": "^5.4.1",
     "prettier": "^3.5.3",
     "qrcode": "^1.5.4",
-    "vite": "^6.3.2"
+    "vite": "^6.3.2",
+    "vitest": "^4.1.2"
   }
 }
