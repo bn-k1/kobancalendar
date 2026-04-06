@@ -194,6 +194,6 @@ npm run create-qr      # config.json の url フィールドからQR生成
 
 ## 備考
 
-- テストスイートはまだありません。動作確認は `npm run dev` で手動でお願いします。
+- テスト: npm test
 - 本リポジトリのサンプルデータはAI生成で、特定の組織とは無関係です。
 - ライセンス: MIT
