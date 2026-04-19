@@ -11,7 +11,7 @@
       
       <div class="edit-form">
         <!-- Subject selector -->
-        <div class="form-group">
+        <div class="form-group" v-if="!isCustomSelected">
           <label for="editSubject">予定名:</label>
           <select
             id="editSubject"
