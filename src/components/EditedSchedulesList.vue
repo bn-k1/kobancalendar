@@ -17,6 +17,7 @@
         :title="isEditsHidden ? '編集済み予定を表示する' : '編集済み予定を非表示にする'"
       >
         <EyeToggleIcon :hidden="isEditsHidden" />
+        <span class="visibility-label">{{ isEditsHidden ? '非表示中' : '表示中' }}</span>
       </button>
     </legend>
     <div v-if="showEmptyNotice" class="edited-empty-notice">
@@ -104,7 +105,7 @@ function handleRemove(dateStr) {
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-color);
-  font-size: 1rem;
+  font: inherit;
   line-height: 1;
   cursor: pointer;
 }
@@ -116,6 +117,10 @@ function handleRemove(dateStr) {
 
 .visibility-icon.is-hidden {
   color: var(--error-color);
+}
+
+.visibility-label {
+  font: inherit;
 }
 
 .edited-list {

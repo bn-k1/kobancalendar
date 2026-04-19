@@ -1,0 +1,524 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - heading "KobanCalendar🚨" [level=1] [ref=e6] [cursor=pointer]
+      - generic [ref=e7]:
+        - link "飲み会モードへ" [ref=e8] [cursor=pointer]:
+          - /url: /kobancalendar/#/meetup
+          - text: 🍻
+        - link "使い方ガイドを開く" [ref=e9] [cursor=pointer]:
+          - /url: /manual.html
+          - img [ref=e10]
+        - button "現在のページを共有" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+        - button "QRコードを表示" [ref=e16] [cursor=pointer]:
+          - img [ref=e17]
+        - button "ダークモード切替" [ref=e28] [cursor=pointer]: 🌙
+  - generic [ref=e29]:
+    - paragraph [ref=e30]: 本日の食堂メニュー
+    - generic [ref=e32]: "A定食: 定休日 ｜ B定食: 定休日"
+    - generic [ref=e33]:
+      - generic [ref=e34]: 明日
+      - generic [ref=e35]: 鶏肉の唐揚げ ｜ 白身魚の味噌マヨ焼き
+  - main [ref=e36]:
+    - generic [ref=e37]:
+      - generic [ref=e39]:
+        - group "基準日" [ref=e40]:
+          - generic [ref=e41]: 基準日
+          - generic [ref=e42]:
+            - generic [ref=e43]: 2025/11/16
+            - 'button "新版: 2026/05/16~" [ref=e45] [cursor=pointer]'
+        - group "基準日のコマ位置" [ref=e46]:
+          - generic [ref=e47]: 基準日のコマ位置
+          - combobox "コマ位置を選択" [ref=e49]:
+            - option "1"
+            - option "2"
+            - option "3"
+            - option "4"
+            - option "5"
+            - option "6"
+            - option "7" [selected]
+            - option "8"
+            - option "9"
+            - option "10"
+            - option "11"
+            - option "12"
+            - option "13"
+            - option "14"
+            - option "15"
+            - option "16"
+            - option "17"
+            - option "18"
+            - option "19"
+            - option "20"
+            - option "21"
+            - option "22"
+            - option "23"
+            - option "24"
+            - option "25"
+            - option "26"
+            - option "27"
+            - option "28"
+            - option "29"
+            - option "30"
+            - option "31"
+            - option "32"
+            - option "33"
+            - option "34"
+            - option "35"
+            - option "36"
+            - option "37"
+            - option "38"
+            - option "39"
+            - option "40"
+            - option "41"
+            - option "42"
+            - option "43"
+            - option "44"
+            - option "45"
+            - option "46"
+            - option "47"
+            - option "48"
+            - option "49"
+            - option "50"
+            - option "51"
+            - option "52"
+            - option "53"
+            - option "54"
+            - option "55"
+            - option "56"
+            - option "57"
+            - option "58"
+            - option "59"
+            - option "60"
+            - option "61"
+            - option "62"
+            - option "63"
+            - option "64"
+            - option "65"
+            - option "66"
+            - option "67"
+            - option "68"
+            - option "69"
+            - option "70"
+            - option "71"
+            - option "72"
+            - option "73"
+            - option "74"
+            - option "75"
+            - option "76"
+            - option "77"
+            - option "78"
+            - option "79"
+            - option "80"
+            - option "81"
+            - option "82"
+            - option "83"
+            - option "84"
+            - option "85"
+            - option "86"
+            - option "87"
+            - option "88"
+            - option "89"
+            - option "90"
+            - option "91"
+            - option "92"
+            - option "93"
+            - option "94"
+            - option "95"
+            - option "96"
+            - option "97"
+            - option "98"
+            - option "99"
+            - option "100"
+            - option "101"
+            - option "102"
+            - option "103"
+            - option "104"
+            - option "105"
+            - option "106"
+            - option "107"
+            - option "108"
+            - option "109"
+            - option "110"
+            - option "111"
+            - option "112"
+            - option "113"
+            - option "114"
+            - option "115"
+            - option "116"
+            - option "117"
+            - option "118"
+            - option "119"
+            - option "120"
+            - option "121"
+            - option "122"
+            - option "123"
+            - option "124"
+            - option "125"
+            - option "126"
+            - option "127"
+            - option "128"
+            - option "129"
+            - option "130"
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - heading "2026年4月" [level=2] [ref=e55]
+          - generic [ref=e56]:
+            - button "today" [disabled] [ref=e57] [cursor=pointer]
+            - generic [ref=e58]:
+              - button "Previous month" [ref=e59] [cursor=pointer]:
+                - img [ref=e60]: 
+              - button "Next month" [ref=e61] [cursor=pointer]:
+                - img [ref=e62]: 
+        - generic "2026年4月" [ref=e63]:
+          - grid [ref=e65]:
+            - rowgroup [ref=e66]:
+              - row "日曜日 月曜日 火曜日 水曜日 木曜日 金曜日 土曜日" [ref=e70]:
+                - columnheader "日曜日" [ref=e71]:
+                  - generic "日曜日" [ref=e73]: 日
+                - columnheader "月曜日" [ref=e74]:
+                  - generic "月曜日" [ref=e76]: 月
+                - columnheader "火曜日" [ref=e77]:
+                  - generic "火曜日" [ref=e79]: 火
+                - columnheader "水曜日" [ref=e80]:
+                  - generic "水曜日" [ref=e82]: 水
+                - columnheader "木曜日" [ref=e83]:
+                  - generic "木曜日" [ref=e85]: 木
+                - columnheader "金曜日" [ref=e86]:
+                  - generic "金曜日" [ref=e88]: 金
+                - columnheader "土曜日" [ref=e89]:
+                  - generic "土曜日" [ref=e91]: 土
+            - rowgroup [ref=e92]:
+              - generic [ref=e95]:
+                - row "2026年3月29日 2026年3月30日 2026年3月31日 2026年4月1日 2026年4月2日 2026年4月3日 2026年4月4日" [ref=e97]:
+                  - gridcell "2026年3月29日" [ref=e98]:
+                    - generic [ref=e99]:
+                      - generic "2026年3月29日" [ref=e101]: 29日
+                      - generic [ref=e105] [cursor=pointer]:
+                        - generic [ref=e106]: 空
+                        - generic [ref=e107]: "10"
+                  - gridcell "2026年3月30日" [ref=e108]:
+                    - generic [ref=e109]:
+                      - generic "2026年3月30日" [ref=e111]: 30日
+                      - generic [ref=e115] [cursor=pointer]:
+                        - generic [ref=e116]: 空
+                        - generic [ref=e117]: "11"
+                  - gridcell "2026年3月31日" [ref=e118]:
+                    - generic [ref=e119]:
+                      - generic "2026年3月31日" [ref=e121]: 31日
+                      - generic [ref=e125] [cursor=pointer]:
+                        - generic [ref=e126]: 101/102
+                        - generic [ref=e127]: 05:18 -
+                        - generic [ref=e128]: 18:48
+                        - generic [ref=e129]: "12"
+                  - gridcell "2026年4月1日" [ref=e130]:
+                    - generic [ref=e131]:
+                      - generic "2026年4月1日" [ref=e133]: 1日
+                      - generic [ref=e137] [cursor=pointer]:
+                        - generic [ref=e138]: "125"
+                        - generic [ref=e139]: 05:28 -
+                        - generic [ref=e140]: 18:28
+                        - generic [ref=e141]: "13"
+                  - gridcell "2026年4月2日" [ref=e142]:
+                    - generic [ref=e143]:
+                      - generic "2026年4月2日" [ref=e145]: 2日
+                      - generic [ref=e149] [cursor=pointer]:
+                        - generic [ref=e150]: 黄815
+                        - generic [ref=e151]: 05:36 -
+                        - generic [ref=e152]: 11:46
+                        - generic [ref=e153]: "14"
+                  - gridcell "2026年4月3日" [ref=e154]:
+                    - generic [ref=e155]:
+                      - generic "2026年4月3日" [ref=e157]: 3日
+                      - generic [ref=e161] [cursor=pointer]:
+                        - generic [ref=e162]: 法休
+                        - generic [ref=e163]: "15"
+                  - gridcell "2026年4月4日" [ref=e164]:
+                    - generic [ref=e165]:
+                      - generic "2026年4月4日" [ref=e167]: 4日
+                      - generic [ref=e171] [cursor=pointer]:
+                        - generic [ref=e172]: 空
+                        - generic [ref=e173]: "16"
+                - row "2026年4月5日 2026年4月6日 2026年4月7日 2026年4月8日 2026年4月9日 2026年4月10日 2026年4月11日" [ref=e174]:
+                  - gridcell "2026年4月5日" [ref=e175]:
+                    - generic [ref=e176]:
+                      - generic "2026年4月5日" [ref=e178]: 5日
+                      - generic [ref=e182] [cursor=pointer]:
+                        - generic [ref=e183]: "1101"
+                        - generic [ref=e184]: 05:31 -
+                        - generic [ref=e185]: 12:52
+                        - generic [ref=e186]: "17"
+                  - gridcell "2026年4月6日" [ref=e187]:
+                    - generic [ref=e188]:
+                      - generic "2026年4月6日" [ref=e190]: 6日
+                      - generic [ref=e194] [cursor=pointer]:
+                        - generic [ref=e195]: 空
+                        - generic [ref=e196]: "18"
+                  - gridcell "2026年4月7日" [ref=e197]:
+                    - generic [ref=e198]:
+                      - generic "2026年4月7日" [ref=e200]: 7日
+                      - generic [ref=e204] [cursor=pointer]:
+                        - generic [ref=e205]: "529"
+                        - generic [ref=e206]: 06:54 -
+                        - generic [ref=e207]: 19:28
+                        - generic [ref=e208]: "19"
+                  - gridcell "2026年4月8日" [ref=e209]:
+                    - generic [ref=e210]:
+                      - generic "2026年4月8日" [ref=e212]: 8日
+                      - generic [ref=e216] [cursor=pointer]:
+                        - generic [ref=e217]: 空
+                        - generic [ref=e218]: "20"
+                  - gridcell "2026年4月9日" [ref=e219]:
+                    - generic [ref=e220]:
+                      - generic "2026年4月9日" [ref=e222]: 9日
+                      - generic [ref=e226] [cursor=pointer]:
+                        - generic [ref=e227]: "105"
+                        - generic [ref=e228]: 05:59 -
+                        - generic [ref=e229]: 12:56
+                        - generic [ref=e230]: "21"
+                  - gridcell "2026年4月10日" [ref=e231]:
+                    - generic [ref=e232]:
+                      - generic "2026年4月10日" [ref=e234]: 10日
+                      - generic [ref=e238] [cursor=pointer]:
+                        - generic [ref=e239]: 公休
+                        - generic [ref=e240]: "22"
+                  - gridcell "2026年4月11日" [ref=e241]:
+                    - generic [ref=e242]:
+                      - generic "2026年4月11日" [ref=e244]: 11日
+                      - generic [ref=e248] [cursor=pointer]:
+                        - generic [ref=e249]: 法休
+                        - generic [ref=e250]: "23"
+                - row "2026年4月12日 2026年4月13日 2026年4月14日 2026年4月15日 2026年4月16日 2026年4月17日 2026年4月18日" [ref=e251]:
+                  - gridcell "2026年4月12日" [ref=e252]:
+                    - generic [ref=e253]:
+                      - generic "2026年4月12日" [ref=e255]: 12日
+                      - generic [ref=e259] [cursor=pointer]:
+                        - generic [ref=e260]: "804"
+                        - generic [ref=e261]: 13:04 -
+                        - generic [ref=e262]: 21:25
+                        - generic [ref=e263]: "24"
+                  - gridcell "2026年4月13日" [ref=e264]:
+                    - generic [ref=e265]:
+                      - generic "2026年4月13日" [ref=e267]: 13日
+                      - generic [ref=e271] [cursor=pointer]:
+                        - generic [ref=e272]: T701/702
+                        - generic [ref=e273]: 07:28 -
+                        - generic [ref=e274]: 21:12
+                        - generic [ref=e275]: "25"
+                  - gridcell "2026年4月14日" [ref=e276]:
+                    - generic [ref=e277]:
+                      - generic "2026年4月14日" [ref=e279]: 14日
+                      - generic [ref=e283] [cursor=pointer]:
+                        - generic [ref=e284]: "821"
+                        - generic [ref=e285]: 07:19 -
+                        - generic [ref=e286]: 19:41
+                        - generic [ref=e287]: "26"
+                  - gridcell "2026年4月15日" [ref=e288]:
+                    - generic [ref=e289]:
+                      - generic "2026年4月15日" [ref=e291]: 15日
+                      - generic [ref=e295] [cursor=pointer]:
+                        - generic [ref=e296]: 空
+                        - generic [ref=e297]: "27"
+                  - gridcell "2026年4月16日" [ref=e298]:
+                    - generic [ref=e299]:
+                      - generic "2026年4月16日" [ref=e301]: 16日
+                      - generic [ref=e305] [cursor=pointer]:
+                        - generic [ref=e306]: "139"
+                        - generic [ref=e307]: 06:13 -
+                        - generic [ref=e308]: 12:36
+                        - generic [ref=e309]: "28"
+                  - gridcell "2026年4月17日" [ref=e310]:
+                    - generic [ref=e311]:
+                      - generic "2026年4月17日" [ref=e313]: 17日
+                      - generic [ref=e317] [cursor=pointer]:
+                        - generic [ref=e318]: 法休
+                        - generic [ref=e319]: "29"
+                  - gridcell "2026年4月18日" [ref=e320]:
+                    - generic [ref=e321]:
+                      - generic "2026年4月18日" [ref=e323]: 18日
+                      - generic [ref=e327] [cursor=pointer]:
+                        - generic [ref=e328]: T503/504
+                        - generic [ref=e329]: 07:13 -
+                        - generic [ref=e330]: 21:08
+                        - generic [ref=e331]: "30"
+                - row "2026年4月19日 2026年4月20日 2026年4月21日 2026年4月22日 2026年4月23日 2026年4月24日 2026年4月25日" [ref=e332]:
+                  - gridcell "2026年4月19日" [ref=e333]:
+                    - generic [ref=e334]:
+                      - generic "2026年4月19日" [ref=e336]: 19日
+                      - generic [ref=e340] [cursor=pointer]:
+                        - generic [ref=e341]: "143"
+                        - generic [ref=e342]: 07:51 -
+                        - generic [ref=e343]: 20:17
+                        - generic [ref=e344]: "31"
+                  - gridcell "2026年4月20日" [ref=e345]:
+                    - generic [ref=e346]:
+                      - generic "2026年4月20日" [ref=e348]: 20日
+                      - generic [ref=e352] [cursor=pointer]:
+                        - generic [ref=e353]: 空
+                        - generic [ref=e354]: "32"
+                  - gridcell "2026年4月21日" [ref=e355]:
+                    - generic [ref=e356]:
+                      - generic "2026年4月21日" [ref=e358]: 21日
+                      - generic [ref=e362] [cursor=pointer]:
+                        - generic [ref=e363]: "717"
+                        - generic [ref=e364]: 08:18 -
+                        - generic [ref=e365]: 21:01
+                        - generic [ref=e366]: "33"
+                  - gridcell "2026年4月22日" [ref=e367]:
+                    - generic [ref=e368]:
+                      - generic "2026年4月22日" [ref=e370]: 22日
+                      - generic [ref=e374] [cursor=pointer]:
+                        - generic [ref=e375]: "126"
+                        - generic [ref=e376]: 15:26 -
+                        - generic [ref=e377]: 24:22
+                        - generic [ref=e378]: "34"
+                  - gridcell "2026年4月23日" [ref=e379]:
+                    - generic [ref=e380]:
+                      - generic "2026年4月23日" [ref=e382]: 23日
+                      - generic [ref=e386] [cursor=pointer]:
+                        - generic [ref=e387]: P予備
+                        - generic [ref=e388]: 13:25 -
+                        - generic [ref=e389]: 21:55
+                        - generic [ref=e390]: "35"
+                  - gridcell "2026年4月24日" [ref=e391]:
+                    - generic [ref=e392]:
+                      - generic "2026年4月24日" [ref=e394]: 24日
+                      - generic [ref=e398] [cursor=pointer]:
+                        - generic [ref=e399]: 公休
+                        - generic [ref=e400]: "36"
+                  - gridcell "2026年4月25日" [ref=e401]:
+                    - generic [ref=e402]:
+                      - generic "2026年4月25日" [ref=e404]: 25日
+                      - generic [ref=e408] [cursor=pointer]:
+                        - generic [ref=e409]: 法休
+                        - generic [ref=e410]: "37"
+                - row "2026年4月26日 2026年4月27日 2026年4月28日 2026年4月29日 2026年4月30日 2026年5月1日 2026年5月2日" [ref=e411]:
+                  - gridcell "2026年4月26日" [ref=e412]:
+                    - generic [ref=e413]:
+                      - generic "2026年4月26日" [ref=e415]: 26日
+                      - generic [ref=e419] [cursor=pointer]:
+                        - generic [ref=e420]: "132"
+                        - generic [ref=e421]: 14:36 -
+                        - generic [ref=e422]: 23:24
+                        - generic [ref=e423]: "38"
+                  - gridcell "2026年4月27日" [ref=e424]:
+                    - generic [ref=e425]:
+                      - generic "2026年4月27日" [ref=e427]: 27日
+                      - generic [ref=e431] [cursor=pointer]:
+                        - generic [ref=e432]: "514"
+                        - generic [ref=e433]: 13:53 -
+                        - generic [ref=e434]: 23:20
+                        - generic [ref=e435]: "39"
+                  - gridcell "2026年4月28日" [ref=e436]:
+                    - generic [ref=e437]:
+                      - generic "2026年4月28日" [ref=e439]: 28日
+                      - generic [ref=e443] [cursor=pointer]:
+                        - generic [ref=e444]: "132"
+                        - generic [ref=e445]: 16:09 -
+                        - generic [ref=e446]: 23:03
+                        - generic [ref=e447]: "40"
+                  - gridcell "2026年4月29日" [ref=e448]:
+                    - generic [ref=e449]:
+                      - generic "2026年4月29日" [ref=e451]: 29日
+                      - generic [ref=e455] [cursor=pointer]:
+                        - generic [ref=e456]: "3011"
+                        - generic [ref=e457]: 08:56 -
+                        - generic [ref=e458]: 18:14
+                        - generic [ref=e459]: 41 昭和の日
+                  - gridcell "2026年4月30日" [ref=e460]:
+                    - generic [ref=e461]:
+                      - generic "2026年4月30日" [ref=e463]: 30日
+                      - generic [ref=e467] [cursor=pointer]:
+                        - generic [ref=e468]: 黄713
+                        - generic [ref=e469]: 05:37 -
+                        - generic [ref=e470]: 12:01
+                        - generic [ref=e471]: "42"
+                  - gridcell "2026年5月1日" [ref=e472]:
+                    - generic [ref=e473]:
+                      - generic "2026年5月1日" [ref=e475]: 1日
+                      - generic [ref=e479] [cursor=pointer]:
+                        - generic [ref=e480]: 法休
+                        - generic [ref=e481]: "43"
+                  - gridcell "2026年5月2日" [ref=e482]:
+                    - generic [ref=e483]:
+                      - generic "2026年5月2日" [ref=e485]: 2日
+                      - generic [ref=e489] [cursor=pointer]:
+                        - generic [ref=e490]: "519"
+                        - generic [ref=e491]: 06:42 -
+                        - generic [ref=e492]: 20:44
+                        - generic [ref=e493]: "44"
+                - row "2026年5月3日 2026年5月4日 2026年5月5日 2026年5月6日 2026年5月7日 2026年5月8日 2026年5月9日" [ref=e494]:
+                  - gridcell "2026年5月3日" [ref=e495]:
+                    - generic [ref=e496]:
+                      - generic "2026年5月3日" [ref=e498]: 3日
+                      - generic [ref=e502] [cursor=pointer]:
+                        - generic [ref=e503]: "1106"
+                        - generic [ref=e504]: 15:08 -
+                        - generic [ref=e505]: 20:37
+                        - generic [ref=e506]: 45 憲法記念日
+                  - gridcell "2026年5月4日" [ref=e507]:
+                    - generic [ref=e508]:
+                      - generic "2026年5月4日" [ref=e510]: 4日
+                      - generic [ref=e514] [cursor=pointer]:
+                        - generic [ref=e515]: 空
+                        - generic [ref=e516]: 46 みどりの日
+                  - gridcell "2026年5月5日" [ref=e517]:
+                    - generic [ref=e518]:
+                      - generic "2026年5月5日" [ref=e520]: 5日
+                      - generic [ref=e524] [cursor=pointer]:
+                        - generic [ref=e525]: 空
+                        - generic [ref=e526]: 47 こどもの日
+                  - gridcell "2026年5月6日" [ref=e527]:
+                    - generic [ref=e528]:
+                      - generic "2026年5月6日" [ref=e530]: 6日
+                      - generic [ref=e534] [cursor=pointer]:
+                        - generic [ref=e535]: T807/808
+                        - generic [ref=e536]: 08:19 -
+                        - generic [ref=e537]: 21:55
+                        - generic [ref=e538]: 48 振替休日
+                  - gridcell "2026年5月7日" [ref=e539]:
+                    - generic [ref=e540]:
+                      - generic "2026年5月7日" [ref=e542]: 7日
+                      - generic [ref=e546] [cursor=pointer]:
+                        - generic [ref=e547]: 公休
+                        - generic [ref=e548]: "49"
+                  - gridcell "2026年5月8日" [ref=e549]:
+                    - generic [ref=e550]:
+                      - generic "2026年5月8日" [ref=e552]: 8日
+                      - generic [ref=e556] [cursor=pointer]:
+                        - generic [ref=e557]: 法休
+                        - generic [ref=e558]: "50"
+                  - gridcell "2026年5月9日" [ref=e559]:
+                    - generic [ref=e560]:
+                      - generic "2026年5月9日" [ref=e562]: 9日
+                      - generic [ref=e566] [cursor=pointer]:
+                        - generic [ref=e567]: "823"
+                        - generic [ref=e568]: 07:52 -
+                        - generic [ref=e569]: 18:26
+                        - generic [ref=e570]: "51"
+      - generic [ref=e571]:
+        - group "編集済み (0) ▶ 編集済み予定を非表示にする" [ref=e572]:
+          - generic [ref=e573] [cursor=pointer]:
+            - text: 編集済み (0)
+            - generic [ref=e574]: ▶
+            - button "編集済み予定を非表示にする" [ref=e575]:
+              - img [ref=e576]
+        - group "検索" [ref=e579]:
+          - generic [ref=e580]: 検索
+          - generic [ref=e582]:
+            - generic [ref=e583] [cursor=pointer]:
+              - radio "平日" [checked] [ref=e584]
+              - text: 平日
+            - generic [ref=e585] [cursor=pointer]:
+              - radio "土曜" [ref=e586]
+              - text: 土曜
+            - generic [ref=e587] [cursor=pointer]:
+              - radio "日祝" [ref=e588]
+              - text: 日祝
+          - textbox "予定名で検索..." [ref=e591]
+  - contentinfo [ref=e592]:
+    - paragraph [ref=e593]:
+      - text: KobanCalendar -
+      - link "GitHub" [ref=e594] [cursor=pointer]:
+        - /url: https://github.com/bn-k1/kobancalendar

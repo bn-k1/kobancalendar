@@ -43,8 +43,8 @@ defineProps({
 
 <style scoped>
 .eye-icon {
-  width: 18px;
-  height: 18px;
+  width: 1em;
+  height: 1em;
   display: block;
 }
 </style>

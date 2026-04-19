@@ -64,4 +64,4 @@ export const ERROR_MESSAGES = {
   GOAHEAD: "行ってらっしゃいませ",
 };
 
-export const EDITED_SCHEDULE_EMPTY_NOTICE = "長押しで予定を編集できます。";
+export const EDITED_SCHEDULE_EMPTY_NOTICE = "既存の予定を長押しして編集できます。";
