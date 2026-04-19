@@ -19,6 +19,11 @@
               新版: {{ formatAsDisplayDate(nextBaseDate) }}~
             </button>
           </div>
+          <div v-else-if="nextBaseDateStr && defaultBaseDate" class="version-link-row">
+            <button class="version-btn" @click="switchToDefaultBaseDate">
+              旧版: {{ formatAsDisplayDate(defaultBaseDate) }}~
+            </button>
+          </div>
         </BaseSelector>
 
         <BaseSelector
@@ -98,12 +103,14 @@ import { useEditedSchedules } from "@/stores/editedSchedules";
 import { useSchedule } from "@/composables/useSchedule";
 import { useAppInitializer } from "@/composables/useAppInitializer";
 import { useUrlParams } from "@/composables/useUrlParams";
+import { useLocalParams } from "@/composables/useLocalParams";
 
 import {
   createDate,
   formatAsISODate,
   formatAsDisplayDate,
   today,
+  isSameDay,
   isSameOrAfter,
   toDate,
 } from "@/utils/date";
@@ -117,17 +124,24 @@ import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
 const {
-  getDateParam,
-  getNumberParam,
-  updateCalendarParams,
-  pushURLParams,
-  resetURLIfUnknownParams,
-  enforceValidBaseDate,
+  hasLegacyUrlParams,
+  readLegacyUrlParams,
+  clearUrl,
+  calculateNewPosition,
 } = useUrlParams();
+const {
+  saveCalendarSelection,
+  loadCalendarSelection,
+  loadCalendarPositionFor,
+  clearCalendarSelection,
+} = useLocalParams();
 const { isLoaded, initializeApp } = useAppInitializer();
 const { initEditedSchedules } = useEditedSchedules();
-const { setSuggestedNumberHandler, clearSuggestedNumberHandler } =
-  useAlertModalStore();
+const {
+  open: openAlertModal,
+  setSuggestedNumberHandler,
+  clearSuggestedNumberHandler,
+} = useAlertModalStore();
 const calendarRef = ref(undefined);
 const selectedBaseDate = ref("");
 const viewRange = ref({ start: null, end: null });
@@ -186,34 +200,24 @@ function navigateCalendarTo(dateObj) {
   }
 }
 
-function switchToNextBaseDate() {
-  const nextDateObj = createDate(nextBaseDateStr.value);
-  updateActiveBaseDate(nextDateObj);
-  selectedBaseDate.value = nextBaseDateStr.value;
-  startPosition.value = undefined;
-  setStartPosition(undefined);
-  pushURLParams({ baseDate: nextBaseDateStr.value, startNumber: undefined });
-  navigateCalendarTo(nextDateObj);
+function switchBaseDate(dateObj, dateStr) {
+  updateActiveBaseDate(dateObj);
+  selectedBaseDate.value = dateStr;
+  const restored = loadCalendarPositionFor(dateStr);
+  const num = Number.isInteger(restored) ? restored : undefined;
+  startPosition.value = num;
+  setStartPosition(num);
+  saveCalendarSelection(dateStr, num ?? null);
+  navigateCalendarTo(dateObj);
 }
 
-function handlePopstate() {
-  const params = new URLSearchParams(window.location.search);
-  const baseDateStr = params.get("baseDate");
-  const startNumberStr = params.get("startNumber");
+function switchToNextBaseDate() {
+  switchBaseDate(createDate(nextBaseDateStr.value), nextBaseDateStr.value);
+}
 
-  const dateObj = baseDateStr ? createDate(baseDateStr) : null;
-  const baseToApply = dateObj?.isValid() ? dateObj : defaultBaseDate.value;
-  updateActiveBaseDate(baseToApply);
-  selectedBaseDate.value = formatAsISODate(baseToApply);
-
-  const startNum = parseInt(startNumberStr, 10);
-  const validStart = !isNaN(startNum) && startNum >= 1 ? startNum : undefined;
-  startPosition.value = validStart;
-  setStartPosition(validStart);
-
-  if (viewRange.value.start && viewRange.value.end) {
-    generateCalendarEvents(viewRange.value.start, viewRange.value.end);
-  }
+function switchToDefaultBaseDate() {
+  if (!defaultBaseDate.value) return;
+  switchBaseDate(defaultBaseDate.value, formatAsISODate(defaultBaseDate.value));
 }
 
 function handlePositionChange(newPosition) {
@@ -221,7 +225,9 @@ function handlePositionChange(newPosition) {
   startPosition.value = positionValue;
   setStartPosition(positionValue);
 
-  updateCalendarParams(selectedBaseDate.value, positionValue);
+  if (selectedBaseDate.value) {
+    saveCalendarSelection(selectedBaseDate.value, positionValue);
+  }
 }
 
 function handleDatesSet({ start, end }) {
@@ -248,7 +254,7 @@ function applySuggestedStartNumber(suggestedStartNumber) {
   setStartPosition(suggestedStartNumber);
 
   if (selectedBaseDate.value) {
-    updateCalendarParams(selectedBaseDate.value, suggestedStartNumber);
+    saveCalendarSelection(selectedBaseDate.value, suggestedStartNumber);
   }
 
   if (viewRange.value.start && viewRange.value.end) {
@@ -256,9 +262,53 @@ function applySuggestedStartNumber(suggestedStartNumber) {
   }
 }
 
+function classifyBaseDate(baseDateStr, validBaseDates) {
+  if (!baseDateStr) return { kind: "empty" };
+  const dateObj = createDate(baseDateStr);
+  if (!dateObj.isValid()) return { kind: "invalid" };
+
+  if (validBaseDates.some((d) => d && isSameDay(d, dateObj))) {
+    return { kind: "active", baseDate: dateObj };
+  }
+
+  const oldBaseDate = createDate(config.old_base_date);
+  if (oldBaseDate.isValid() && isSameDay(dateObj, oldBaseDate)) {
+    return { kind: "migrate" };
+  }
+
+  return { kind: "unknown" };
+}
+
+function validStartNumberOrNull(raw, cycleLength) {
+  const n = parseInt(raw, 10);
+  if (isNaN(n) || n < 1 || n > cycleLength) return null;
+  return n;
+}
+
+function applyDefaultBaseDate() {
+  if (!defaultBaseDate.value) {
+    console.error(ERROR_MESSAGES.NO_BASE_DATE);
+    return false;
+  }
+  updateActiveBaseDate(defaultBaseDate.value);
+  selectedBaseDate.value = formatAsISODate(defaultBaseDate.value);
+  setStartPosition(undefined);
+  startPosition.value = undefined;
+  return true;
+}
+
+function openMigrationModal(suggestedNumber) {
+  openAlertModal({
+    title: "基準日を更新しました",
+    message: ERROR_MESSAGES.INVALID_BASE_DATE,
+    suggestedNumber,
+  });
+}
+
 async function initialize() {
-  resetURLIfUnknownParams();
-  enforceValidBaseDate();
+  const hadUrlParams = hasLegacyUrlParams();
+  const legacyParams = hadUrlParams ? readLegacyUrlParams() : null;
+  if (hadUrlParams) clearUrl();
 
   try {
     const result = await initializeApp({
@@ -270,52 +320,104 @@ async function initialize() {
 
     if (!result) {
       alert(ERROR_MESSAGES.INIT_FAILED);
-      return;
+      return false;
     }
 
     const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
       Boolean,
     );
-    const baseDateParam = getDateParam(
-      "baseDate", 
-      undefined, 
-      validBaseDates,
-      config,
-      result.scheduleData.rotationCycleLength
-    );
-    const startNumberParam = getNumberParam(
-      "startNumber",
-      undefined,
-      1,
-      result.scheduleData.rotationCycleLength,
-    );
+    const cycleLength = result.scheduleData.rotationCycleLength;
 
-    let validBaseDate;
-    if (baseDateParam) {
-      validBaseDate = baseDateParam;
-      updateActiveBaseDate(validBaseDate);
-    } else if (defaultBaseDate.value) {
-      validBaseDate = defaultBaseDate.value;
-      updateActiveBaseDate(validBaseDate);
-    } else {
-      console.error(ERROR_MESSAGES.NO_BASE_DATE);
-      return false;
+    const applied = legacyParams
+      ? applyFromLegacy(legacyParams, validBaseDates, cycleLength)
+      : applyFromStorage(validBaseDates, cycleLength);
+
+    if (!applied) {
+      return applyDefaultBaseDate();
     }
-
-    selectedBaseDate.value = formatAsISODate(validBaseDate);
-
-    if (!baseDateParam || !startNumberParam) {
-      setStartPosition(undefined);
-      return true;
-    }
-
-    setStartPosition(startNumberParam);
     return true;
   } catch (error) {
     console.error(ERROR_MESSAGES.INIT_FAILED, error);
     alert(ERROR_MESSAGES.INIT_FAILED);
     return false;
   }
+}
+
+function applyFromLegacy(params, validBaseDates, cycleLength) {
+  const cls = classifyBaseDate(params.baseDate, validBaseDates);
+
+  if (cls.kind === "empty") {
+    // Legacy URL had other params but no baseDate
+    alert(ERROR_MESSAGES.NO_BASE_DATE);
+    return false;
+  }
+  if (cls.kind === "invalid") {
+    console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: baseDate`);
+    return false;
+  }
+
+  if (cls.kind === "active") {
+    const num = validStartNumberOrNull(params.startNumber, cycleLength);
+    updateActiveBaseDate(cls.baseDate);
+    selectedBaseDate.value = formatAsISODate(cls.baseDate);
+    setStartPosition(num ?? undefined);
+    startPosition.value = num ?? undefined;
+    saveCalendarSelection(selectedBaseDate.value, num);
+    return true;
+  }
+
+  if (cls.kind === "migrate") {
+    const originalNum = parseInt(params.startNumber, 10);
+    if (!isNaN(originalNum)) {
+      const shifted = calculateNewPosition(
+        originalNum,
+        config.position_shift,
+        cycleLength,
+      );
+      if (Number.isInteger(shifted)) {
+        openMigrationModal(shifted);
+      }
+    }
+    return false;
+  }
+
+  return false; // unknown
+}
+
+function applyFromStorage(validBaseDates, cycleLength) {
+  const stored = loadCalendarSelection();
+  if (!stored) return false;
+
+  const cls = classifyBaseDate(stored.baseDate, validBaseDates);
+
+  if (cls.kind === "active") {
+    const num = validStartNumberOrNull(stored.startNumber, cycleLength);
+    updateActiveBaseDate(cls.baseDate);
+    selectedBaseDate.value = formatAsISODate(cls.baseDate);
+    setStartPosition(num ?? undefined);
+    startPosition.value = num ?? undefined;
+    return true;
+  }
+
+  if (cls.kind === "migrate") {
+    clearCalendarSelection();
+    const originalNum = parseInt(stored.startNumber, 10);
+    if (!isNaN(originalNum)) {
+      const shifted = calculateNewPosition(
+        originalNum,
+        config.position_shift,
+        cycleLength,
+      );
+      if (Number.isInteger(shifted)) {
+        openMigrationModal(shifted);
+      }
+    }
+    return false;
+  }
+
+  // invalid / empty / unknown — drop it
+  clearCalendarSelection();
+  return false;
 }
 
 watch(activeBaseDate, (newBaseDate) => {
@@ -332,13 +434,11 @@ watch(computedStartPosition, (newValue) => {
 
 onMounted(async () => {
   setSuggestedNumberHandler(applySuggestedStartNumber);
-  window.addEventListener("popstate", handlePopstate);
   await initialize();
 });
 
 onUnmounted(() => {
   clearSuggestedNumberHandler();
-  window.removeEventListener("popstate", handlePopstate);
 });
 </script>
 

@@ -1,87 +1,56 @@
-import { createDate, formatAsISODate, isSameDay } from "@/utils/date";
-import { ERROR_MESSAGES } from "@/utils/constants";
-import { useAlertModalStore } from "@/stores/alertModal";
-import config from "@config/config.json";
+const LEGACY_PARAM_KEYS = [
+  "baseDate",
+  "startNumber",
+  "participants",
+  "startTime",
+  "period",
+];
+
+function getNormalizedHash(hash = window.location.hash) {
+  if (!hash || hash === "#") {
+    return "#/";
+  }
+  return hash;
+}
 
 /**
- * URL parameters handling composable
- * Handles retrieving and updating URL parameters for both views
+ * Legacy URL support.
+ *
+ * The app no longer writes to the URL — state lives in localStorage via
+ * useLocalParams. But URLs generated before this change may still be in
+ * circulation (bookmarks, shared links), so on first load a view reads any
+ * recognized query params once and then clears them.
  */
 export function useUrlParams() {
-  const { open } = useAlertModalStore();
-
-  const validParams = [
-    "baseDate",
-    "startNumber",
-    "participants",
-    "startTime",
-    "period",
-  ];
-
-  function getNormalizedHash(hash = window.location.hash) {
-    if (!hash || hash === "#") {
-      return "#/";
+  function hasLegacyUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    for (const key of LEGACY_PARAM_KEYS) {
+      if (params.has(key)) return true;
     }
-    return hash;
+    return false;
   }
 
-  function resetURL() {
-    const normalizedHash = getNormalizedHash();
+  function readLegacyUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const out = {};
+    for (const key of LEGACY_PARAM_KEYS) {
+      if (params.has(key)) out[key] = params.get(key);
+    }
+    return out;
+  }
+
+  function clearUrl() {
+    const hash = getNormalizedHash();
     window.history.replaceState(
       {},
       "",
-      `${window.location.pathname}${normalizedHash}`,
+      `${window.location.pathname}${hash}`,
     );
   }
 
-  function resetURLWithError(errorMessage) {
-    console.error(errorMessage);
-    resetURL();
-  }
-
   /**
-   * Reset URL if unknown params exist
-   */
-  function resetURLIfUnknownParams() {
-    const url = new URL(window.location);
-    const keys = Array.from(url.searchParams.keys());
-    const unknownKeys = keys.filter((key) => !validParams.includes(key));
-    if (unknownKeys.length > 0) {
-      resetURL();
-    }
-  }
-
-  /**
-   * Alert and reset URL if baseDate is missing or invalid,
-   * but only when other parameters are present
-   */
-  function enforceValidBaseDate() {
-    const url = new URL(window.location);
-    const paramsExist = url.searchParams.toString().length > 0;
-    if (!paramsExist) {
-      return;
-    }
-
-    const baseDateStr = url.searchParams.get("baseDate");
-    if (!baseDateStr) {
-      alert(ERROR_MESSAGES.NO_BASE_DATE);
-      resetURL();
-      return;
-    }
-
-    const dateObj = createDate(baseDateStr);
-    if (!dateObj.isValid()) {
-      alert(ERROR_MESSAGES.NO_BASE_DATE);
-      resetURL();
-    }
-  }
-
-  /**
-   * Calculate new position when base date changes
-   * @param {number} currentStartNumber - Current start number from URL
-   * @param {number} positionShift - Magic number from config
-   * @param {number} rotationCycleLength - Rotation cycle length
-   * @returns {number} New position
+   * Shift a rotation position by `positionShift`, wrapping within the cycle.
+   * Used when migrating state saved against `old_base_date`.
    */
   function calculateNewPosition(
     currentStartNumber,
@@ -93,217 +62,16 @@ export function useUrlParams() {
     }
 
     let newPosition = currentStartNumber + positionShift;
-
-    // If exceeds rotation cycle length, wrap around
     if (newPosition > rotationCycleLength) {
       newPosition = newPosition - rotationCycleLength;
     }
-
     return newPosition;
   }
 
-  /**
-   * Update URL parameters without reloading the page
-   * @param {Object} params - Parameters to update
-   */
-  function buildUpdatedURL(params) {
-    const url = new URL(window.location);
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
-        url.searchParams.set(key, value);
-      } else {
-        url.searchParams.delete(key);
-      }
-    });
-    const normalizedHash = getNormalizedHash(url.hash);
-    return `${url.pathname}${url.search}${normalizedHash}`;
-  }
-
-  function updateURLParams(params) {
-    window.history.replaceState({}, "", buildUpdatedURL(params));
-  }
-
-  function pushURLParams(params) {
-    window.history.pushState({}, "", buildUpdatedURL(params));
-  }
-
-  /**
-   * Get a URL parameter value
-   * @param {string} paramName - Parameter name
-   * @param {*} defaultValue - Default value if parameter doesn't exist
-   * @returns {string} Parameter value or default
-   */
-  function getURLParam(paramName, defaultValue = undefined) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.has(paramName) ? urlParams.get(paramName) : defaultValue;
-  }
-
-  function resolveSuggestedStartNumberForInvalidBaseDate(rotationCycleLength) {
-    if (!config || !config.position_shift || !rotationCycleLength) {
-      return null;
-    }
-
-    const currentStartNumber = getNumberParam("startNumber", null);
-    if (!currentStartNumber) {
-      return null;
-    }
-
-    return calculateNewPosition(
-      currentStartNumber,
-      config.position_shift,
-      rotationCycleLength,
-    );
-  }
-
-  /**
-   * Get and validate a date parameter from URL
-   * @param {string} paramName - Parameter name
-   * @param {*} defaultValue - Default value
-   * @param {Array} validDates - Valid dates to check against
-   * @param {Object} config - Config object (optional, for position_shift support)
-   * @param {number} rotationCycleLength - Rotation cycle length (optional, for position_shift support)
-   */
-  function getDateParam(
-    paramName,
-    defaultValue,
-    validDates = [],
-    appConfig = null,
-    rotationCycleLength = null,
-  ) {
-    const dateStr = getURLParam(paramName);
-
-    if (!dateStr) {
-      return defaultValue;
-    }
-
-    const dateObj = createDate(dateStr);
-
-    // Check date validity
-    if (!dateObj.isValid()) {
-      resetURLWithError(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
-      return defaultValue;
-    }
-
-    // Validate against allowed dates if provided
-    if (validDates.length > 0) {
-      const dateExists = validDates.some((date) => isSameDay(date, dateObj));
-
-      if (!dateExists) {
-        const oldBaseDate = createDate(appConfig.old_base_date);
-        const shouldAlertInvalidBaseDate =
-          oldBaseDate.isValid() && isSameDay(dateObj, oldBaseDate);
-
-        if (shouldAlertInvalidBaseDate) {
-          const suggestedNumber = resolveSuggestedStartNumberForInvalidBaseDate(
-            rotationCycleLength,
-          );
-
-          open({
-            title: "基準日を更新しました",
-            message: ERROR_MESSAGES.INVALID_BASE_DATE,
-            suggestedNumber,
-          });
-        }
-
-        resetURL();
-        return defaultValue;
-      }
-    }
-
-    return dateObj;
-  }
-
-  /**
-   * Get a number parameter from URL
-   */
-  function getNumberParam(
-    paramName,
-    defaultValue,
-    min = undefined,
-    max = undefined,
-  ) {
-    const valueStr = getURLParam(paramName);
-    if (!valueStr) return defaultValue;
-
-    const value = parseInt(valueStr, 10);
-    if (isNaN(value)) {
-      resetURLWithError(`${ERROR_MESSAGES.INVALID_URL_PARAM}: ${paramName}`);
-      return defaultValue;
-    }
-
-    if (min !== undefined && value < min) {
-      resetURLWithError(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
-      return defaultValue;
-    }
-
-    if (max !== undefined && value > max) {
-      resetURLWithError(ERROR_MESSAGES.PARAM_OUT_OF_RANGE);
-      return defaultValue;
-    }
-
-    return value;
-  }
-
-  /**
-   * Get a string parameter from URL
-   */
-  function getStringParam(paramName, defaultValue) {
-    return getURLParam(paramName, defaultValue);
-  }
-
-  /**
-   * Get participant positions from URL parameter
-   */
-  function getParticipantsFromParams() {
-    const participantsParam = getURLParam("participants", "");
-    if (!participantsParam) return [{ position: "" }];
-
-    const positions = participantsParam
-      .split(",")
-      .map((p) => parseInt(p, 10))
-      .filter((p) => !isNaN(p));
-
-    return positions.length > 0
-      ? positions.map((position) => ({ position }))
-      : [{ position: "" }];
-  }
-
-  /**
-   * Update URL parameters for calendar view
-   */
-  function updateCalendarParams(baseDate, startNumber) {
-    updateURLParams({
-      baseDate: formatAsISODate(baseDate),
-      startNumber,
-    });
-  }
-
-  /**
-   * Update URL parameters for meetup view
-   */
-  function updateMeetupParams(baseDate, participants, otherParams = {}) {
-    const validParticipants = participants
-      .filter((p) => p.position)
-      .map((p) => p.position)
-      .join(",");
-
-    updateURLParams({
-      baseDate: formatAsISODate(baseDate),
-      participants: validParticipants,
-      ...otherParams,
-    });
-  }
-
   return {
-    getDateParam,
-    getNumberParam,
-    getStringParam,
-    getParticipantsFromParams,
-    updateCalendarParams,
-    updateMeetupParams,
-    pushURLParams,
+    hasLegacyUrlParams,
+    readLegacyUrlParams,
+    clearUrl,
     calculateNewPosition,
-    resetURLIfUnknownParams,
-    enforceValidBaseDate,
   };
 }

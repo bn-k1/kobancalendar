@@ -1,6 +1,6 @@
 // src/__tests__/setup.js
 // Test environment setup - localStorage mock for happy-dom
-import { vi } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 // happy-dom の localStorage は Storage interface を実装していないため
 // 完全な mock に置き換える
@@ -29,3 +29,7 @@ const createStorageMock = () => {
 };
 
 vi.stubGlobal("localStorage", createStorageMock());
+
+beforeEach(() => {
+  localStorage.clear();
+});

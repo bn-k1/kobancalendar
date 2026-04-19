@@ -25,13 +25,35 @@ function parseLegacyKeyValueString(stored) {
 }
 
 function readStoredObject(storageKey) {
-  const stored = localStorage.getItem(storageKey);
+  let stored;
+  try {
+    stored = localStorage.getItem(storageKey);
+  } catch {
+    return null;
+  }
   if (!stored) return null;
 
   try {
     return JSON.parse(stored);
   } catch {
     return parseLegacyKeyValueString(stored);
+  }
+}
+
+function writeStoredObject(storageKey, value) {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function removeStoredObject(storageKey) {
+  try {
+    localStorage.removeItem(storageKey);
+  } catch {
+    // noop — storage may be unavailable
   }
 }
 
@@ -43,50 +65,86 @@ function toValidIntegerArray(values) {
     .filter((value) => !isNaN(value));
 }
 
+function readCalendarStorage() {
+  const parsed = readStoredObject(CALENDAR_STORAGE_KEY);
+  if (!parsed || typeof parsed !== "object") return { active: null, positions: {} };
+
+  if (parsed.positions && typeof parsed.positions === "object") {
+    const positions = {};
+    for (const [key, value] of Object.entries(parsed.positions)) {
+      const n = parseInt(value, 10);
+      if (!isNaN(n)) positions[key] = n;
+    }
+    return { active: parsed.active || null, positions };
+  }
+
+  // Legacy flat shape {baseDate, startNumber}
+  const legacyBase = parsed.baseDate || null;
+  const legacyNum = parseInt(parsed.startNumber, 10);
+  const positions = {};
+  if (legacyBase && !isNaN(legacyNum)) positions[legacyBase] = legacyNum;
+  return { active: legacyBase, positions };
+}
+
 export function useLocalParams() {
   function saveCalendarSelection(baseDate, startNumber) {
-    if (!baseDate || !startNumber) return false;
+    if (!baseDate) return false;
 
-    localStorage.setItem(
-      CALENDAR_STORAGE_KEY,
-      JSON.stringify({ baseDate, startNumber }),
-    );
-    return true;
+    const current = readCalendarStorage();
+    const positions = { ...current.positions };
+    const parsedStart = parseInt(startNumber, 10);
+    if (!isNaN(parsedStart)) {
+      positions[baseDate] = parsedStart;
+    }
+
+    return writeStoredObject(CALENDAR_STORAGE_KEY, {
+      active: baseDate,
+      positions,
+    });
   }
 
   function loadCalendarSelection() {
-    const parsed = readStoredObject(CALENDAR_STORAGE_KEY);
-    if (!parsed) return null;
+    const { active, positions } = readCalendarStorage();
+    if (!active) return null;
+    const stored = positions[active];
+    const startNumber = typeof stored === "number" ? stored : null;
+    return { baseDate: active, startNumber };
+  }
 
-    const baseDate = parsed?.baseDate;
-    const startNumber = parseInt(parsed?.startNumber, 10);
+  function loadCalendarPositionFor(baseDate) {
+    if (!baseDate) return null;
+    const { positions } = readCalendarStorage();
+    const stored = positions[baseDate];
+    return typeof stored === "number" ? stored : null;
+  }
 
-    if (!baseDate || isNaN(startNumber)) {
-      return null;
-    }
-
-    return { baseDate, startNumber };
+  function clearCalendarSelection() {
+    removeStoredObject(CALENDAR_STORAGE_KEY);
   }
 
   function saveMeetupParams(baseDate, participants, startTime, period) {
-    const validParticipants = participants
-      .map((participant) => parseInt(participant.position, 10))
-      .filter((position) => !isNaN(position));
+    const validParticipants = toValidIntegerArray(
+      participants?.map?.((p) =>
+        typeof p === "object" ? p.position : p,
+      ),
+    );
+    const parsedPeriod = parseInt(period, 10);
 
-    if (!baseDate || validParticipants.length === 0 || !startTime || !period) {
+    if (
+      !baseDate ||
+      validParticipants.length === 0 ||
+      !startTime ||
+      isNaN(parsedPeriod)
+    ) {
       return false;
     }
 
-    localStorage.setItem(
-      MEETUP_STORAGE_KEY,
-      JSON.stringify({
-        baseDate,
-        participants: validParticipants,
-        startTime,
-        period: parseInt(period, 10),
-      }),
-    );
-    return true;
+    return writeStoredObject(MEETUP_STORAGE_KEY, {
+      baseDate,
+      participants: validParticipants,
+      startTime,
+      period: parsedPeriod,
+    });
   }
 
   function loadMeetupParams() {
@@ -119,10 +177,17 @@ export function useLocalParams() {
     };
   }
 
+  function clearMeetupParams() {
+    removeStoredObject(MEETUP_STORAGE_KEY);
+  }
+
   return {
     saveCalendarSelection,
     loadCalendarSelection,
+    loadCalendarPositionFor,
+    clearCalendarSelection,
     saveMeetupParams,
     loadMeetupParams,
+    clearMeetupParams,
   };
 }
