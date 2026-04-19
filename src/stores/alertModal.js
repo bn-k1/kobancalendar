@@ -1,14 +1,12 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 
-export const ALERT_MODAL_SUGGESTED_NUMBER_EVENT =
-  "alert-modal:suggested-start-number";
-
 export const useAlertModalStore = defineStore("alertModal", () => {
   const isVisible = ref(false);
   const title = ref("Notification");
   const message = ref("");
   const suggestedNumber = ref(null);
+  const suggestedNumberHandler = ref(null);
 
   function open({
     title: nextTitle = "Notification",
@@ -28,6 +26,20 @@ export const useAlertModalStore = defineStore("alertModal", () => {
     suggestedNumber.value = null;
   }
 
+  function setSuggestedNumberHandler(handler) {
+    suggestedNumberHandler.value =
+      typeof handler === "function" ? handler : null;
+  }
+
+  function clearSuggestedNumberHandler() {
+    suggestedNumberHandler.value = null;
+  }
+
+  function applySuggestedNumber() {
+    if (!Number.isInteger(suggestedNumber.value)) return;
+    suggestedNumberHandler.value?.(suggestedNumber.value);
+  }
+
   return {
     isVisible,
     title,
@@ -35,5 +47,8 @@ export const useAlertModalStore = defineStore("alertModal", () => {
     suggestedNumber,
     open,
     close,
+    setSuggestedNumberHandler,
+    clearSuggestedNumberHandler,
+    applySuggestedNumber,
   };
 });

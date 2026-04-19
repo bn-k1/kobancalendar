@@ -9,7 +9,7 @@ import {
   formatAsDisplayDate,
   isBefore,
   addDays,
-  toUnix,
+  isSame,
   isSameOrAfter,
 } from "@/utils/date";
 
@@ -89,13 +89,14 @@ export function useSchedule() {
 
     // Check if date is within valid range
     const baseStr = formatAsISODate(baseDate);
-    const nextStr = formatAsISODate(storeNextBaseDate.value);
+    if (dateStr < baseStr) {
+      return undefined;
+    }
 
-    if (
-      (toUnix(baseDate) !== toUnix(storeNextBaseDate.value) &&
-        dateStr >= nextStr) ||
-      dateStr < baseStr
-    ) {
+    const nextBase = storeNextBaseDate.value;
+    const hasDistinctNextBase =
+      !!nextBase?.isValid?.() && !isSame(baseDate, nextBase, "day");
+    if (hasDistinctNextBase && dateStr >= formatAsISODate(nextBase)) {
       return undefined;
     }
 
@@ -210,10 +211,15 @@ export function useSchedule() {
 
   /**
    * Set next base date
-   * @param {dayjs} date - Next base date
+   * @param {dayjs|string|Date|null|undefined} date - Next base date; null/undefined/invalid clears it
    */
   function setNextBaseDate(date) {
-    scheduleStore.setNextBaseDate(createDate(date));
+    if (date === undefined || date === null) {
+      scheduleStore.setNextBaseDate(undefined);
+      return;
+    }
+    const d = createDate(date);
+    scheduleStore.setNextBaseDate(d.isValid() ? d : undefined);
   }
 
   /**

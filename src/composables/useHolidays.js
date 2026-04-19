@@ -60,11 +60,20 @@ export function useHolidays() {
   }
 
   /**
+   * Enumerate years around the current year, inclusive of both endpoints.
+   */
+  function forEachYearInRange(currentYear, yearsRange, fn) {
+    for (
+      let year = currentYear - yearsRange;
+      year <= currentYear + yearsRange;
+      year++
+    ) {
+      fn(year);
+    }
+  }
+
+  /**
    * Add user-defined holidays to holidays object
-   * @param {Object} holidays - Holidays object to update
-   * @param {Array} customHolidays - Custom holiday dates
-   * @param {number} currentYear - Current year
-   * @param {number} yearsRange - Years range
    */
   function addUserDefinedHolidays(
     holidays,
@@ -73,36 +82,24 @@ export function useHolidays() {
     yearsRange,
   ) {
     customHolidays.forEach((date) => {
-      let [month, day] = date.split("-");
-      for (
-        let year = currentYear - yearsRange;
-        year <= currentYear + yearsRange;
-        year++
-      ) {
-        let formattedDate = `${year}-${month}-${day}`;
+      const [month, day] = date.split("-");
+      forEachYearInRange(currentYear, yearsRange, (year) => {
+        const formattedDate = `${year}-${month}-${day}`;
         if (holidays[formattedDate] === undefined) {
           holidays[formattedDate] = CUSTOM_HOLIDAY;
         }
-      }
+      });
     });
   }
 
   /**
    * Fetch holidays for a given year range
-   * @param {number} yearsRange - Years before/after current year
-   * @param {Array} customHolidays - Custom holiday dates
-   * @returns {Object} Holidays object
    */
   function fetchHolidays(yearsRange, customHolidays) {
     const currentYear = createDate().year();
     const holidays = {};
 
-    // Get official holidays from JapaneseHolidays library
-    for (
-      let year = currentYear - yearsRange;
-      year <= currentYear + yearsRange;
-      year++
-    ) {
+    forEachYearInRange(currentYear, yearsRange, (year) => {
       const yearHolidays = JapaneseHolidays.getHolidaysOf(year);
       yearHolidays.forEach((holiday) => {
         const dateObj = createDate(
@@ -111,9 +108,8 @@ export function useHolidays() {
         const dateStr = formatAsISODate(dateObj);
         holidays[dateStr] = holiday.name;
       });
-    }
+    });
 
-    // Add user-defined holidays
     if (customHolidays && customHolidays.length > 0) {
       addUserDefinedHolidays(holidays, customHolidays, currentYear, yearsRange);
     }

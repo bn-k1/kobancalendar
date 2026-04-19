@@ -34,10 +34,7 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import {
-  ALERT_MODAL_SUGGESTED_NUMBER_EVENT,
-  useAlertModalStore,
-} from "@/stores/alertModal";
+import { useAlertModalStore } from "@/stores/alertModal";
 
 const alertModalStore = useAlertModalStore();
 const {
@@ -46,22 +43,11 @@ const {
   message: alertModalMessage,
   suggestedNumber: alertModalSuggestedNumber,
 } = storeToRefs(alertModalStore);
-const { close: closeAlertModal } = alertModalStore;
-
-function emitSuggestedStartNumber() {
-  if (!Number.isInteger(alertModalSuggestedNumber.value)) {
-    return;
-  }
-
-  window.dispatchEvent(
-    new CustomEvent(ALERT_MODAL_SUGGESTED_NUMBER_EVENT, {
-      detail: { startNumber: alertModalSuggestedNumber.value },
-    }),
-  );
-}
+const { close: closeAlertModal, applySuggestedNumber: applySuggestedNumberToHandler } =
+  alertModalStore;
 
 function applySuggestedNumber() {
-  emitSuggestedStartNumber();
+  applySuggestedNumberToHandler();
   closeAlertModal();
 }
 

@@ -15,6 +15,10 @@ export default defineConfig(({ mode }) => {
       },
     },
     base: isGHPages ? "/kobancalendar/" : "/",
+    server: {
+      host: true,
+      allowedHosts: [".ts.net"],
+    },
     build: {
       outDir: isGHPages ? "docs" : "dist",
       sourcemap: false,

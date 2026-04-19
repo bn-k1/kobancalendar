@@ -117,40 +117,59 @@ function processDirectory(dirName) {
     rotationCycleLength: 0
   };
 
-  let hasValidData = true;
+  let allFilesPresent = true;
+  let anyReadError = false;
 
   // Process each CSV file
   for (const filename of FILES_TO_CONVERT) {
     const csvPath = join(inputDir, `${filename}.csv`);
-    
+
     console.log(`Processing ${csvPath}`);
-    
+
     if (!fs.existsSync(csvPath)) {
-      console.warn(`File not found: ${csvPath}. Marking data as invalid.`);
-      hasValidData = false;
-      break;
+      console.warn(`File not found: ${csvPath}.`);
+      allFilesPresent = false;
+      continue;
     }
 
     try {
       const csvContent = fs.readFileSync(csvPath, 'utf8');
       const parsedData = parseCSVToScheduleObjects(csvContent);
       scheduleData[filename] = parsedData;
-      
+
       console.log(`✓ Parsed ${filename}.csv (${parsedData.length} entries)`);
     } catch (err) {
       console.error(`Error reading or parsing ${csvPath}:`, err);
-      hasValidData = false;
-      break;
+      anyReadError = true;
     }
   }
 
-  // Validate data consistency
-  if (hasValidData && validateScheduleData(scheduleData)) {
+  if (anyReadError) {
+    throw new Error(`Failed to read one or more CSVs in '${dirName}'. Fix and retry.`);
+  }
+
+  // A directory with no CSV files is a valid "no-data" state (e.g. data/next/ before a transition).
+  // Emit an empty schedule in that case, but if files exist they must be consistent.
+  const anyFilePresent = FILES_TO_CONVERT.some((f) =>
+    fs.existsSync(join(inputDir, `${f}.csv`))
+  );
+
+  if (!anyFilePresent) {
+    console.warn(`⚠ No CSVs in '${dirName}'. Creating empty schedule data.`);
+    Object.assign(scheduleData, createEmptyScheduleData());
+  } else if (!allFilesPresent) {
+    throw new Error(
+      `Incomplete CSV set in '${dirName}': holiday/saturday/weekday must all exist or all be absent.`
+    );
+  } else if (validateScheduleData(scheduleData)) {
     scheduleData.rotationCycleLength = scheduleData.holiday.length;
     console.log(`✓ Validation passed. Rotation cycle length: ${scheduleData.rotationCycleLength}`);
   } else {
-    console.warn(`⚠ Validation failed or missing files. Creating empty schedule data.`);
-    Object.assign(scheduleData, createEmptyScheduleData());
+    throw new Error(
+      `Row-count mismatch in '${dirName}': holiday=${scheduleData.holiday.length}, ` +
+      `saturday=${scheduleData.saturday.length}, weekday=${scheduleData.weekday.length}. ` +
+      `All three must have identical non-zero row counts.`
+    );
   }
 
   // Write consolidated JSON file (minified - no formatting)

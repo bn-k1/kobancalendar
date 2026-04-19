@@ -137,13 +137,14 @@ export function toUnix(date) {
 }
 
 /**
- * Time parsing
+ * Time parsing — TIMEZONE 固定で生成し、環境依存の比較ズレを防ぐ
  */
 export function parseTime(timeStr) {
   if (!timeStr) return undefined;
 
   const [hours, minutes = "00"] = timeStr.split(":");
-  return dayjs()
+  return dayjs
+    .tz(undefined, TIMEZONE)
     .hour(parseInt(hours, 10))
     .minute(parseInt(minutes, 10))
     .second(0)

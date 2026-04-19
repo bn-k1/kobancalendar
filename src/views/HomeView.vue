@@ -109,7 +109,7 @@ import {
 } from "@/utils/date";
 
 import { ERROR_MESSAGES } from "@/utils/constants";
-import { ALERT_MODAL_SUGGESTED_NUMBER_EVENT } from "@/stores/alertModal";
+import { useAlertModalStore } from "@/stores/alertModal";
 
 import defaultScheduleData from "@data/default/default.json";
 import nextScheduleData from "@data/next/next.json";
@@ -126,6 +126,8 @@ const {
 } = useUrlParams();
 const { isLoaded, initializeApp } = useAppInitializer();
 const { initEditedSchedules } = useEditedSchedules();
+const { setSuggestedNumberHandler, clearSuggestedNumberHandler } =
+  useAlertModalStore();
 const calendarRef = ref(undefined);
 const selectedBaseDate = ref("");
 const viewRange = ref({ start: null, end: null });
@@ -233,11 +235,9 @@ function handleEditedChanged() {
   }
 }
 
-function applySuggestedStartNumber(event) {
-  const suggestedStartNumber = parseInt(event.detail?.startNumber, 10);
-
+function applySuggestedStartNumber(suggestedStartNumber) {
   if (
-    isNaN(suggestedStartNumber) ||
+    !Number.isInteger(suggestedStartNumber) ||
     suggestedStartNumber < 1 ||
     suggestedStartNumber > rotationCycleLength.value
   ) {
@@ -331,13 +331,13 @@ watch(computedStartPosition, (newValue) => {
 });
 
 onMounted(async () => {
-  window.addEventListener(ALERT_MODAL_SUGGESTED_NUMBER_EVENT, applySuggestedStartNumber);
+  setSuggestedNumberHandler(applySuggestedStartNumber);
   window.addEventListener("popstate", handlePopstate);
   await initialize();
 });
 
 onUnmounted(() => {
-  window.removeEventListener(ALERT_MODAL_SUGGESTED_NUMBER_EVENT, applySuggestedStartNumber);
+  clearSuggestedNumberHandler();
   window.removeEventListener("popstate", handlePopstate);
 });
 </script>
