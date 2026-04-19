@@ -1,7 +1,7 @@
 <template>
   <a
     class="help-link"
-    href="./manual.html"
+    :href="manualUrl"
     target="_blank"
     rel="noopener noreferrer"
     aria-label="使い方ガイドを開く"
@@ -13,6 +13,8 @@
 
 <script setup>
 import HelpIcon from "@/components/Icons/HelpIcon.vue";
+
+const manualUrl = `${import.meta.env.BASE_URL}manual.html`;
 </script>
 
 <style scoped>

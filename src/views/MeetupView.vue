@@ -20,6 +20,11 @@
               新版: {{ formatAsDisplayDate(nextBaseDate) }}~
             </button>
           </div>
+          <div v-else-if="nextBaseDateStr && defaultBaseDate" class="version-link-row">
+            <button class="version-btn" @click="switchToDefaultBaseDate">
+              旧版: {{ formatAsDisplayDate(defaultBaseDate) }}~
+            </button>
+          </div>
         </BaseSelector>
 
         <!-- Meetup settings -->
@@ -122,7 +127,6 @@ const ResultsDisplay = defineAsyncComponent(
 // Composables
 import { useSchedule } from "@/composables/useSchedule";
 import { useAppInitializer } from "@/composables/useAppInitializer";
-import { useUrlParams } from "@/composables/useUrlParams";
 import { useLocalParams } from "@/composables/useLocalParams";
 import { useMeetupSearch } from "@/composables/useMeetupSearch";
 
@@ -160,11 +164,13 @@ const participants = ref([{ position: "" }]);
 
 // Composables initialization
 const { isLoaded, initializeApp } = useAppInitializer();
-const { hasLegacyUrlParams, readLegacyUrlParams, clearUrl } = useUrlParams();
 const {
   saveMeetupParams,
   loadMeetupParams,
+  loadMeetupParamsFor,
   clearMeetupParams,
+  loadCalendarSelection,
+  loadCalendarPositionFor,
 } = useLocalParams();
 const { searchResults, findMeetupDates } = useMeetupSearch();
 
@@ -196,10 +202,53 @@ function applySelectedBaseDate(dateObj) {
   selectedBaseDate.value = formatAsISODate(dateObj);
 }
 
+function applyHomeFallbackFor(baseDateStr) {
+  const homePosition = loadCalendarPositionFor(baseDateStr);
+  if (!Number.isInteger(homePosition)) return false;
+
+  participants.value = [{ position: homePosition }];
+  meetupStartTime.value = APP_CONFIG.DEFAULT_MEETUP_START_TIME;
+  searchPeriod.value = APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString();
+  saveMeetupParams(
+    baseDateStr,
+    participants.value,
+    meetupStartTime.value,
+    searchPeriod.value,
+  );
+  return true;
+}
+
+function resetMeetupToDefaults() {
+  participants.value = [{ position: "" }];
+  meetupStartTime.value = APP_CONFIG.DEFAULT_MEETUP_START_TIME;
+  searchPeriod.value = APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString();
+}
+
+function applyMeetupSet(baseDateStr) {
+  const loaded = loadMeetupParamsFor(baseDateStr);
+  if (loaded) {
+    participants.value = loaded.participants;
+    meetupStartTime.value = loaded.startTime;
+    searchPeriod.value = String(loaded.period);
+    return;
+  }
+  if (applyHomeFallbackFor(baseDateStr)) return;
+  resetMeetupToDefaults();
+}
+
 function switchToNextBaseDate() {
   const nextDateObj = createDate(nextBaseDateStr.value);
   applySelectedBaseDate(nextDateObj);
   showResults.value = false;
+  applyMeetupSet(nextBaseDateStr.value);
+}
+
+function switchToDefaultBaseDate() {
+  if (!defaultBaseDate.value) return;
+  const dateStr = formatAsISODate(defaultBaseDate.value);
+  applySelectedBaseDate(defaultBaseDate.value);
+  showResults.value = false;
+  applyMeetupSet(dateStr);
 }
 
 function classifyBaseDate(baseDateStr, validBaseDates) {
@@ -209,20 +258,7 @@ function classifyBaseDate(baseDateStr, validBaseDates) {
   if (validBaseDates.some((d) => d && isSameDay(d, dateObj))) {
     return { kind: "active", baseDate: dateObj };
   }
-  return { kind: "unknown" }; // includes old_base_date — meetup can't migrate a list via the modal
-}
-
-function parseLegacyMeetupFields(rawParams) {
-  const positions = rawParams.participants
-    ? rawParams.participants
-        .split(",")
-        .map((p) => parseInt(p, 10))
-        .filter((p) => !isNaN(p))
-    : [];
-  const startTime = rawParams.startTime || null;
-  const periodNum = parseInt(rawParams.period, 10);
-  const period = isNaN(periodNum) ? null : periodNum;
-  return { positions, startTime, period };
+  return { kind: "unknown" };
 }
 
 // Find available dates
@@ -264,10 +300,6 @@ function findDates() {
 }
 
 async function initialize() {
-  const hadUrlParams = hasLegacyUrlParams();
-  const legacyParams = hadUrlParams ? readLegacyUrlParams() : null;
-  if (hadUrlParams) clearUrl();
-
   try {
     const result = await initializeApp({
       defaultScheduleData,
@@ -285,55 +317,14 @@ async function initialize() {
       Boolean,
     );
 
-    const applied = legacyParams
-      ? applyFromLegacy(legacyParams, validBaseDates)
-      : applyFromStorage(validBaseDates);
-
-    if (!applied) {
-      applySelectedBaseDate(defaultBaseDate.value);
-    }
+    if (applyFromStorage(validBaseDates)) return true;
+    if (applyFromHomeStorage(validBaseDates)) return true;
+    applySelectedBaseDate(defaultBaseDate.value);
     return true;
   } catch (error) {
     alert(ERROR_MESSAGES.INIT_FAILED);
     return false;
   }
-}
-
-function applyFromLegacy(rawParams, validBaseDates) {
-  const cls = classifyBaseDate(rawParams.baseDate, validBaseDates);
-
-  if (cls.kind === "empty") {
-    alert(ERROR_MESSAGES.NO_BASE_DATE);
-    return false;
-  }
-  if (cls.kind === "invalid") {
-    console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: baseDate`);
-    return false;
-  }
-  if (cls.kind !== "active") {
-    return false;
-  }
-
-  applySelectedBaseDate(cls.baseDate);
-
-  const { positions, startTime, period } = parseLegacyMeetupFields(rawParams);
-  if (positions.length > 0) {
-    participants.value = positions.map((position) => ({ position }));
-  }
-  if (startTime) meetupStartTime.value = startTime;
-  if (period) searchPeriod.value = String(period);
-
-  // Persist the imported URL state so next visit reads from localStorage
-  if (positions.length > 0 && startTime && period) {
-    saveMeetupParams(
-      formatAsISODate(cls.baseDate),
-      participants.value,
-      meetupStartTime.value,
-      searchPeriod.value,
-    );
-  }
-
-  return true;
 }
 
 function applyFromStorage(validBaseDates) {
@@ -351,6 +342,17 @@ function applyFromStorage(validBaseDates) {
   meetupStartTime.value = stored.startTime;
   searchPeriod.value = String(stored.period);
   return true;
+}
+
+function applyFromHomeStorage(validBaseDates) {
+  const home = loadCalendarSelection();
+  if (!home || !Number.isInteger(home.startNumber)) return false;
+
+  const cls = classifyBaseDate(home.baseDate, validBaseDates);
+  if (cls.kind !== "active") return false;
+
+  applySelectedBaseDate(cls.baseDate);
+  return applyHomeFallbackFor(formatAsISODate(cls.baseDate));
 }
 
 // Watch for base date changes from composable
@@ -398,8 +400,8 @@ onMounted(async () => {
   margin-top: var(--spacing-xs);
 }
 .version-btn {
-  font-size: 0.78rem;
-  padding: 0.1rem 0.45rem;
+  font-size: 0.88rem;
+  padding: 0.2rem 0.6rem;
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--primary-color);
   color: var(--primary-color);

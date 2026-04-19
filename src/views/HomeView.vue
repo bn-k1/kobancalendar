@@ -448,8 +448,8 @@ onUnmounted(() => {
   margin-top: var(--spacing-xs);
 }
 .version-btn {
-  font-size: 0.78rem;
-  padding: 0.1rem 0.45rem;
+  font-size: 0.88rem;
+  padding: 0.2rem 0.6rem;
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--primary-color);
   color: var(--primary-color);

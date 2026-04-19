@@ -122,6 +122,39 @@ describe("useLocalParams", () => {
       expect(loadMeetupParams()).toBeNull();
     });
 
+    it("remembers a separate set per baseDate", () => {
+      const { saveMeetupParams, loadMeetupParams, loadMeetupParamsFor } =
+        useLocalParams();
+      saveMeetupParams("2025-11-16", [1, 2], "19:00", 30);
+      saveMeetupParams("2026-05-16", [3, 4, 5], "20:30", 60);
+
+      expect(loadMeetupParams()).toEqual({
+        baseDate: "2026-05-16",
+        participants: [{ position: 3 }, { position: 4 }, { position: 5 }],
+        startTime: "20:30",
+        period: 60,
+      });
+      expect(loadMeetupParamsFor("2025-11-16")).toEqual({
+        baseDate: "2025-11-16",
+        participants: [{ position: 1 }, { position: 2 }],
+        startTime: "19:00",
+        period: 30,
+      });
+      expect(loadMeetupParamsFor("1999-01-01")).toBeNull();
+    });
+
+    it("saving one baseDate preserves another's set", () => {
+      const { saveMeetupParams, loadMeetupParamsFor } = useLocalParams();
+      saveMeetupParams("2025-11-16", [1, 2], "19:00", 30);
+      saveMeetupParams("2026-05-16", [9], "21:00", 45);
+      expect(loadMeetupParamsFor("2025-11-16")).toEqual({
+        baseDate: "2025-11-16",
+        participants: [{ position: 1 }, { position: 2 }],
+        startTime: "19:00",
+        period: 30,
+      });
+    });
+
     it("clearMeetupParams removes stored data", () => {
       const { saveMeetupParams, loadMeetupParams, clearMeetupParams } = useLocalParams();
       saveMeetupParams("2025-11-16", [1, 2], "19:00", 30);

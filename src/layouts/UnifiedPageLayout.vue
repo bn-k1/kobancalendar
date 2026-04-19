@@ -5,7 +5,7 @@
       <div class="header-top">
         <h1 @click="handleTitleClick" class="clickable-title">{{ pageTitle }}</h1>
         <div class="header-controls">
-          <a v-if="isHomePage" class="mode-link" :href="meetupLink" aria-label="飲み会モードへ">🍻</a>
+          <a v-if="isHomePage" class="mode-link" href="/kobancalendar/#/meetup" aria-label="飲み会モードへ">🍻</a>
           <a v-if="isMeetupPage" class="mode-link" href="/kobancalendar/#/" aria-label="勤務モードへ">🚨</a>
           <HelpButton />
           <ShareButton />
@@ -80,8 +80,6 @@
 import { useRoute } from "vue-router";
 import { computed } from "vue";
 import { formatAsISODate, today, addDays } from "@/utils/date";
-import { useSchedule } from "@/composables/useSchedule";
-import { useCalendar } from "@/composables/useCalendar";
 import ShareButton from "@/components/ShareButton.vue";
 import QrButton from "@/components/QrButton.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
@@ -104,33 +102,11 @@ const props = defineProps({
   },
 });
 
-const { activeBaseDate } = useSchedule();
-const { startPosition } = useCalendar();
 const route = useRoute();
 
 // Detect current page
 const isHomePage = computed(() => route.path === "/" || route.path === "");
 const isMeetupPage = computed(() => route.path === "/meetup");
-
-// Generate meetup link with parameters from store
-const meetupLink = computed(() => {
-  let link = "/kobancalendar/";
-  const params = [];
-
-  if (activeBaseDate.value) {
-    params.push(`baseDate=${formatAsISODate(activeBaseDate.value)}`);
-  }
-
-  if (startPosition.value) {
-    params.push(`participants=${startPosition.value}`);
-  }
-
-  if (params.length > 0) {
-    link += `?${params.join("&")}#/meetup`;
-  }
-
-  return link;
-});
 
 // Page title based on route or props
 const pageTitle = computed(() => {

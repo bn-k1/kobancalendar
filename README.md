@@ -163,7 +163,7 @@ npm run create-qr      # config.json の url フィールドからQR生成
 
 1. `config.json` の `default_base_date` を新しい基準日に変更
 2. （任意）`old_base_date` に旧基準日、`position_shift` に全員へのコマ加算数を設定
-   - 設定しておくと、旧URLにアクセスしたユーザーへ新コマ位置のアラートを表示できます
+   - 設定しておくと、旧基準日を保存しているユーザーへ新コマ位置のアラートを表示できます
 
 ### パターン2 — 各員のコマ位置のみ移動
 
@@ -191,6 +191,19 @@ npm run create-qr      # config.json の url フィールドからQR生成
 > `schedule_update` は設定しません（`next_base_date` が優先されます）。
 
 ---
+
+## 状態の保存
+
+ユーザー選択（基準日・コマ位置・飲み会検索条件）は URL ではなく `localStorage` に保存されます。
+
+| キー | 形状 | 内容 |
+|------|------|------|
+| `kobancalendar.savedSelection.v1` | `{ active, positions: { [baseDate]: number } }` | Home のコマ位置。版ごとに別々の位置を記憶 |
+| `kobancalendar.savedMeetup.v1` | `{ active, sets: { [baseDate]: { participants, startTime, period } } }` | 飲みに行くンダーの検索条件。版ごとに別々の set を記憶 |
+
+- `active` は最後に開いていた baseDate（ISO 文字列）。次回ロード時に復元されます。
+- 旧版では `?baseDate=...&startNumber=...` といった URL クエリでも受け付けます（HomeView が1度だけ読み取って localStorage に移し、URL をクリア）。
+- Meetup は専用の保存データが無い場合、Home の localStorage から現在の baseDate に対応する位置を拾って初期参加者として利用します。
 
 ## 備考
 

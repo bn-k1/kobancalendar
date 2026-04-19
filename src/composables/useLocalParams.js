@@ -65,6 +65,41 @@ function toValidIntegerArray(values) {
     .filter((value) => !isNaN(value));
 }
 
+function normalizeMeetupSet(raw) {
+  if (!raw || typeof raw !== "object") return null;
+
+  const startTime = raw.startTime;
+  const period = parseInt(raw.period, 10);
+  const fromArray = toValidIntegerArray(raw.participants);
+  const participants =
+    fromArray.length > 0 ? fromArray : parsePositions(raw.participants);
+
+  if (!startTime || isNaN(period) || participants.length === 0) return null;
+
+  return { participants, startTime, period };
+}
+
+function readMeetupStorage() {
+  const parsed = readStoredObject(MEETUP_STORAGE_KEY);
+  if (!parsed || typeof parsed !== "object") return { active: null, sets: {} };
+
+  if (parsed.sets && typeof parsed.sets === "object") {
+    const sets = {};
+    for (const [key, value] of Object.entries(parsed.sets)) {
+      const normalized = normalizeMeetupSet(value);
+      if (normalized) sets[key] = normalized;
+    }
+    return { active: parsed.active || null, sets };
+  }
+
+  // Legacy flat shape {baseDate, participants, startTime, period}
+  const legacyBase = parsed.baseDate || null;
+  const legacySet = normalizeMeetupSet(parsed);
+  const sets = {};
+  if (legacyBase && legacySet) sets[legacyBase] = legacySet;
+  return { active: legacyBase, sets };
+}
+
 function readCalendarStorage() {
   const parsed = readStoredObject(CALENDAR_STORAGE_KEY);
   if (!parsed || typeof parsed !== "object") return { active: null, positions: {} };
@@ -139,42 +174,33 @@ export function useLocalParams() {
       return false;
     }
 
-    return writeStoredObject(MEETUP_STORAGE_KEY, {
-      baseDate,
+    const current = readMeetupStorage();
+    const sets = { ...current.sets };
+    sets[baseDate] = {
       participants: validParticipants,
       startTime,
       period: parsedPeriod,
-    });
+    };
+
+    return writeStoredObject(MEETUP_STORAGE_KEY, { active: baseDate, sets });
+  }
+
+  function loadMeetupParamsFor(baseDate) {
+    if (!baseDate) return null;
+    const { sets } = readMeetupStorage();
+    const set = sets[baseDate];
+    if (!set) return null;
+    return {
+      baseDate,
+      participants: set.participants.map((position) => ({ position })),
+      startTime: set.startTime,
+      period: set.period,
+    };
   }
 
   function loadMeetupParams() {
-    const parsed = readStoredObject(MEETUP_STORAGE_KEY);
-    if (!parsed) return null;
-
-    const baseDate = parsed?.baseDate;
-    const startTime = parsed?.startTime;
-    const period = parseInt(parsed?.period, 10);
-    const participantsFromArray = toValidIntegerArray(parsed?.participants);
-    const participants =
-      participantsFromArray.length > 0
-        ? participantsFromArray
-        : parsePositions(parsed?.participants);
-
-    if (
-      !baseDate ||
-      !startTime ||
-      isNaN(period) ||
-      participants.length === 0
-    ) {
-      return null;
-    }
-
-    return {
-      baseDate,
-      startTime,
-      period,
-      participants: participants.map((position) => ({ position })),
-    };
+    const { active } = readMeetupStorage();
+    return active ? loadMeetupParamsFor(active) : null;
   }
 
   function clearMeetupParams() {
@@ -188,6 +214,7 @@ export function useLocalParams() {
     clearCalendarSelection,
     saveMeetupParams,
     loadMeetupParams,
+    loadMeetupParamsFor,
     clearMeetupParams,
   };
 }
