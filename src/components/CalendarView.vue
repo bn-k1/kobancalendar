@@ -106,6 +106,7 @@ const mergedEvents = computed(() => {
           editedSubject: editedSchedule.subject,
           startTime: editedSchedule.startTime,
           endTime: editedSchedule.endTime,
+          note: editedSchedule.note || "",
         },
       };
     }
@@ -159,6 +160,7 @@ function openEditModal(event) {
       subject: extendedProps.editedSubject,
       startTime: extendedProps.startTime,
       endTime: extendedProps.endTime,
+      note: extendedProps.note || "",
     };
   } else {
     const titleParts = event.title.split("\n");
@@ -166,6 +168,7 @@ function openEditModal(event) {
       subject: titleParts[0] || "",
       startTime: extendedProps.startTime || "",
       endTime: extendedProps.endTime || "",
+      note: "",
     };
   }
   
@@ -186,8 +189,9 @@ function handleSaveEdit(editData) {
     subject: editData.subject,
     startTime: editData.startTime,
     endTime: editData.endTime,
+    note: editData.note,
   });
-  
+
   closeEditModal();
   emit("scheduleEdited", editData);
 }

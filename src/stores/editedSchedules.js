@@ -11,6 +11,7 @@ function normalizeSchedule(schedule) {
     subject: schedule?.subject || "",
     startTime: schedule?.startTime || "",
     endTime: schedule?.endTime || "",
+    note: schedule?.note || "",
   };
 }
 

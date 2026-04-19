@@ -61,6 +61,13 @@
               class="edit-input"
               placeholder="予定名を入力"
             />
+            <button
+              type="button"
+              class="custom-toggle-btn"
+              @click="exitCustomMode"
+            >
+              📋 選んで入力
+            </button>
           </div>
           <div class="form-group time-inputs">
             <label for="customStartTime">開始時間:</label>
@@ -80,6 +87,18 @@
               class="edit-input"
             />
           </div>
+        </div>
+
+        <!-- Note / 備考 (not shown on calendar) -->
+        <div class="form-group">
+          <label for="editNote">備考:</label>
+          <textarea
+            id="editNote"
+            v-model="note"
+            class="edit-input edit-textarea"
+            rows="3"
+            placeholder="メモ（カレンダーには表示されません）"
+          ></textarea>
         </div>
 
         <!-- Action buttons -->
@@ -135,12 +154,13 @@ const customSubject = ref("");
 const customStartTime = ref("");
 const customEndTime = ref("");
 const isCustomSelected = ref(false);
+const note = ref("");
 
 const canSave = computed(() => {
   if (isCustomSelected.value) {
     return customSubject.value.trim() !== "";
   }
-  return selectedSubject.value !== "";
+  return selectedSubject.value !== "" || note.value.trim() !== "";
 });
 
 const modalTitle = computed(() => {
@@ -211,6 +231,16 @@ function enterCustomMode() {
   selectedEndTime.value = "";
 }
 
+function exitCustomMode() {
+  isCustomSelected.value = false;
+  customSubject.value = "";
+  customStartTime.value = "";
+  customEndTime.value = "";
+  selectedSubject.value = "";
+  selectedStartTime.value = "";
+  selectedEndTime.value = "";
+}
+
 function handleSave() {
   if (!canSave.value) return;
 
@@ -231,6 +261,7 @@ function handleSave() {
     subject: schedule.subject,
     startTime: schedule.startTime,
     endTime: schedule.endTime,
+    note: note.value,
   });
 }
 
@@ -267,6 +298,7 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
       customStartTime.value = "";
       customEndTime.value = "";
     }
+    note.value = props.currentSchedule.note || "";
   } else if (!newShow) {
     isCustomSelected.value = false;
     selectedSubject.value = "";
@@ -275,6 +307,7 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
     customSubject.value = "";
     customStartTime.value = "";
     customEndTime.value = "";
+    note.value = "";
   }
 });
 </script>
@@ -339,6 +372,12 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
   border-color: var(--primary-light);
   outline: none;
   box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.3);
+}
+
+.edit-textarea {
+  resize: vertical;
+  min-height: 3em;
+  font-family: inherit;
 }
 
 .custom-toggle-btn {

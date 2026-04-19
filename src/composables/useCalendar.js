@@ -163,6 +163,7 @@ export function useCalendar() {
             holidayName: getHolidayName(currentDate),
             isEdited: true,
             editedSubject: editedSchedule.subject,
+            note: editedSchedule.note || "",
           },
         });
       } else {
