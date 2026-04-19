@@ -53,7 +53,6 @@ export const ERROR_MESSAGES = {
   BASEDATE_CONFIGURATION_ERROR: "基準日設定失敗",
   INVALID_BASE_DATE: "掲示板に貼ってあるコマ位置の表が新しくなりましたので、それを見て登録しなおしてください",
   INVALID_STARTNUMBER: "無効なコマ位置です",
-  INVALID_URL_PARAM: "無効なURLパラメータです",
   PARAM_OUT_OF_RANGE: "パラメータが有効範囲外です",
   CONFIG_NOT_LOADED: "設定が完全に読み込まれていません",
   CONFIG_LOAD_ERROR: "設定の取得に失敗しました",

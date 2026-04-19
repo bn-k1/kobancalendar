@@ -32,7 +32,6 @@
           aria-label="コマ位置を選択"
           v-model="startPosition"
           :options="positionOptions"
-          :show-home-screen-notice="true"
           @change="handlePositionChange"
         />
       </div>
@@ -263,9 +262,9 @@ function applySuggestedStartNumber(suggestedStartNumber) {
 }
 
 function classifyBaseDate(baseDateStr, validBaseDates) {
-  if (!baseDateStr) return { kind: "empty" };
+  if (!baseDateStr) return null;
   const dateObj = createDate(baseDateStr);
-  if (!dateObj.isValid()) return { kind: "invalid" };
+  if (!dateObj.isValid()) return null;
 
   if (validBaseDates.some((d) => d && isSameDay(d, dateObj))) {
     return { kind: "active", baseDate: dateObj };
@@ -276,7 +275,7 @@ function classifyBaseDate(baseDateStr, validBaseDates) {
     return { kind: "migrate" };
   }
 
-  return { kind: "unknown" };
+  return null;
 }
 
 function validStartNumberOrNull(raw, cycleLength) {
@@ -343,45 +342,36 @@ async function initialize() {
   }
 }
 
+// サポートする legacy URL 形式（他は false を返して applyDefaultBaseDate に任せる）:
+//   - ?baseDate=<active>&startNumber=<1..cycleLength>#/  → 即適用
+//   - ?baseDate=<active>#/                                → localStorage 側の保存値があれば流用
+//   - ?baseDate=<old>&startNumber=<1..cycleLength>#/      → 移行モーダル
 function applyFromLegacy(params, validBaseDates, cycleLength) {
   const cls = classifyBaseDate(params.baseDate, validBaseDates);
-
-  if (cls.kind === "empty") {
-    // Legacy URL had other params but no baseDate
-    alert(ERROR_MESSAGES.NO_BASE_DATE);
-    return false;
-  }
-  if (cls.kind === "invalid") {
-    console.error(`${ERROR_MESSAGES.INVALID_URL_PARAM}: baseDate`);
-    return false;
-  }
-
-  if (cls.kind === "active") {
-    const num = validStartNumberOrNull(params.startNumber, cycleLength);
-    updateActiveBaseDate(cls.baseDate);
-    selectedBaseDate.value = formatAsISODate(cls.baseDate);
-    setStartPosition(num ?? undefined);
-    startPosition.value = num ?? undefined;
-    saveCalendarSelection(selectedBaseDate.value, num);
-    return true;
-  }
+  if (!cls) return false;
 
   if (cls.kind === "migrate") {
-    const originalNum = parseInt(params.startNumber, 10);
-    if (!isNaN(originalNum)) {
-      const shifted = calculateNewPosition(
-        originalNum,
-        config.position_shift,
-        cycleLength,
-      );
-      if (Number.isInteger(shifted)) {
-        openMigrationModal(shifted);
-      }
-    }
+    const num = validStartNumberOrNull(params.startNumber, cycleLength);
+    if (num == null) return false;
+    const shifted = calculateNewPosition(num, config.position_shift, cycleLength);
+    if (Number.isInteger(shifted)) openMigrationModal(shifted);
     return false;
   }
 
-  return false; // unknown
+  const hasStartNumber = params.startNumber != null;
+  const urlNum = hasStartNumber
+    ? validStartNumberOrNull(params.startNumber, cycleLength)
+    : null;
+  if (hasStartNumber && urlNum == null) return false; // 範囲外・非数値 → 切り捨て
+
+  const isoBaseDate = formatAsISODate(cls.baseDate);
+  const num = urlNum ?? loadCalendarPositionFor(isoBaseDate);
+  updateActiveBaseDate(cls.baseDate);
+  selectedBaseDate.value = isoBaseDate;
+  setStartPosition(num ?? undefined);
+  startPosition.value = num ?? undefined;
+  saveCalendarSelection(selectedBaseDate.value, num);
+  return true;
 }
 
 function applyFromStorage(validBaseDates, cycleLength) {
@@ -389,6 +379,10 @@ function applyFromStorage(validBaseDates, cycleLength) {
   if (!stored) return false;
 
   const cls = classifyBaseDate(stored.baseDate, validBaseDates);
+  if (!cls) {
+    clearCalendarSelection();
+    return false;
+  }
 
   if (cls.kind === "active") {
     const num = validStartNumberOrNull(stored.startNumber, cycleLength);
@@ -399,24 +393,13 @@ function applyFromStorage(validBaseDates, cycleLength) {
     return true;
   }
 
-  if (cls.kind === "migrate") {
-    clearCalendarSelection();
-    const originalNum = parseInt(stored.startNumber, 10);
-    if (!isNaN(originalNum)) {
-      const shifted = calculateNewPosition(
-        originalNum,
-        config.position_shift,
-        cycleLength,
-      );
-      if (Number.isInteger(shifted)) {
-        openMigrationModal(shifted);
-      }
-    }
-    return false;
-  }
-
-  // invalid / empty / unknown — drop it
+  // migrate
   clearCalendarSelection();
+  const num = validStartNumberOrNull(stored.startNumber, cycleLength);
+  if (num != null) {
+    const shifted = calculateNewPosition(num, config.position_shift, cycleLength);
+    if (Number.isInteger(shifted)) openMigrationModal(shifted);
+  }
   return false;
 }
 

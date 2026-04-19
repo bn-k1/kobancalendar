@@ -35,10 +35,6 @@
       <slot></slot>
     </div>
 
-    <div v-if="displayHomeScreenNotice" class="home-screen-notice">
-      この内容で「ホーム画面に追加」する場合は、一度上から下に引っ張ってリロードしてください
-    </div>
-    
     <div v-if="displayScheduleUpdateNotice" class="schedule-update-notice">
       ※交番表更新: {{ scheduleUpdateNotice }}{{ isScheduleApplied ? '以降の表示に対して新データ適用済み' : '' }}
     </div>
@@ -46,7 +42,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { useSchedule } from '@/composables/useSchedule';
 
 const props = defineProps({
@@ -81,10 +77,6 @@ const props = defineProps({
   formatter: {
     type: Function,
   },
-  showHomeScreenNotice: {
-    type: Boolean,
-    default: false,
-  },
   scheduleUpdateNotice: {
     type: String,
     default: "",
@@ -92,14 +84,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
-const hasUserSelection = ref(false);
 
 // Get schedule composable to check next schedule data
 const { scheduleDataSets } = useSchedule();
-
-const displayHomeScreenNotice = computed(() => {
-  return props.showHomeScreenNotice && hasUserSelection.value && props.modelValue;
-});
 
 // Check if schedule update notice should be displayed
 const displayScheduleUpdateNotice = computed(() => {
@@ -136,29 +123,12 @@ function formatOption(option) {
 // Handle selection change
 function handleChange(event) {
   const newValue = event.target.value;
-  hasUserSelection.value = true;
   emit("update:modelValue", newValue);
   emit("change", newValue);
 }
-
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    if (!newValue) {
-      hasUserSelection.value = false;
-    }
-  },
-);
 </script>
 
 <style scoped>
-.home-screen-notice {
-  color: #dc3545;
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-  font-weight: 500;
-}
-
 .schedule-update-notice {
   color: #dc3545;
   font-size: 0.8rem;

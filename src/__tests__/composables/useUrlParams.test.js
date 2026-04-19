@@ -30,11 +30,19 @@ describe("useUrlParams", () => {
     });
 
     it("recognizes all legacy keys", () => {
-      const keys = ["baseDate", "startNumber", "participants", "startTime", "period"];
+      const keys = ["baseDate", "startNumber"];
       for (const key of keys) {
         setLocation("/", `?${key}=x`, "#/");
         const { hasLegacyUrlParams } = useUrlParams();
         expect(hasLegacyUrlParams(), key).toBe(true);
+      }
+    });
+
+    it("ignores retired meetup params", () => {
+      for (const key of ["participants", "startTime", "period"]) {
+        setLocation("/", `?${key}=x`, "#/");
+        const { hasLegacyUrlParams } = useUrlParams();
+        expect(hasLegacyUrlParams(), key).toBe(false);
       }
     });
   });
@@ -50,7 +58,6 @@ describe("useUrlParams", () => {
       expect(readLegacyUrlParams()).toEqual({
         baseDate: "2025-11-16",
         startNumber: "5",
-        participants: "1,2",
       });
     });
   });

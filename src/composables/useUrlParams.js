@@ -1,33 +1,13 @@
-const LEGACY_PARAM_KEYS = [
-  "baseDate",
-  "startNumber",
-  "participants",
-  "startTime",
-  "period",
-];
+// Legacy URL support — the app persists state in localStorage, not URLs.
+// Bookmarks from before that change may still carry ?baseDate=&startNumber=,
+// so HomeView reads them once on mount and then clears the query string.
 
-function getNormalizedHash(hash = window.location.hash) {
-  if (!hash || hash === "#") {
-    return "#/";
-  }
-  return hash;
-}
+const LEGACY_PARAM_KEYS = ["baseDate", "startNumber"];
 
-/**
- * Legacy URL support.
- *
- * The app no longer writes to the URL — state lives in localStorage via
- * useLocalParams. But URLs generated before this change may still be in
- * circulation (bookmarks, shared links), so on first load a view reads any
- * recognized query params once and then clears them.
- */
 export function useUrlParams() {
   function hasLegacyUrlParams() {
     const params = new URLSearchParams(window.location.search);
-    for (const key of LEGACY_PARAM_KEYS) {
-      if (params.has(key)) return true;
-    }
-    return false;
+    return LEGACY_PARAM_KEYS.some((key) => params.has(key));
   }
 
   function readLegacyUrlParams() {
@@ -40,32 +20,16 @@ export function useUrlParams() {
   }
 
   function clearUrl() {
-    const hash = getNormalizedHash();
-    window.history.replaceState(
-      {},
-      "",
-      `${window.location.pathname}${hash}`,
-    );
+    const hash = window.location.hash && window.location.hash !== "#"
+      ? window.location.hash
+      : "#/";
+    window.history.replaceState({}, "", `${window.location.pathname}${hash}`);
   }
 
-  /**
-   * Shift a rotation position by `positionShift`, wrapping within the cycle.
-   * Used when migrating state saved against `old_base_date`.
-   */
-  function calculateNewPosition(
-    currentStartNumber,
-    positionShift,
-    rotationCycleLength,
-  ) {
-    if (!currentStartNumber || !positionShift || !rotationCycleLength) {
-      return null;
-    }
-
-    let newPosition = currentStartNumber + positionShift;
-    if (newPosition > rotationCycleLength) {
-      newPosition = newPosition - rotationCycleLength;
-    }
-    return newPosition;
+  function calculateNewPosition(currentStartNumber, positionShift, rotationCycleLength) {
+    if (!currentStartNumber || !positionShift || !rotationCycleLength) return null;
+    const shifted = currentStartNumber + positionShift;
+    return shifted > rotationCycleLength ? shifted - rotationCycleLength : shifted;
   }
 
   return {
