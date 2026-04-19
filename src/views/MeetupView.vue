@@ -1,5 +1,5 @@
 <template>
-  <UnifiedPageLayout layout="meetup" :show-results="showResults">
+  <UnifiedPageLayout layout="meetup" :show-results="showResults" @title-click="switchToDefaultBaseDate">
     <!-- Search controls section -->
     <template #search-controls>
       <div class="search-controls">

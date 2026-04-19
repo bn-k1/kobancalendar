@@ -102,6 +102,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["title-click"]);
+
 const route = useRoute();
 
 // Detect current page
@@ -149,15 +151,8 @@ const showCafeteriaMenu = computed(() => {
   return props.layout !== "meetup" && !isMeetupPage.value && hasAnyMenuData.value;
 });
 
-// Handle title click - navigate to respective clean top page
 function handleTitleClick() {
-  if (isHomePage.value) {
-    window.location.href = '/kobancalendar/#/';
-  } else if (isMeetupPage.value) {
-    window.location.href = '/kobancalendar/#/meetup';
-  } else {
-    window.location.href = '/kobancalendar/#/';
-  }
+  emit("title-click");
 }
 </script>
 

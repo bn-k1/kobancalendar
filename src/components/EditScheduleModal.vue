@@ -20,7 +20,6 @@
             class="edit-select"
           >
             <option value="" disabled>予定を選択</option>
-            <option :value="CUSTOM_VALUE">カスタム(自分で入力)</option>
             <option
               v-for="option in subjectOptions"
               :key="option.subject"
@@ -29,6 +28,14 @@
               {{ option.subject }}
             </option>
           </select>
+          <button
+            v-if="!isCustomSelected"
+            type="button"
+            class="custom-toggle-btn"
+            @click="enterCustomMode"
+          >
+            ✏ 自分で入力
+          </button>
         </div>
 
         <!-- Time display (read-only, auto-filled) -->
@@ -121,15 +128,14 @@ const emit = defineEmits(["close", "save"]);
 
 const { scheduleDataSets, scheduleUpdateDate } = useSchedule();
 
-const CUSTOM_VALUE = "__custom__";
 const selectedSubject = ref("");
 const selectedStartTime = ref("");
 const selectedEndTime = ref("");
 const customSubject = ref("");
 const customStartTime = ref("");
 const customEndTime = ref("");
+const isCustomSelected = ref(false);
 
-const isCustomSelected = computed(() => selectedSubject.value === CUSTOM_VALUE);
 const canSave = computed(() => {
   if (isCustomSelected.value) {
     return customSubject.value.trim() !== "";
@@ -187,11 +193,7 @@ const subjectOptions = computed(() => {
 });
 
 function handleSubjectChange() {
-  if (selectedSubject.value === CUSTOM_VALUE) {
-    selectedStartTime.value = "";
-    selectedEndTime.value = "";
-    return;
-  }
+  isCustomSelected.value = false;
   const selected = subjectOptions.value.find(opt => opt.subject === selectedSubject.value);
   if (selected) {
     selectedStartTime.value = selected.startTime;
@@ -200,6 +202,13 @@ function handleSubjectChange() {
     selectedStartTime.value = "";
     selectedEndTime.value = "";
   }
+}
+
+function enterCustomMode() {
+  isCustomSelected.value = true;
+  selectedSubject.value = "";
+  selectedStartTime.value = "";
+  selectedEndTime.value = "";
 }
 
 function handleSave() {
@@ -242,13 +251,15 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
         (props.currentSchedule.endTime || "") !== (matchingOption.endTime || ""));
 
     if (currentSubject && (!isKnownSubject || isCustomByTime)) {
-      selectedSubject.value = CUSTOM_VALUE;
+      isCustomSelected.value = true;
+      selectedSubject.value = "";
       customSubject.value = currentSubject;
       customStartTime.value = props.currentSchedule.startTime || "";
       customEndTime.value = props.currentSchedule.endTime || "";
       selectedStartTime.value = "";
       selectedEndTime.value = "";
     } else {
+      isCustomSelected.value = false;
       selectedSubject.value = currentSubject;
       selectedStartTime.value = matchingOption?.startTime || props.currentSchedule.startTime || "";
       selectedEndTime.value = matchingOption?.endTime || props.currentSchedule.endTime || "";
@@ -257,6 +268,7 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
       customEndTime.value = "";
     }
   } else if (!newShow) {
+    isCustomSelected.value = false;
     selectedSubject.value = "";
     selectedStartTime.value = "";
     selectedEndTime.value = "";
@@ -327,6 +339,24 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
   border-color: var(--primary-light);
   outline: none;
   box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.3);
+}
+
+.custom-toggle-btn {
+  align-self: flex-end;
+  background: transparent;
+  border: 1px solid var(--gray-300);
+  color: var(--gray-700);
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.custom-toggle-btn:hover {
+  background: var(--primary-color);
+  color: var(--text-light);
+  border-color: var(--primary-color);
 }
 
 .custom-inputs {

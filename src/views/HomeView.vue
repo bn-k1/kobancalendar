@@ -1,6 +1,6 @@
 // src/views/HomeView.vue
 <template>
-  <UnifiedPageLayout layout="calendar">
+  <UnifiedPageLayout layout="calendar" @title-click="switchToDefaultBaseDate">
     <!-- Controls section -->
     <template #controls>
       <div class="horizontal-fields" v-if="isLoaded && selectedBaseDate">
