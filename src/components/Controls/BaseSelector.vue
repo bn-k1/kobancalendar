@@ -130,9 +130,9 @@ function handleChange(event) {
 
 <style scoped>
 .schedule-update-notice {
-  color: #dc3545;
+  color: var(--error-color);
   font-size: 0.8rem;
   margin-top: 0.25rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 </style>

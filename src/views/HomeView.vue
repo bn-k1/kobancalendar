@@ -426,34 +426,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.version-link-row {
-  flex-basis: 100%;
-  margin-top: var(--spacing-xs);
-}
-.version-btn {
-  font-size: 0.88rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--primary-color);
-  color: var(--primary-color);
-  background: transparent;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-.version-btn:hover {
-  background: var(--primary-color);
-  color: var(--text-light);
-}
-
 .loading-placeholder {
-  height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--gray-100);
-  border-radius: var(--border-radius-lg);
-  font-size: 1.2rem;
-  color: var(--gray-600);
+  min-height: 400px;
 }
 </style>

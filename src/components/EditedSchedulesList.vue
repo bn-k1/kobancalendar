@@ -101,6 +101,7 @@ function handleRemove(dateStr) {
   gap: 8px;
   margin-left: 6px;
   padding: 2px 6px;
+  min-height: unset;
   border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
@@ -108,6 +109,7 @@ function handleRemove(dateStr) {
   font: inherit;
   line-height: 1;
   cursor: pointer;
+  box-shadow: none;
 }
 
 .visibility-icon:hover {
@@ -131,10 +133,10 @@ function handleRemove(dateStr) {
 }
 
 .edited-empty-notice {
-  color: #dc3545;
+  color: var(--error-color);
   font-size: 0.8rem;
   margin-top: 0.25rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .edited-line {
@@ -156,9 +158,10 @@ function handleRemove(dateStr) {
 .remove-btn {
   background-color: var(--error-color);
   color: white;
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
+  width: 28px;
+  height: 28px;
+  min-height: unset;
+  min-width: 28px;
   border-radius: 50%;
   padding: 0;
   display: flex;
@@ -168,9 +171,12 @@ function handleRemove(dateStr) {
   border: none;
   cursor: pointer;
   flex-shrink: 0;
+  box-shadow: none;
 }
 
 .remove-btn:hover {
-  background-color: #d91a6a;
+  background-color: #dc2626;
+  transform: none;
+  box-shadow: none;
 }
 </style>

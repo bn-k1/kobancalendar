@@ -108,23 +108,24 @@ watch(
 .remove-participant {
   background-color: var(--error-color);
   color: white;
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
+  width: 40px;
+  height: 40px;
+  min-height: unset;
+  min-width: 40px;
   border-radius: 50%;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: var(--font-weight-bold);
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast);
   flex-shrink: 0;
 }
 
 .remove-participant:hover {
-  background-color: var(--error-color);
-  transform: scale(1.1);
+  background-color: #dc2626;
+  transform: none;
 }
 
 #addParticipantBtn {

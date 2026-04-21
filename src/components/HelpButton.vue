@@ -19,20 +19,19 @@ const manualUrl = `${import.meta.env.BASE_URL}manual.html`;
 
 <style scoped>
 .help-link {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.12);
   color: var(--text-light);
   text-decoration: none;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast);
 }
 
 .help-link:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.22);
 }
 </style>

@@ -186,6 +186,7 @@ function showDetails(match) {
   background: none;
   border: none;
   padding: var(--spacing-sm) var(--spacing-lg);
+  min-height: 44px;
   cursor: pointer;
   border-bottom: 3px solid transparent;
   color: var(--gray-600);
@@ -256,7 +257,7 @@ function showDetails(match) {
 }
 
 .results-table tr:hover {
-  background-color: rgba(67, 97, 238, 0.1);
+  background-color: rgba(99, 102, 241, 0.08);
 }
 
 .results-table .view-details {
@@ -265,6 +266,7 @@ function showDetails(match) {
   border: none;
   border-radius: var(--border-radius-pill);
   padding: var(--spacing-xs) var(--spacing-md);
+  min-height: unset;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all var(--transition-normal);

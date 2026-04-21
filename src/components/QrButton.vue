@@ -50,24 +50,25 @@ function closeModalOnOutsideClick(event) {
 </script>
 <style scoped>
 .qr-button {
-  background: none;
+  background-color: rgba(255, 255, 255, 0.12);
   border: none;
   color: var(--text-light);
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
+  min-height: unset;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast);
   padding: 0;
-  background-color: rgba(255, 255, 255, 0.2);
   box-shadow: none;
 }
 .qr-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.22);
+  transform: none;
+  box-shadow: none;
 }
 .qr-container {
   margin: var(--spacing-lg) auto;
