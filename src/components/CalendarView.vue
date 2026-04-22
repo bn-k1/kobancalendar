@@ -386,9 +386,15 @@ onMounted(() => {
 :deep(.event-title) {
   color: white;
   font-weight: var(--font-weight-bold);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media screen and (min-width: 768px) {
+  :deep(.event-title) {
+    font-size: 0.95rem;
+  }
 }
 
 :deep(.event-time) {
