@@ -351,6 +351,17 @@ function applyFromLegacy(params, validBaseDates, cycleLength) {
   if (!cls) return false;
 
   if (cls.kind === "migrate") {
+    const stored = loadCalendarSelection();
+    if (stored) {
+      const storedCls = classifyBaseDate(stored.baseDate, validBaseDates);
+      if (
+        storedCls?.kind === "active" &&
+        validStartNumberOrNull(stored.startNumber, cycleLength) != null
+      ) {
+        return applyFromStorage(validBaseDates, cycleLength);
+      }
+    }
+
     const num = validStartNumberOrNull(params.startNumber, cycleLength);
     if (num == null) return false;
     const shifted = calculateNewPosition(num, config.position_shift, cycleLength);
