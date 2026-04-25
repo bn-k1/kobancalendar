@@ -128,6 +128,7 @@ const ResultsDisplay = defineAsyncComponent(
 import { useSchedule } from "@/composables/useSchedule";
 import { useAppInitializer } from "@/composables/useAppInitializer";
 import { useLocalParams } from "@/composables/useLocalParams";
+import { useUrlParams } from "@/composables/useUrlParams";
 import { useMeetupSearch } from "@/composables/useMeetupSearch";
 
 // Utils
@@ -172,6 +173,11 @@ const {
   loadCalendarSelection,
   loadCalendarPositionFor,
 } = useLocalParams();
+const {
+  readCanonicalMeetup,
+  writeMeetupUrl,
+  clearMeetupUrl,
+} = useUrlParams();
 const { searchResults, findMeetupDates } = useMeetupSearch();
 
 // Schedule composable
@@ -202,6 +208,19 @@ function applySelectedBaseDate(dateObj) {
   selectedBaseDate.value = formatAsISODate(dateObj);
 }
 
+function syncMeetupUrl() {
+  const positions = toValidPositionNumbers(participants.value);
+  if (positions.length === 0 || !meetupStartTime.value || !searchPeriod.value) {
+    clearMeetupUrl();
+    return;
+  }
+  writeMeetupUrl({
+    participants: positions,
+    startTime: meetupStartTime.value,
+    period: searchPeriod.value,
+  });
+}
+
 function applyHomeFallbackFor(baseDateStr) {
   const homePosition = loadCalendarPositionFor(baseDateStr);
   if (!Number.isInteger(homePosition)) return false;
@@ -230,10 +249,15 @@ function applyMeetupSet(baseDateStr) {
     participants.value = loaded.participants;
     meetupStartTime.value = loaded.startTime;
     searchPeriod.value = String(loaded.period);
+    syncMeetupUrl();
     return;
   }
-  if (applyHomeFallbackFor(baseDateStr)) return;
+  if (applyHomeFallbackFor(baseDateStr)) {
+    syncMeetupUrl();
+    return;
+  }
   resetMeetupToDefaults();
+  syncMeetupUrl();
 }
 
 function switchToNextBaseDate() {
@@ -297,6 +321,7 @@ function findDates() {
     meetupStartTime.value,
     searchPeriod.value,
   );
+  syncMeetupUrl();
 }
 
 async function initialize() {
@@ -317,14 +342,50 @@ async function initialize() {
       Boolean,
     );
 
-    if (applyFromStorage(validBaseDates)) return true;
-    if (applyFromHomeStorage(validBaseDates)) return true;
+    if (applyFromCanonical(validBaseDates)) {
+      // URL already reflects the desired state, no resync needed
+      return true;
+    }
+    if (applyFromStorage(validBaseDates)) {
+      syncMeetupUrl();
+      return true;
+    }
+    if (applyFromHomeStorage(validBaseDates)) {
+      syncMeetupUrl();
+      return true;
+    }
     applySelectedBaseDate(defaultBaseDate.value);
+    syncMeetupUrl();
     return true;
   } catch (error) {
     alert(ERROR_MESSAGES.INIT_FAILED);
     return false;
   }
+}
+
+function applyFromCanonical(validBaseDates) {
+  const url = readCanonicalMeetup();
+  if (!url) return false;
+
+  // baseDate は config の現行 active を採用（URL には載せない設計）
+  const targetBaseDate = nextBaseDate.value || defaultBaseDate.value;
+  if (!targetBaseDate) return false;
+  const cls = classifyBaseDate(formatAsISODate(targetBaseDate), validBaseDates);
+  if (cls.kind !== "active") return false;
+
+  applySelectedBaseDate(cls.baseDate);
+  participants.value = url.participants.map((position) => ({ position }));
+  meetupStartTime.value = url.startTime;
+  searchPeriod.value = String(url.period);
+
+  // URL 由来の値は即 Storage にも書き戻す（次回起動の Storage 解決を有効化）
+  saveMeetupParams(
+    selectedBaseDate.value,
+    participants.value,
+    meetupStartTime.value,
+    searchPeriod.value,
+  );
+  return true;
 }
 
 function applyFromStorage(validBaseDates) {

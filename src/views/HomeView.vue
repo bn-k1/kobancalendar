@@ -127,6 +127,9 @@ const {
   readLegacyUrlParams,
   clearUrl,
   calculateNewPosition,
+  readCanonicalCalendar,
+  writeCalendarUrl,
+  clearCalendarUrl,
 } = useUrlParams();
 const {
   saveCalendarSelection,
@@ -199,6 +202,24 @@ function navigateCalendarTo(dateObj) {
   }
 }
 
+function isOldVersion() {
+  if (!nextBaseDateStr.value) return false;
+  if (!defaultBaseDate.value) return false;
+  return selectedBaseDate.value === formatAsISODate(defaultBaseDate.value);
+}
+
+function syncCalendarUrl() {
+  if (!selectedBaseDate.value) {
+    clearCalendarUrl();
+    return;
+  }
+  const hasPosition = Number.isInteger(startPosition.value);
+  writeCalendarUrl({
+    position: hasPosition ? startPosition.value : null,
+    version: hasPosition && isOldVersion() ? "old" : null,
+  });
+}
+
 function switchBaseDate(dateObj, dateStr) {
   updateActiveBaseDate(dateObj);
   selectedBaseDate.value = dateStr;
@@ -208,6 +229,7 @@ function switchBaseDate(dateObj, dateStr) {
   setStartPosition(num);
   saveCalendarSelection(dateStr, num ?? null);
   navigateCalendarTo(dateObj);
+  syncCalendarUrl();
 }
 
 function switchToNextBaseDate() {
@@ -226,6 +248,7 @@ function handlePositionChange(newPosition) {
 
   if (selectedBaseDate.value) {
     saveCalendarSelection(selectedBaseDate.value, positionValue);
+    syncCalendarUrl();
   }
 }
 
@@ -254,6 +277,7 @@ function applySuggestedStartNumber(suggestedStartNumber) {
 
   if (selectedBaseDate.value) {
     saveCalendarSelection(selectedBaseDate.value, suggestedStartNumber);
+    syncCalendarUrl();
   }
 
   if (viewRange.value.start && viewRange.value.end) {
@@ -327,14 +351,22 @@ async function initialize() {
     );
     const cycleLength = result.scheduleData.rotationCycleLength;
 
-    const applied = legacyParams
-      ? applyFromLegacy(legacyParams, validBaseDates, cycleLength)
-      : applyFromStorage(validBaseDates, cycleLength);
-
-    if (!applied) {
-      return applyDefaultBaseDate();
+    let applied = false;
+    if (legacyParams) {
+      applied = applyFromLegacy(legacyParams, validBaseDates, cycleLength);
     }
-    return true;
+    if (!applied) {
+      applied = applyFromCanonical(validBaseDates, cycleLength);
+    }
+    if (!applied) {
+      applied = applyFromStorage(validBaseDates, cycleLength);
+    }
+    if (!applied) {
+      applied = applyDefaultBaseDate();
+    }
+
+    syncCalendarUrl();
+    return applied;
   } catch (error) {
     console.error(ERROR_MESSAGES.INIT_FAILED, error);
     alert(ERROR_MESSAGES.INIT_FAILED);
@@ -342,7 +374,7 @@ async function initialize() {
   }
 }
 
-// サポートする legacy URL 形式（他は false を返して applyDefaultBaseDate に任せる）:
+// サポートする legacy URL 形式（他は false を返して applyFromCanonical/Storage/Default に委譲）:
 //   - ?baseDate=<active>&startNumber=<1..cycleLength>#/  → 即適用
 //   - ?baseDate=<active>#/                                → localStorage 側の保存値があれば流用
 //   - ?baseDate=<old>&startNumber=<1..cycleLength>#/      → 移行モーダル
@@ -358,7 +390,8 @@ function applyFromLegacy(params, validBaseDates, cycleLength) {
         storedCls?.kind === "active" &&
         validStartNumberOrNull(stored.startNumber, cycleLength) != null
       ) {
-        return applyFromStorage(validBaseDates, cycleLength);
+        // 既に移行済み — モーダルを抑止し、後段の Storage 解決に委ねる
+        return false;
       }
     }
 
@@ -382,6 +415,36 @@ function applyFromLegacy(params, validBaseDates, cycleLength) {
   setStartPosition(num ?? undefined);
   startPosition.value = num ?? undefined;
   saveCalendarSelection(selectedBaseDate.value, num);
+  return true;
+}
+
+function applyFromCanonical(validBaseDates, cycleLength) {
+  const { position, version } = readCanonicalCalendar();
+  if (position == null && version == null) return false;
+
+  let targetBaseDate = null;
+  if (version === "old" && defaultBaseDate.value) {
+    targetBaseDate = defaultBaseDate.value;
+  } else if (nextBaseDate.value) {
+    targetBaseDate = nextBaseDate.value;
+  } else if (defaultBaseDate.value) {
+    targetBaseDate = defaultBaseDate.value;
+  }
+  if (!targetBaseDate) return false;
+
+  const isoBaseDate = formatAsISODate(targetBaseDate);
+  const validUrlNum =
+    position != null ? validStartNumberOrNull(position, cycleLength) : null;
+  const fallbackNum = loadCalendarPositionFor(isoBaseDate);
+  const num = validUrlNum ?? (Number.isInteger(fallbackNum) ? fallbackNum : null);
+
+  updateActiveBaseDate(targetBaseDate);
+  selectedBaseDate.value = isoBaseDate;
+  setStartPosition(num ?? undefined);
+  startPosition.value = num ?? undefined;
+  if (Number.isInteger(num)) {
+    saveCalendarSelection(isoBaseDate, num);
+  }
   return true;
 }
 
