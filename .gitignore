@@ -2,3 +2,5 @@ node_modules/
 .playwright-mcp/
 CLAUDE.md
 .env
+dist/
+docs/
