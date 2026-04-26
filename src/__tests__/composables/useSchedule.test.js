@@ -11,8 +11,16 @@ import { useHolidayStore } from "@/stores/holiday";
 const CYCLE = 5;
 const makeScheduleData = (cycle = CYCLE) => ({
   holiday: Array.from({ length: cycle }, (_, i) => ({ s: `休日${i}` })),
-  saturday: Array.from({ length: cycle }, (_, i) => ({ s: `土曜${i}`, sT: "09:00", eT: "17:00" })),
-  weekday: Array.from({ length: cycle }, (_, i) => ({ s: `平日${i}`, sT: "08:00", eT: "16:00" })),
+  saturday: Array.from({ length: cycle }, (_, i) => ({
+    s: `土曜${i}`,
+    sT: "09:00",
+    eT: "17:00",
+  })),
+  weekday: Array.from({ length: cycle }, (_, i) => ({
+    s: `平日${i}`,
+    sT: "08:00",
+    eT: "16:00",
+  })),
   rotationCycleLength: cycle,
 });
 
@@ -111,7 +119,10 @@ describe("calculateShiftIndex()", () => {
 describe("getScheduleForDate()", () => {
   it("平日は weekday データを返す", () => {
     // 2025-11-17 は月曜（平日、非祝日）
-    setupStores({ baseDate: dayjs("2025-11-16"), nextBaseDate: dayjs("2025-11-16") });
+    setupStores({
+      baseDate: dayjs("2025-11-16"),
+      nextBaseDate: dayjs("2025-11-16"),
+    });
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-17"), 1);
     expect(result).not.toBeUndefined();
@@ -120,7 +131,10 @@ describe("getScheduleForDate()", () => {
 
   it("土曜は saturday データを返す", () => {
     // 2025-11-22 は土曜
-    setupStores({ baseDate: dayjs("2025-11-16"), nextBaseDate: dayjs("2025-11-16") });
+    setupStores({
+      baseDate: dayjs("2025-11-16"),
+      nextBaseDate: dayjs("2025-11-16"),
+    });
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-22"), 1);
     expect(result).not.toBeUndefined();
@@ -129,7 +143,10 @@ describe("getScheduleForDate()", () => {
 
   it("日曜（祝日扱い）は holiday データを返す", () => {
     // 2025-11-16 は日曜（isSunday → isHoliday）
-    setupStores({ baseDate: dayjs("2025-11-16"), nextBaseDate: dayjs("2025-11-16") });
+    setupStores({
+      baseDate: dayjs("2025-11-16"),
+      nextBaseDate: dayjs("2025-11-16"),
+    });
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-16"), 1);
     expect(result).not.toBeUndefined();
@@ -151,21 +168,30 @@ describe("getScheduleForDate()", () => {
   });
 
   it("基準日より前の日付は undefined を返す", () => {
-    setupStores({ baseDate: dayjs("2025-11-16"), nextBaseDate: dayjs("2026-05-16") });
+    setupStores({
+      baseDate: dayjs("2025-11-16"),
+      nextBaseDate: dayjs("2026-05-16"),
+    });
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-15"), 1);
     expect(result).toBeUndefined();
   });
 
   it("baseDate と nextBaseDate が異なる場合、nextBaseDate 以降は undefined を返す", () => {
-    setupStores({ baseDate: dayjs("2025-11-16"), nextBaseDate: dayjs("2026-05-16") });
+    setupStores({
+      baseDate: dayjs("2025-11-16"),
+      nextBaseDate: dayjs("2026-05-16"),
+    });
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2026-05-16"), 1);
     expect(result).toBeUndefined();
   });
 
   it("baseDate と nextBaseDate が同じ場合、nextBaseDate 以降でも undefined にならない", () => {
-    setupStores({ baseDate: dayjs("2025-11-16"), nextBaseDate: dayjs("2025-11-16") });
+    setupStores({
+      baseDate: dayjs("2025-11-16"),
+      nextBaseDate: dayjs("2025-11-16"),
+    });
     const { getScheduleForDate } = useSchedule();
     // 基準日と同じ日（日曜・祝日扱い）なので holiday データが返るはず
     const result = getScheduleForDate(dayjs("2025-11-16"), 1);
@@ -215,7 +241,10 @@ describe("getScheduleForDate()", () => {
   });
 
   it("shiftIndex を返す", () => {
-    setupStores({ baseDate: dayjs("2025-11-17"), nextBaseDate: dayjs("2025-11-17") });
+    setupStores({
+      baseDate: dayjs("2025-11-17"),
+      nextBaseDate: dayjs("2025-11-17"),
+    });
     const { getScheduleForDate } = useSchedule();
     // 基準日当日 pos=1 → shiftIndex=0
     const r0 = getScheduleForDate(dayjs("2025-11-17"), 1);
@@ -230,7 +259,10 @@ describe("getScheduleForDate()", () => {
 
 describe("calculateScheduleRange()", () => {
   it("日付範囲のスケジュールを配列で返す（endDate は含まない）", () => {
-    setupStores({ baseDate: dayjs("2025-11-17"), nextBaseDate: dayjs("2025-11-17") });
+    setupStores({
+      baseDate: dayjs("2025-11-17"),
+      nextBaseDate: dayjs("2025-11-17"),
+    });
     const { calculateScheduleRange } = useSchedule();
     const result = calculateScheduleRange(
       dayjs("2025-11-17"),
@@ -241,9 +273,16 @@ describe("calculateScheduleRange()", () => {
   });
 
   it("各要素に dateStr が含まれる", () => {
-    setupStores({ baseDate: dayjs("2025-11-17"), nextBaseDate: dayjs("2025-11-17") });
+    setupStores({
+      baseDate: dayjs("2025-11-17"),
+      nextBaseDate: dayjs("2025-11-17"),
+    });
     const { calculateScheduleRange } = useSchedule();
-    const result = calculateScheduleRange(dayjs("2025-11-17"), dayjs("2025-11-19"), 1);
+    const result = calculateScheduleRange(
+      dayjs("2025-11-17"),
+      dayjs("2025-11-19"),
+      1,
+    );
     expect(result[0].dateStr).toBe("2025-11-17");
     expect(result[1].dateStr).toBe("2025-11-18");
   });
@@ -255,7 +294,11 @@ describe("calculateScheduleRange()", () => {
       nextBaseDate: dayjs("2025-11-19"), // 17, 18 だけ有効
     });
     const { calculateScheduleRange } = useSchedule();
-    const result = calculateScheduleRange(dayjs("2025-11-17"), dayjs("2025-11-22"), 1);
+    const result = calculateScheduleRange(
+      dayjs("2025-11-17"),
+      dayjs("2025-11-22"),
+      1,
+    );
     // 17, 18 が返るはず（19以降は undefined → skip）
     result.forEach((r) => {
       expect(["2025-11-17", "2025-11-18"]).toContain(r.dateStr);

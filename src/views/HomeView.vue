@@ -3,23 +3,31 @@
   <UnifiedPageLayout layout="calendar" @title-click="switchToDefaultBaseDate">
     <!-- Controls section -->
     <template #controls>
-      <div class="horizontal-fields" v-if="isLoaded && selectedBaseDate">
+      <div v-if="isLoaded && selectedBaseDate" class="horizontal-fields">
         <BaseSelector
           id="baseDate"
+          v-model="selectedBaseDate"
           legend="基準日"
           aria-label="基準日を選択"
-          v-model="selectedBaseDate"
           :display-as-text="true"
-          :display-value="activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''"
+          :display-value="
+            activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''
+          "
           :options="[]"
           :schedule-update-notice="scheduleUpdateNotice"
         >
-          <div v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr" class="version-link-row">
+          <div
+            v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr"
+            class="version-link-row"
+          >
             <button class="version-btn" @click="switchToNextBaseDate">
               新版: {{ formatAsDisplayDate(nextBaseDate) }}~
             </button>
           </div>
-          <div v-else-if="nextBaseDateStr && defaultBaseDate" class="version-link-row">
+          <div
+            v-else-if="nextBaseDateStr && defaultBaseDate"
+            class="version-link-row"
+          >
             <button class="version-btn" @click="switchToDefaultBaseDate">
               旧版: {{ formatAsDisplayDate(defaultBaseDate) }}~
             </button>
@@ -28,9 +36,9 @@
 
         <BaseSelector
           id="startNumber"
+          v-model="startPosition"
           legend="基準日のコマ位置"
           aria-label="コマ位置を選択"
-          v-model="startPosition"
           :options="positionOptions"
           @change="handlePositionChange"
         />
@@ -62,7 +70,7 @@
           <div class="loading-placeholder">Loading...</div>
         </template>
       </Suspense>
-      
+
       <Suspense v-if="isLoaded">
         <SearchSection />
         <template #fallback>
@@ -70,7 +78,6 @@
         </template>
       </Suspense>
     </template>
-
   </UnifiedPageLayout>
 </template>
 
@@ -169,7 +176,11 @@ const {
 const nextBaseDateStr = computed(() => {
   if (!nextBaseDate.value?.isValid?.()) return null;
   if (!defaultBaseDate.value?.isValid?.()) return null;
-  if (formatAsISODate(nextBaseDate.value) === formatAsISODate(defaultBaseDate.value)) return null;
+  if (
+    formatAsISODate(nextBaseDate.value) ===
+    formatAsISODate(defaultBaseDate.value)
+  )
+    return null;
   return formatAsISODate(nextBaseDate.value);
 });
 
@@ -397,7 +408,11 @@ function applyFromLegacy(params, validBaseDates, cycleLength) {
 
     const num = validStartNumberOrNull(params.startNumber, cycleLength);
     if (num == null) return false;
-    const shifted = calculateNewPosition(num, config.position_shift, cycleLength);
+    const shifted = calculateNewPosition(
+      num,
+      config.position_shift,
+      cycleLength,
+    );
     if (Number.isInteger(shifted)) openMigrationModal(shifted);
     return false;
   }
@@ -436,7 +451,8 @@ function applyFromCanonical(validBaseDates, cycleLength) {
   const validUrlNum =
     position != null ? validStartNumberOrNull(position, cycleLength) : null;
   const fallbackNum = loadCalendarPositionFor(isoBaseDate);
-  const num = validUrlNum ?? (Number.isInteger(fallbackNum) ? fallbackNum : null);
+  const num =
+    validUrlNum ?? (Number.isInteger(fallbackNum) ? fallbackNum : null);
 
   updateActiveBaseDate(targetBaseDate);
   selectedBaseDate.value = isoBaseDate;
@@ -471,7 +487,11 @@ function applyFromStorage(validBaseDates, cycleLength) {
   clearCalendarSelection();
   const num = validStartNumberOrNull(stored.startNumber, cycleLength);
   if (num != null) {
-    const shifted = calculateNewPosition(num, config.position_shift, cycleLength);
+    const shifted = calculateNewPosition(
+      num,
+      config.position_shift,
+      cycleLength,
+    );
     if (Number.isInteger(shifted)) openMigrationModal(shifted);
   }
   return false;

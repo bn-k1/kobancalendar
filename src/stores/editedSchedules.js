@@ -1,7 +1,11 @@
 // src/stores/editedSchedules.js
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
-import { formatAsISODate, formatAsDisplayDate, getWeekdayName } from "@/utils/date";
+import {
+  formatAsISODate,
+  formatAsDisplayDate,
+  getWeekdayName,
+} from "@/utils/date";
 
 const STORAGE_KEY = "kobancalendar_edited_schedules";
 const HIDDEN_KEY = "kobancalendar_edited_schedules_hidden";
@@ -16,10 +20,10 @@ function normalizeSchedule(schedule) {
 }
 
 function parseLegacyCsv(stored) {
-  const lines = stored.split("\n").filter(line => line.trim());
+  const lines = stored.split("\n").filter((line) => line.trim());
   const schedules = {};
 
-  lines.forEach(line => {
+  lines.forEach((line) => {
     const [dateStr, subject, startTime, endTime] = line.split(",");
     if (dateStr) {
       schedules[dateStr] = normalizeSchedule({
@@ -75,7 +79,10 @@ export const useEditedSchedules = defineStore("editedSchedules", () => {
 
       editedSchedules.value = {};
     } catch (error) {
-      console.error("Failed to load edited schedules from localStorage:", error);
+      console.error(
+        "Failed to load edited schedules from localStorage:",
+        error,
+      );
       editedSchedules.value = {};
     }
   }

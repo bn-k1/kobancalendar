@@ -34,8 +34,11 @@ describe("useLocalParams", () => {
     });
 
     it("clear removes the saved selection", () => {
-      const { saveCalendarSelection, loadCalendarSelection, clearCalendarSelection } =
-        useLocalParams();
+      const {
+        saveCalendarSelection,
+        loadCalendarSelection,
+        clearCalendarSelection,
+      } = useLocalParams();
       saveCalendarSelection("2025-11-16", 42);
       clearCalendarSelection();
       expect(loadCalendarSelection()).toBeNull();
@@ -156,7 +159,8 @@ describe("useLocalParams", () => {
     });
 
     it("clearMeetupParams removes stored data", () => {
-      const { saveMeetupParams, loadMeetupParams, clearMeetupParams } = useLocalParams();
+      const { saveMeetupParams, loadMeetupParams, clearMeetupParams } =
+        useLocalParams();
       saveMeetupParams("2025-11-16", [1, 2], "19:00", 30);
       clearMeetupParams();
       expect(loadMeetupParams()).toBeNull();

@@ -1,6 +1,11 @@
 <!-- src/components/Icons/HelpIcon.vue -->
 <template>
-  <svg class="help-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <svg
+    class="help-icon"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+  >
     <path
       d="M9.3 9a2.7 2.7 0 015.4 0c0 1.8-1.8 2.2-2.5 3-.4.4-.4.8-.4 1.5"
       fill="none"

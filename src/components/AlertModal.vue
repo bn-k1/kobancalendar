@@ -20,7 +20,11 @@
         class="alert-suggestion"
       >
         おそらくですが番号は
-        <a href="#" class="suggested-number-link" @click.prevent="applySuggestedNumber">
+        <a
+          href="#"
+          class="suggested-number-link"
+          @click.prevent="applySuggestedNumber"
+        >
           {{ alertModalSuggestedNumber }}
         </a>
         です
@@ -43,8 +47,10 @@ const {
   message: alertModalMessage,
   suggestedNumber: alertModalSuggestedNumber,
 } = storeToRefs(alertModalStore);
-const { close: closeAlertModal, applySuggestedNumber: applySuggestedNumberToHandler } =
-  alertModalStore;
+const {
+  close: closeAlertModal,
+  applySuggestedNumber: applySuggestedNumberToHandler,
+} = alertModalStore;
 
 function applySuggestedNumber() {
   applySuggestedNumberToHandler();

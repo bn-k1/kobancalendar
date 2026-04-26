@@ -6,27 +6,27 @@
  * Each dataset outputs a single JSON file containing holiday, saturday, and weekday data.
  */
 
-import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
-import { dirname, resolve, join } from 'path';
+import { createRequire } from "module";
+import { fileURLToPath } from "url";
+import { dirname, resolve, join } from "path";
 
 const require = createRequire(import.meta.url);
-const fs = require('fs');
-const Papa = require('papaparse');
+const fs = require("fs");
+const Papa = require("papaparse");
 
 // Determine this script's directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-console.log('CSV to JSON Conversion');
-console.log('========================================');
+console.log("CSV to JSON Conversion");
+console.log("========================================");
 
 // Project root directory (one level up from this script)
-const PROJECT_ROOT = resolve(__dirname, '..');
+const PROJECT_ROOT = resolve(__dirname, "..");
 
 // Data sets and files to convert
-const TARGET_DIRS = ['default', 'next'];
-const FILES_TO_CONVERT = ['holiday', 'saturday', 'weekday'];
+const TARGET_DIRS = ["default", "next"];
+const FILES_TO_CONVERT = ["holiday", "saturday", "weekday"];
 
 /**
  * Parse CSV content into an array of optimized schedule objects
@@ -44,16 +44,16 @@ function parseCSVToScheduleObjects(csvData) {
     });
 
     if (result.errors && result.errors.length > 0) {
-      console.error('CSV Parse Error:', result.errors);
+      console.error("CSV Parse Error:", result.errors);
       return [];
     }
 
     // Convert each row to an optimized object with shortened property names
-    return result.data.map(row => {
+    return result.data.map((row) => {
       const scheduleItem = {
-        s: row[0] || '' // subject -> s
+        s: row[0] || "", // subject -> s
       };
-      
+
       // Only include startTime (sT) and endTime (eT) if they have values
       if (row[1] && row[1].trim()) {
         scheduleItem.sT = row[1].trim(); // startTime -> sT
@@ -61,11 +61,11 @@ function parseCSVToScheduleObjects(csvData) {
       if (row[2] && row[2].trim()) {
         scheduleItem.eT = row[2].trim(); // endTime -> eT
       }
-      
+
       return scheduleItem;
     });
   } catch (error) {
-    console.error('Error parsing CSV data:', error);
+    console.error("Error parsing CSV data:", error);
     return [];
   }
 }
@@ -77,11 +77,11 @@ function parseCSVToScheduleObjects(csvData) {
  */
 function validateScheduleData(scheduleData) {
   const { holiday, saturday, weekday } = scheduleData;
-  
+
   if (!holiday.length || !saturday.length || !weekday.length) {
     return false;
   }
-  
+
   const holidayLength = holiday.length;
   return saturday.length === holidayLength && weekday.length === holidayLength;
 }
@@ -95,7 +95,7 @@ function createEmptyScheduleData() {
     holiday: [],
     saturday: [],
     weekday: [],
-    rotationCycleLength: 0
+    rotationCycleLength: 0,
   };
 }
 
@@ -104,7 +104,7 @@ function createEmptyScheduleData() {
  * @param {string} dirName - Directory name ('default' or 'next')
  */
 function processDirectory(dirName) {
-  const inputDir = resolve(PROJECT_ROOT, 'data', dirName);
+  const inputDir = resolve(PROJECT_ROOT, "data", dirName);
   const outputFile = resolve(inputDir, `${dirName}.json`);
 
   console.log(`\nProcessing directory: ${inputDir}`);
@@ -114,7 +114,7 @@ function processDirectory(dirName) {
     holiday: [],
     saturday: [],
     weekday: [],
-    rotationCycleLength: 0
+    rotationCycleLength: 0,
   };
 
   let allFilesPresent = true;
@@ -133,7 +133,7 @@ function processDirectory(dirName) {
     }
 
     try {
-      const csvContent = fs.readFileSync(csvPath, 'utf8');
+      const csvContent = fs.readFileSync(csvPath, "utf8");
       const parsedData = parseCSVToScheduleObjects(csvContent);
       scheduleData[filename] = parsedData;
 
@@ -145,13 +145,15 @@ function processDirectory(dirName) {
   }
 
   if (anyReadError) {
-    throw new Error(`Failed to read one or more CSVs in '${dirName}'. Fix and retry.`);
+    throw new Error(
+      `Failed to read one or more CSVs in '${dirName}'. Fix and retry.`,
+    );
   }
 
   // A directory with no CSV files is a valid "no-data" state (e.g. data/next/ before a transition).
   // Emit an empty schedule in that case, but if files exist they must be consistent.
   const anyFilePresent = FILES_TO_CONVERT.some((f) =>
-    fs.existsSync(join(inputDir, `${f}.csv`))
+    fs.existsSync(join(inputDir, `${f}.csv`)),
   );
 
   if (!anyFilePresent) {
@@ -159,16 +161,18 @@ function processDirectory(dirName) {
     Object.assign(scheduleData, createEmptyScheduleData());
   } else if (!allFilesPresent) {
     throw new Error(
-      `Incomplete CSV set in '${dirName}': holiday/saturday/weekday must all exist or all be absent.`
+      `Incomplete CSV set in '${dirName}': holiday/saturday/weekday must all exist or all be absent.`,
     );
   } else if (validateScheduleData(scheduleData)) {
     scheduleData.rotationCycleLength = scheduleData.holiday.length;
-    console.log(`✓ Validation passed. Rotation cycle length: ${scheduleData.rotationCycleLength}`);
+    console.log(
+      `✓ Validation passed. Rotation cycle length: ${scheduleData.rotationCycleLength}`,
+    );
   } else {
     throw new Error(
       `Row-count mismatch in '${dirName}': holiday=${scheduleData.holiday.length}, ` +
-      `saturday=${scheduleData.saturday.length}, weekday=${scheduleData.weekday.length}. ` +
-      `All three must have identical non-zero row counts.`
+        `saturday=${scheduleData.saturday.length}, weekday=${scheduleData.weekday.length}. ` +
+        `All three must have identical non-zero row counts.`,
     );
   }
 
@@ -186,7 +190,9 @@ function processDirectory(dirName) {
     console.log(`  - Holiday entries: ${scheduleData.holiday.length}`);
     console.log(`  - Saturday entries: ${scheduleData.saturday.length}`);
     console.log(`  - Weekday entries: ${scheduleData.weekday.length}`);
-    console.log(`  - Rotation cycle length: ${scheduleData.rotationCycleLength}`);
+    console.log(
+      `  - Rotation cycle length: ${scheduleData.rotationCycleLength}`,
+    );
   } catch (err) {
     console.error(`Error writing ${outputFile}:`, err);
   }
@@ -195,4 +201,4 @@ function processDirectory(dirName) {
 // Process both directories
 TARGET_DIRS.forEach(processDirectory);
 
-console.log('\n✅ CSV to JSON conversion complete!');
+console.log("\n✅ CSV to JSON conversion complete!");

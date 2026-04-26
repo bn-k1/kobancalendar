@@ -8,16 +8,16 @@
   >
     <div class="modal-content edit-modal-content">
       <h3 class="modal-title">{{ modalTitle }}</h3>
-      
+
       <div class="edit-form">
         <!-- Subject selector -->
-        <div class="form-group" v-if="!isCustomSelected">
+        <div v-if="!isCustomSelected" class="form-group">
           <label for="editSubject">予定名:</label>
           <select
             id="editSubject"
             v-model="selectedSubject"
-            @change="handleSubjectChange"
             class="edit-select"
+            @change="handleSubjectChange"
           >
             <option value="" disabled>予定を選択</option>
             <option
@@ -39,7 +39,10 @@
         </div>
 
         <!-- Time display (read-only, auto-filled) -->
-        <div class="form-group time-display" v-if="selectedSubject && !isCustomSelected">
+        <div
+          v-if="selectedSubject && !isCustomSelected"
+          class="form-group time-display"
+        >
           <div class="time-info">
             <span class="time-label">開始:</span>
             <span class="time-value">{{ selectedStartTime || "なし" }}</span>
@@ -103,14 +106,8 @@
 
         <!-- Action buttons -->
         <div class="modal-actions">
-          <button class="cancel-btn" @click="$emit('close')">
-            キャンセル
-          </button>
-          <button 
-            class="save-btn" 
-            @click="handleSave"
-            :disabled="!canSave"
-          >
+          <button class="cancel-btn" @click="$emit('close')">キャンセル</button>
+          <button class="save-btn" :disabled="!canSave" @click="handleSave">
             保存
           </button>
         </div>
@@ -121,7 +118,12 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
-import { formatAsDisplayDate, getWeekdayName, createDate, isSameOrAfter } from "@/utils/date";
+import {
+  formatAsDisplayDate,
+  getWeekdayName,
+  createDate,
+  isSameOrAfter,
+} from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
 
 const props = defineProps({
@@ -171,19 +173,22 @@ const modalTitle = computed(() => {
 
 const activeScheduleData = computed(() => {
   if (!props.date || !scheduleDataSets.value) return null;
-  
+
   const dateObj = createDate(props.date);
-  
-  if (scheduleUpdateDate.value && isSameOrAfter(dateObj, scheduleUpdateDate.value)) {
+
+  if (
+    scheduleUpdateDate.value &&
+    isSameOrAfter(dateObj, scheduleUpdateDate.value)
+  ) {
     return scheduleDataSets.value.next;
   }
-  
+
   return scheduleDataSets.value.default;
 });
 
 const subjectOptions = computed(() => {
   if (!activeScheduleData.value) return [];
-  
+
   let dayTypeData;
   switch (props.dayType) {
     case "saturday":
@@ -195,9 +200,9 @@ const subjectOptions = computed(() => {
     default:
       dayTypeData = activeScheduleData.value.weekday || [];
   }
-  
+
   const subjectMap = new Map();
-  dayTypeData.forEach(item => {
+  dayTypeData.forEach((item) => {
     if (item.s && !subjectMap.has(item.s)) {
       subjectMap.set(item.s, {
         subject: item.s,
@@ -206,15 +211,17 @@ const subjectOptions = computed(() => {
       });
     }
   });
-  
-  return Array.from(subjectMap.values()).sort((a, b) => 
-    a.subject.localeCompare(b.subject, 'ja')
+
+  return Array.from(subjectMap.values()).sort((a, b) =>
+    a.subject.localeCompare(b.subject, "ja"),
   );
 });
 
 function handleSubjectChange() {
   isCustomSelected.value = false;
-  const selected = subjectOptions.value.find(opt => opt.subject === selectedSubject.value);
+  const selected = subjectOptions.value.find(
+    (opt) => opt.subject === selectedSubject.value,
+  );
   if (selected) {
     selectedStartTime.value = selected.startTime;
     selectedEndTime.value = selected.endTime;
@@ -274,12 +281,16 @@ function closeModalOnOutsideClick(event) {
 watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
   if (newShow && props.currentSchedule) {
     const currentSubject = props.currentSchedule.subject || "";
-    const matchingOption = subjectOptions.value.find(opt => opt.subject === currentSubject);
+    const matchingOption = subjectOptions.value.find(
+      (opt) => opt.subject === currentSubject,
+    );
     const isKnownSubject = Boolean(matchingOption);
     const isCustomByTime =
       isKnownSubject &&
-      ((props.currentSchedule.startTime || "") !== (matchingOption.startTime || "") ||
-        (props.currentSchedule.endTime || "") !== (matchingOption.endTime || ""));
+      ((props.currentSchedule.startTime || "") !==
+        (matchingOption.startTime || "") ||
+        (props.currentSchedule.endTime || "") !==
+          (matchingOption.endTime || ""));
 
     if (currentSubject && (!isKnownSubject || isCustomByTime)) {
       isCustomSelected.value = true;
@@ -292,8 +303,10 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
     } else {
       isCustomSelected.value = false;
       selectedSubject.value = currentSubject;
-      selectedStartTime.value = matchingOption?.startTime || props.currentSchedule.startTime || "";
-      selectedEndTime.value = matchingOption?.endTime || props.currentSchedule.endTime || "";
+      selectedStartTime.value =
+        matchingOption?.startTime || props.currentSchedule.startTime || "";
+      selectedEndTime.value =
+        matchingOption?.endTime || props.currentSchedule.endTime || "";
       customSubject.value = "";
       customStartTime.value = "";
       customEndTime.value = "";
@@ -389,7 +402,10 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
   padding: 0.2rem 0.6rem;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .custom-toggle-btn:hover {

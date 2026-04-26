@@ -9,9 +9,9 @@
         class="participant-entry"
       >
         <select
+          v-model="participant.position"
           class="participant-position"
           aria-label="参加者のコマ位置"
-          v-model="participant.position"
           @change="handleParticipantChange"
         >
           <option value="" disabled>コマ位置を選択</option>

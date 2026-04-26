@@ -1,26 +1,38 @@
 <template>
-  <UnifiedPageLayout layout="meetup" :show-results="showResults" @title-click="switchToDefaultBaseDate">
+  <UnifiedPageLayout
+    layout="meetup"
+    :show-results="showResults"
+    @title-click="switchToDefaultBaseDate"
+  >
     <!-- Search controls section -->
     <template #search-controls>
       <div class="search-controls">
         <!-- Base date selector -->
         <BaseSelector
+          v-if="isLoaded"
           id="baseDate"
+          v-model="selectedBaseDate"
           legend="基準日"
           aria-label="基準日を選択"
-          v-model="selectedBaseDate"
           :display-as-text="true"
-          :display-value="activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''"
+          :display-value="
+            activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''
+          "
           :options="[]"
           :schedule-update-notice="scheduleUpdateNotice"
-          v-if="isLoaded"
         >
-          <div v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr" class="version-link-row">
+          <div
+            v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr"
+            class="version-link-row"
+          >
             <button class="version-btn" @click="switchToNextBaseDate">
               新版: {{ formatAsDisplayDate(nextBaseDate) }}~
             </button>
           </div>
-          <div v-else-if="nextBaseDateStr && defaultBaseDate" class="version-link-row">
+          <div
+            v-else-if="nextBaseDateStr && defaultBaseDate"
+            class="version-link-row"
+          >
             <button class="version-btn" @click="switchToDefaultBaseDate">
               旧版: {{ formatAsDisplayDate(defaultBaseDate) }}~
             </button>
@@ -29,17 +41,17 @@
 
         <!-- Meetup settings -->
         <fieldset
+          v-if="isLoaded"
           id="meetupSettingsSection"
           class="control-group"
-          v-if="isLoaded"
         >
           <legend>検索条件</legend>
           <div class="form-group">
             <label for="meetupStartTime">飲会開始:</label>
             <select
               id="meetupStartTime"
-              aria-label="飲み会開始時間"
               v-model="meetupStartTime"
+              aria-label="飲み会開始時間"
             >
               <option v-for="time in TIMEOPTIONS" :key="time" :value="time">
                 {{ time }}
@@ -50,8 +62,8 @@
             <label for="searchPeriod">検索期間:</label>
             <select
               id="searchPeriod"
-              aria-label="検索期間"
               v-model="searchPeriod"
+              aria-label="検索期間"
             >
               <option
                 v-for="period in PERIODOPTIONS"
@@ -82,9 +94,9 @@
     <!-- Search button section -->
     <template #search-button>
       <button
+        v-if="isLoaded"
         id="findDatesBtn"
         class="primary-btn action-btn"
-        v-if="isLoaded"
         @click="findDates"
       >
         日程を検索
@@ -104,13 +116,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  computed,
-  onMounted,
-  watch,
-  defineAsyncComponent,
-} from "vue";
+import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 
 // Essential components loaded immediately
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
@@ -173,11 +179,7 @@ const {
   loadCalendarSelection,
   loadCalendarPositionFor,
 } = useLocalParams();
-const {
-  readCanonicalMeetup,
-  writeMeetupUrl,
-  clearMeetupUrl,
-} = useUrlParams();
+const { readCanonicalMeetup, writeMeetupUrl, clearMeetupUrl } = useUrlParams();
 const { searchResults, findMeetupDates } = useMeetupSearch();
 
 // Schedule composable
@@ -193,14 +195,16 @@ const {
 const nextBaseDateStr = computed(() => {
   if (!nextBaseDate.value?.isValid?.()) return null;
   if (!defaultBaseDate.value?.isValid?.()) return null;
-  if (formatAsISODate(nextBaseDate.value) === formatAsISODate(defaultBaseDate.value)) return null;
+  if (
+    formatAsISODate(nextBaseDate.value) ===
+    formatAsISODate(defaultBaseDate.value)
+  )
+    return null;
   return formatAsISODate(nextBaseDate.value);
 });
 
 function toValidPositionNumbers(items) {
-  return items
-    .map((p) => parseInt(p.position, 10))
-    .filter((p) => !isNaN(p));
+  return items.map((p) => parseInt(p.position, 10)).filter((p) => !isNaN(p));
 }
 
 function applySelectedBaseDate(dateObj) {

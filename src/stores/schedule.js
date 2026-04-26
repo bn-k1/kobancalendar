@@ -21,7 +21,7 @@ export const useScheduleStore = defineStore("schedule", () => {
   const defaultBaseDate = ref(undefined);
   const activeBaseDate = ref(undefined);
   const nextBaseDate = ref(undefined);
-  
+
   const scheduleUpdateDate = ref(undefined);
 
   const isDataLoaded = computed(() => {

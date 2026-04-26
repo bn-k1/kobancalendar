@@ -102,7 +102,8 @@ function readMeetupStorage() {
 
 function readCalendarStorage() {
   const parsed = readStoredObject(CALENDAR_STORAGE_KEY);
-  if (!parsed || typeof parsed !== "object") return { active: null, positions: {} };
+  if (!parsed || typeof parsed !== "object")
+    return { active: null, positions: {} };
 
   if (parsed.positions && typeof parsed.positions === "object") {
     const positions = {};
@@ -159,9 +160,7 @@ export function useLocalParams() {
 
   function saveMeetupParams(baseDate, participants, startTime, period) {
     const validParticipants = toValidIntegerArray(
-      participants?.map?.((p) =>
-        typeof p === "object" ? p.position : p,
-      ),
+      participants?.map?.((p) => (typeof p === "object" ? p.position : p)),
     );
     const parsedPeriod = parseInt(period, 10);
 

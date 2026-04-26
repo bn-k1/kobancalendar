@@ -5,7 +5,13 @@ import { useCalendarStore } from "@/stores/calendar";
 import { useSchedule } from "@/composables/useSchedule";
 import { useHolidays } from "@/composables/useHolidays";
 import { useEditedSchedules } from "@/stores/editedSchedules";
-import { createDate, addDays, isBefore, parseTime, formatAsISODate } from "@/utils/date";
+import {
+  createDate,
+  addDays,
+  isBefore,
+  parseTime,
+  formatAsISODate,
+} from "@/utils/date";
 
 /**
  * Calendar functionality composable
@@ -138,16 +144,23 @@ export function useCalendar() {
 
     while (isBefore(currentDate, end)) {
       const dateStr = formatAsISODate(currentDate);
-      
+
       // Check for edited schedule first (highest priority), unless hidden
-      const editedSchedule = isEditsHidden.value ? null : getEditedSchedule(dateStr);
-      
+      const editedSchedule = isEditsHidden.value
+        ? null
+        : getEditedSchedule(dateStr);
+
       if (editedSchedule) {
         const scheduleInfo = getScheduleForDate(currentDate, startPosition);
         const shiftIndex = scheduleInfo?.shiftIndex ?? 0;
-        
+
         const { config } = getEventType(editedSchedule.subject, true);
-        const title = buildEventTitle(editedSchedule.subject, editedSchedule.startTime, editedSchedule.endTime, config);
+        const title = buildEventTitle(
+          editedSchedule.subject,
+          editedSchedule.startTime,
+          editedSchedule.endTime,
+          config,
+        );
 
         generatedEvents.push({
           title,

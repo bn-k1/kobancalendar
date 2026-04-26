@@ -27,14 +27,8 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             vendor: ["vue", "vue-router", "pinia"],
-            calendar: [
-              "@fullcalendar/vue3",
-              "@fullcalendar/daygrid",
-            ],
-            utils: [
-              "dayjs",
-              "japanese-holidays",
-            ],
+            calendar: ["@fullcalendar/vue3", "@fullcalendar/daygrid"],
+            utils: ["dayjs", "japanese-holidays"],
           },
         },
       },

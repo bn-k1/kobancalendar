@@ -2,7 +2,7 @@
 <template>
   <div class="calendar-container">
     <FullCalendar ref="calendarRef" :options="calendarOptions" />
-    
+
     <EditScheduleModal
       :show="showEditModal"
       :date="editingDate"
@@ -76,7 +76,7 @@ const editedEventConfig = computed(() => {
 });
 
 const mergedEvents = computed(() => {
-  return props.events.map(event => {
+  return props.events.map((event) => {
     if (isEditsHidden.value) {
       return {
         ...event,
@@ -89,13 +89,14 @@ const mergedEvents = computed(() => {
 
     const dateStr = formatAsISODate(event.start);
     const editedSchedule = getEditedSchedule(dateStr);
-    
+
     if (editedSchedule) {
-      const title = editedSchedule.startTime || editedSchedule.endTime
-        ? `${editedSchedule.subject}\n${editedSchedule.startTime} - \n${editedSchedule.endTime}`
-        : editedSchedule.subject;
+      const title =
+        editedSchedule.startTime || editedSchedule.endTime
+          ? `${editedSchedule.subject}\n${editedSchedule.startTime} - \n${editedSchedule.endTime}`
+          : editedSchedule.subject;
       const editedColor = editedEventConfig.value?.color || event.color;
-      
+
       return {
         ...event,
         title,
@@ -110,7 +111,7 @@ const mergedEvents = computed(() => {
         },
       };
     }
-    
+
     return {
       ...event,
       extendedProps: {
@@ -125,7 +126,7 @@ function handlePressStart(info, event) {
   if (event?.isPrimary === false) return;
   if (event?.pointerType === "mouse" && event?.button !== 0) return;
   pressedEventInfo = { event: info.event, jsEvent: event };
-  
+
   longPressTimer = setTimeout(() => {
     if (pressedEventInfo) {
       openEditModal(pressedEventInfo.event);
@@ -144,17 +145,17 @@ function handlePressEnd() {
 function openEditModal(event) {
   const dateObj = createDate(event.start);
   const dateStr = formatAsISODate(dateObj);
-  
+
   let dayType = "weekday";
   if (isHoliday(dateObj) || dateObj.day() === 0) {
     dayType = "holiday";
   } else if (dateObj.day() === 6) {
     dayType = "saturday";
   }
-  
+
   const extendedProps = event.extendedProps || {};
-  let currentSchedule = {};
-  
+  let currentSchedule;
+
   if (extendedProps.isEdited) {
     currentSchedule = {
       subject: extendedProps.editedSubject,
@@ -171,7 +172,7 @@ function openEditModal(event) {
       note: "",
     };
   }
-  
+
   editingDate.value = dateStr;
   editingDayType.value = dayType;
   editingCurrentSchedule.value = currentSchedule;
@@ -244,7 +245,7 @@ const calendarOptions = computed(() => ({
       ? `${shiftIndex + 1} ${holidayName}`
       : `${shiftIndex + 1}`;
 
-    const editedIndicator = isEdited ? '✎ ' : '';
+    const editedIndicator = isEdited ? "✎ " : "";
 
     return {
       html: `
@@ -259,13 +260,13 @@ const calendarOptions = computed(() => ({
   eventDidMount: (info) => {
     const el = info.el;
     const pointerDownHandler = (e) => handlePressStart(info, e);
-    
+
     pointerDownHandlerMap.set(el, pointerDownHandler);
     el.addEventListener("pointerdown", pointerDownHandler);
     el.addEventListener("pointerup", handlePressEnd);
     el.addEventListener("pointerleave", handlePressEnd);
     el.addEventListener("pointercancel", handlePressEnd);
-    
+
     el.classList.add("long-press-enabled");
   },
 

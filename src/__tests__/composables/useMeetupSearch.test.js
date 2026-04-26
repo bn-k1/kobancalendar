@@ -13,7 +13,11 @@ import { useEditedSchedules } from "@/stores/editedSchedules";
 const CYCLE = 3;
 const makeScheduleData = () => ({
   holiday: [{ s: "公休" }, { s: "公休" }, { s: "公休" }],
-  saturday: [{ s: "公休" }, { s: "早番", sT: "08:00", eT: "16:00" }, { s: "公休" }],
+  saturday: [
+    { s: "公休" },
+    { s: "早番", sT: "08:00", eT: "16:00" },
+    { s: "公休" },
+  ],
   weekday: [
     { s: "公休" },
     { s: "早番", sT: "08:00", eT: "16:00" },
@@ -130,7 +134,10 @@ describe("findMeetupDates()", () => {
       const prev = result.partialMatches[i - 1];
       const curr = result.partialMatches[i];
       if (prev.availableCount === curr.availableCount) {
-        expect(prev.date.isBefore(curr.date, "day") || prev.date.isSame(curr.date, "day")).toBe(true);
+        expect(
+          prev.date.isBefore(curr.date, "day") ||
+            prev.date.isSame(curr.date, "day"),
+        ).toBe(true);
       } else {
         expect(prev.availableCount).toBeGreaterThanOrEqual(curr.availableCount);
       }

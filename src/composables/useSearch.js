@@ -1,5 +1,5 @@
-import { ref, computed, watch } from 'vue';
-import { useSchedule } from '@/composables/useSchedule';
+import { ref, computed, watch } from "vue";
+import { useSchedule } from "@/composables/useSchedule";
 
 /**
  * Search composable for finding schedule subjects
@@ -10,10 +10,10 @@ export function useSearch() {
   const { scheduleDataSets, scheduleUpdateDate } = useSchedule();
 
   // Local state
-  const searchQuery = ref('');
+  const searchQuery = ref("");
   const searchResults = ref([]);
-  const selectedScheduleType = ref('current');
-  const selectedDayType = ref('weekday');
+  const selectedScheduleType = ref("current");
+  const selectedDayType = ref("weekday");
   const hasSearched = ref(false);
 
   function getNormalizedQuery() {
@@ -40,7 +40,7 @@ export function useSearch() {
     if (!scheduleDataSets.value) return null;
 
     if (showScheduleTypeSelector.value) {
-      return selectedScheduleType.value === 'next'
+      return selectedScheduleType.value === "next"
         ? scheduleDataSets.value.next
         : scheduleDataSets.value.default;
     }
@@ -53,9 +53,9 @@ export function useSearch() {
     if (!currentScheduleData.value) return [];
 
     switch (selectedDayType.value) {
-      case 'saturday':
+      case "saturday":
         return currentScheduleData.value.saturday || [];
-      case 'holiday':
+      case "holiday":
         return currentScheduleData.value.holiday || [];
       default:
         return currentScheduleData.value.weekday || [];
@@ -106,8 +106,8 @@ export function useSearch() {
       if (item.s && item.s.toLowerCase().includes(queryLower)) {
         results.push({
           subject: item.s,
-          startTime: item.sT || '',
-          endTime: item.eT || '',
+          startTime: item.sT || "",
+          endTime: item.eT || "",
           position: index + 1,
           scheduleType: selectedScheduleType.value,
           dayType: selectedDayType.value,
@@ -141,7 +141,7 @@ export function useSearch() {
    * Clear search results and query
    */
   function clearSearch() {
-    searchQuery.value = '';
+    searchQuery.value = "";
     searchResults.value = [];
     hasSearched.value = false;
   }
@@ -151,8 +151,8 @@ export function useSearch() {
    */
   function resetSearch() {
     clearSearch();
-    selectedScheduleType.value = 'current';
-    selectedDayType.value = 'weekday';
+    selectedScheduleType.value = "current";
+    selectedDayType.value = "weekday";
   }
 
   // Watch for schedule data changes and reset if needed
@@ -166,7 +166,7 @@ export function useSearch() {
     (newValue) => {
       if (newValue) {
         // If schedule update is available, default to 'current'
-        selectedScheduleType.value = 'current';
+        selectedScheduleType.value = "current";
       }
     },
     { immediate: true },

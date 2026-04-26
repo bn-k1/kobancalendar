@@ -2,8 +2,8 @@
 <template>
   <button
     class="qr-button"
-    @click="showModal = true"
     aria-label="QRコードを表示"
+    @click="showModal = true"
   >
     <QrIcon />
   </button>

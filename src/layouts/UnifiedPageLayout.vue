@@ -3,10 +3,24 @@
   <div class="page-layout">
     <header>
       <div class="header-top">
-        <h1 @click="handleTitleClick" class="clickable-title">{{ pageTitle }}</h1>
+        <h1 class="clickable-title" @click="handleTitleClick">
+          {{ pageTitle }}
+        </h1>
         <div class="header-controls">
-          <a v-if="isHomePage" class="mode-link" href="/kobancalendar/#/meetup" aria-label="飲み会モードへ">🍻</a>
-          <a v-if="isMeetupPage" class="mode-link" href="/kobancalendar/#/" aria-label="勤務モードへ">🚨</a>
+          <a
+            v-if="isHomePage"
+            class="mode-link"
+            href="/kobancalendar/#/meetup"
+            aria-label="飲み会モードへ"
+            >🍻</a
+          >
+          <a
+            v-if="isMeetupPage"
+            class="mode-link"
+            href="/kobancalendar/#/"
+            aria-label="勤務モードへ"
+            >🚨</a
+          >
           <HelpButton />
           <ShareButton />
           <QrButton />
@@ -14,18 +28,26 @@
         </div>
       </div>
     </header>
-    <div v-if="showCafeteriaMenu" class="cafeteria-menu-retro" :class="{ 'is-unavailable': !hasTodayMenu }">
+    <div
+      v-if="showCafeteriaMenu"
+      class="cafeteria-menu-retro"
+      :class="{ 'is-unavailable': !hasTodayMenu }"
+    >
       <p class="retro-title">本日の食堂メニュー</p>
       <template v-if="hasTodayMenu">
         <div class="retro-row">
-          <span class="retro-item">A定食: {{ todayMenu.a }} ｜ B定食: {{ todayMenu.b }}</span>
+          <span class="retro-item"
+            >A定食: {{ todayMenu.a }} ｜ B定食: {{ todayMenu.b }}</span
+          >
         </div>
       </template>
       <p v-else class="retro-empty">本日のメニューは未登録です</p>
       <template v-if="hasTomorrowMenu">
         <div class="retro-row retro-row--tomorrow">
           <span class="retro-label">明日</span>
-          <span class="retro-item">{{ tomorrowMenu.a }} ｜ {{ tomorrowMenu.b }}</span>
+          <span class="retro-item"
+            >{{ tomorrowMenu.a }} ｜ {{ tomorrowMenu.b }}</span
+          >
         </div>
       </template>
     </div>
@@ -53,7 +75,7 @@
         <section class="search-button-section">
           <slot name="search-button"></slot>
         </section>
-        <section class="results-section" v-if="showResults">
+        <section v-if="showResults" class="results-section">
           <slot name="results"></slot>
         </section>
       </div>
@@ -145,10 +167,14 @@ const tomorrowMenu = computed(() => {
 });
 const hasTomorrowMenu = computed(() => tomorrowMenu.value !== null);
 const hasAnyMenuData = computed(() => {
-  return menuData && typeof menuData === "object" && Object.keys(menuData).length > 0;
+  return (
+    menuData && typeof menuData === "object" && Object.keys(menuData).length > 0
+  );
 });
 const showCafeteriaMenu = computed(() => {
-  return props.layout !== "meetup" && !isMeetupPage.value && hasAnyMenuData.value;
+  return (
+    props.layout !== "meetup" && !isMeetupPage.value && hasAnyMenuData.value
+  );
 });
 
 function handleTitleClick() {

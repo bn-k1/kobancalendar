@@ -7,8 +7,8 @@
         id="allMatchesTab"
         class="tab-btn"
         :class="{ active: activeTab === 'all' }"
-        @click="activeTab = 'all'"
         data-matches="all"
+        @click="activeTab = 'all'"
       >
         全員一致
       </button>
@@ -16,8 +16,8 @@
         id="partialMatchesTab"
         class="tab-btn"
         :class="{ active: activeTab === 'partial' }"
-        @click="activeTab = 'partial'"
         data-matches="partial"
+        @click="activeTab = 'partial'"
       >
         部分一致
       </button>
@@ -29,13 +29,13 @@
         class="tab-content"
         :class="{ active: activeTab === 'all' }"
       >
-        <div class="no-results-message" v-if="results.allMatches.length === 0">
+        <div v-if="results.allMatches.length === 0" class="no-results-message">
           全員が参加可能な日付は見つかりませんでした。
         </div>
         <table
+          v-if="results.allMatches.length > 0"
           id="allMatchesTable"
           class="results-table"
-          v-if="results.allMatches.length > 0"
         >
           <thead>
             <tr>
@@ -72,15 +72,15 @@
         :class="{ active: activeTab === 'partial' }"
       >
         <div
-          class="no-results-message"
           v-if="results.partialMatches.length === 0"
+          class="no-results-message"
         >
           条件に合う日付は見つかりませんでした。
         </div>
         <table
+          v-if="results.partialMatches.length > 0"
           id="partialMatchesTable"
           class="results-table"
-          v-if="results.partialMatches.length > 0"
         >
           <thead>
             <tr>

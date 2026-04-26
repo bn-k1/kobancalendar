@@ -5,19 +5,29 @@
     class="control-group"
     :style="editedColorStyle"
   >
-    <legend @click="toggleExpanded" class="clickable-legend">
+    <legend class="clickable-legend" @click="toggleExpanded">
       編集済み ({{ editedSchedulesList.length }})
-      <span class="toggle-icon">{{ isExpanded ? '▼' : '▶' }}</span>
+      <span class="toggle-icon">{{ isExpanded ? "▼" : "▶" }}</span>
       <button
         type="button"
         class="visibility-icon"
         :class="{ 'is-hidden': isEditsHidden }"
+        :aria-label="
+          isEditsHidden
+            ? '編集済み予定を表示する'
+            : '編集済み予定を非表示にする'
+        "
+        :title="
+          isEditsHidden
+            ? '編集済み予定を表示する'
+            : '編集済み予定を非表示にする'
+        "
         @click.stop="toggleHidden"
-        :aria-label="isEditsHidden ? '編集済み予定を表示する' : '編集済み予定を非表示にする'"
-        :title="isEditsHidden ? '編集済み予定を表示する' : '編集済み予定を非表示にする'"
       >
         <EyeToggleIcon :hidden="isEditsHidden" />
-        <span class="visibility-label">{{ isEditsHidden ? '非表示中' : '表示中' }}</span>
+        <span class="visibility-label">{{
+          isEditsHidden ? "非表示中" : "表示中"
+        }}</span>
       </button>
     </legend>
     <div v-if="showEmptyNotice" class="edited-empty-notice">
@@ -29,8 +39,16 @@
         :key="item.dateStr"
         class="edited-line"
       >
-        <span class="edited-text">{{ item.displayDate }}({{ item.weekday }}) {{ item.subject }}</span>
-        <button class="remove-btn" @click="handleRemove(item.dateStr)" aria-label="削除">✕</button>
+        <span class="edited-text"
+          >{{ item.displayDate }}({{ item.weekday }}) {{ item.subject }}</span
+        >
+        <button
+          class="remove-btn"
+          aria-label="削除"
+          @click="handleRemove(item.dateStr)"
+        >
+          ✕
+        </button>
       </div>
     </div>
   </fieldset>
@@ -45,7 +63,8 @@ import { useCalendarStore } from "@/stores/calendar";
 import { EDITED_SCHEDULE_EMPTY_NOTICE } from "@/utils/constants";
 
 const editedSchedulesStore = useEditedSchedules();
-const { editedSchedulesList, isEditsHidden } = storeToRefs(editedSchedulesStore);
+const { editedSchedulesList, isEditsHidden } =
+  storeToRefs(editedSchedulesStore);
 const { removeEditedSchedule, setEditsHidden } = editedSchedulesStore;
 const emit = defineEmits(["editedChanged"]);
 const isExpanded = ref(false);

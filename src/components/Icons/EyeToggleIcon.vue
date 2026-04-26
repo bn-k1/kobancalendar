@@ -28,7 +28,14 @@
       stroke-linecap="round"
       stroke-linejoin="round"
     />
-    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6" />
+    <circle
+      cx="12"
+      cy="12"
+      r="3"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+    />
   </svg>
 </template>
 

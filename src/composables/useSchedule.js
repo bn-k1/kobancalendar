@@ -29,7 +29,9 @@ export function useSchedule() {
   const storeDefaultBaseDate = computed(() => scheduleStore.defaultBaseDate);
   const storeActiveBaseDate = computed(() => scheduleStore.activeBaseDate);
   const storeNextBaseDate = computed(() => scheduleStore.nextBaseDate);
-  const storeScheduleUpdateDate = computed(() => scheduleStore.scheduleUpdateDate);
+  const storeScheduleUpdateDate = computed(
+    () => scheduleStore.scheduleUpdateDate,
+  );
 
   // Determine which schedule data to use based on target date
   const getScheduleDataForDate = (targetDate) => {
@@ -56,7 +58,12 @@ export function useSchedule() {
    * @param {Object} scheduleData - Schedule data to use for calculation
    * @returns {number} Shift index
    */
-  function calculateShiftIndex(targetDate, startPosition, baseDate, scheduleData) {
+  function calculateShiftIndex(
+    targetDate,
+    startPosition,
+    baseDate,
+    scheduleData,
+  ) {
     const target = createDate(targetDate);
     const base = createDate(baseDate);
     const daysDifference = target.diff(base, "day");
@@ -104,7 +111,12 @@ export function useSchedule() {
     const currentScheduleData = getScheduleDataForDate(target);
 
     // Calculate shift index
-    const shiftIndex = calculateShiftIndex(target, startPosition, baseDate, currentScheduleData);
+    const shiftIndex = calculateShiftIndex(
+      target,
+      startPosition,
+      baseDate,
+      currentScheduleData,
+    );
 
     // Get appropriate data based on date type
     let shiftData;

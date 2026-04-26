@@ -51,7 +51,8 @@ export const ERROR_MESSAGES = {
   UNKNOWN_CSV_FORMAT: "不明な形式のCSVです",
   NO_BASE_DATE: "URLパラメータに基準日が含まれていません",
   BASEDATE_CONFIGURATION_ERROR: "基準日設定失敗",
-  INVALID_BASE_DATE: "掲示板に貼ってあるコマ位置の表が新しくなりましたので、それを見て登録しなおしてください",
+  INVALID_BASE_DATE:
+    "掲示板に貼ってあるコマ位置の表が新しくなりましたので、それを見て登録しなおしてください",
   INVALID_STARTNUMBER: "無効なコマ位置です",
   PARAM_OUT_OF_RANGE: "パラメータが有効範囲外です",
   CONFIG_NOT_LOADED: "設定が完全に読み込まれていません",
@@ -64,4 +65,5 @@ export const ERROR_MESSAGES = {
   GOAHEAD: "行ってらっしゃいませ",
 };
 
-export const EDITED_SCHEDULE_EMPTY_NOTICE = "既存の予定を長押しして編集できます。";
+export const EDITED_SCHEDULE_EMPTY_NOTICE =
+  "既存の予定を長押しして編集できます。";

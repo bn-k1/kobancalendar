@@ -2,24 +2,24 @@
 <template>
   <fieldset id="searchSection" class="control-group">
     <legend>検索</legend>
-    
+
     <!-- Schedule type selector (only shown when schedule_update is set) -->
     <div v-if="showScheduleTypeSelector" class="form-group">
       <div class="radio-group">
         <label>
-          <input 
-            type="radio" 
-            value="current" 
+          <input
             v-model="selectedScheduleType"
+            type="radio"
+            value="current"
             @change="handleScheduleTypeChange"
           />
           現交番表
         </label>
         <label>
-          <input 
-            type="radio" 
-            value="next" 
+          <input
             v-model="selectedScheduleType"
+            type="radio"
+            value="next"
             @change="handleScheduleTypeChange"
           />
           新交番表
@@ -31,28 +31,28 @@
     <div class="form-group">
       <div class="radio-group">
         <label>
-          <input 
-            type="radio" 
-            value="weekday" 
+          <input
             v-model="selectedDayType"
+            type="radio"
+            value="weekday"
             @change="handleDayTypeChange"
           />
           平日
         </label>
         <label>
-          <input 
-            type="radio" 
-            value="saturday" 
+          <input
             v-model="selectedDayType"
+            type="radio"
+            value="saturday"
             @change="handleDayTypeChange"
           />
           土曜
         </label>
         <label>
-          <input 
-            type="radio" 
-            value="holiday" 
+          <input
             v-model="selectedDayType"
+            type="radio"
+            value="holiday"
             @change="handleDayTypeChange"
           />
           日祝
@@ -64,26 +64,29 @@
     <div class="form-group">
       <div class="search-input-container">
         <input
-          type="text"
           id="searchInput"
           v-model="searchQuery"
+          type="text"
+          placeholder="予定名で検索..."
+          class="search-input"
+          autocomplete="off"
           @input="handleSearchInput"
           @focus="showSuggestions = true"
           @blur="handleBlur"
           @keydown="handleKeydown"
-          placeholder="予定名で検索..."
-          class="search-input"
-          autocomplete="off"
         />
-        
+
         <!-- Autocomplete suggestions -->
-        <div v-if="showSuggestions && filteredSuggestions.length > 0" class="suggestions-dropdown">
+        <div
+          v-if="showSuggestions && filteredSuggestions.length > 0"
+          class="suggestions-dropdown"
+        >
           <div
             v-for="(suggestion, index) in filteredSuggestions"
             :key="index"
-            @mousedown="selectSuggestion(suggestion)"
             class="suggestion-item"
-            :class="{ 'highlighted': index === highlightedIndex }"
+            :class="{ highlighted: index === highlightedIndex }"
+            @mousedown="selectSuggestion(suggestion)"
           >
             {{ suggestion }}
           </div>
@@ -105,8 +108,12 @@
             <span v-if="result.startTime && result.endTime" class="result-time">
               {{ result.startTime }} - {{ result.endTime }}
             </span>
-            <span v-else-if="result.startTime" class="result-time">{{ result.startTime }}</span>
-            <span v-else-if="result.endTime" class="result-time">{{ result.endTime }}</span>
+            <span v-else-if="result.startTime" class="result-time">{{
+              result.startTime
+            }}</span>
+            <span v-else-if="result.endTime" class="result-time">{{
+              result.endTime
+            }}</span>
             <span class="result-position">コマ{{ result.position }}</span>
           </div>
         </div>
@@ -121,8 +128,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { useSearch } from '@/composables/useSearch';
+import { ref, computed, watch } from "vue";
+import { useSearch } from "@/composables/useSearch";
 
 // Composable for search functionality
 const {
@@ -135,7 +142,7 @@ const {
   hasSearched,
   performSearch,
   updateScheduleType,
-  updateDayType
+  updateDayType,
 } = useSearch();
 
 // Local state for UI
@@ -187,24 +194,24 @@ function handleKeydown(event) {
   if (!showSuggestions.value || filteredSuggestions.value.length === 0) return;
 
   switch (event.key) {
-    case 'ArrowDown':
+    case "ArrowDown":
       event.preventDefault();
       highlightedIndex.value = Math.min(
         highlightedIndex.value + 1,
-        filteredSuggestions.value.length - 1
+        filteredSuggestions.value.length - 1,
       );
       break;
-    case 'ArrowUp':
+    case "ArrowUp":
       event.preventDefault();
       highlightedIndex.value = Math.max(highlightedIndex.value - 1, -1);
       break;
-    case 'Enter':
+    case "Enter":
       event.preventDefault();
       if (highlightedIndex.value >= 0) {
         selectSuggestion(filteredSuggestions.value[highlightedIndex.value]);
       }
       break;
-    case 'Escape':
+    case "Escape":
       showSuggestions.value = false;
       highlightedIndex.value = -1;
       break;

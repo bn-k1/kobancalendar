@@ -18,7 +18,7 @@ export function useAppInitializer() {
     loadScheduleData,
     setDefaultBaseDate,
     setNextBaseDate,
-    setScheduleUpdateDate
+    setScheduleUpdateDate,
   } = useSchedule();
 
   const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =

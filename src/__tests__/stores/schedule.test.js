@@ -78,7 +78,12 @@ describe("setScheduleDataSets()", () => {
   it("isDataLoaded が true になる（default cycleLength > 0）", () => {
     const store = useScheduleStore();
     store.setScheduleDataSets({
-      default: { holiday: [], saturday: [], weekday: [], rotationCycleLength: 5 },
+      default: {
+        holiday: [],
+        saturday: [],
+        weekday: [],
+        rotationCycleLength: 5,
+      },
       next: { holiday: [], saturday: [], weekday: [], rotationCycleLength: 0 },
     });
     expect(store.isDataLoaded).toBe(true);
@@ -87,7 +92,12 @@ describe("setScheduleDataSets()", () => {
   it("isDataLoaded が true になる（next cycleLength > 0）", () => {
     const store = useScheduleStore();
     store.setScheduleDataSets({
-      default: { holiday: [], saturday: [], weekday: [], rotationCycleLength: 0 },
+      default: {
+        holiday: [],
+        saturday: [],
+        weekday: [],
+        rotationCycleLength: 0,
+      },
       next: { holiday: [], saturday: [], weekday: [], rotationCycleLength: 3 },
     });
     expect(store.isDataLoaded).toBe(true);

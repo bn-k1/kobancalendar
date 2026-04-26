@@ -2,8 +2,8 @@
 <template>
   <button
     class="share-button"
-    @click="shareCurrentPage"
     aria-label="現在のページを共有"
+    @click="shareCurrentPage"
   >
     <ShareIcon />
   </button>
@@ -15,10 +15,10 @@ import ShareIcon from "@/components/Icons/ShareIcon.vue";
 // Share current page using Web Share API
 async function shareCurrentPage() {
   if (!navigator.share) return;
-  
+
   await navigator.share({
     title: document.title,
-    url: window.location.href
+    url: window.location.href,
   });
 }
 </script>

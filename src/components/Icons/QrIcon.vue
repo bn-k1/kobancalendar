@@ -1,11 +1,6 @@
 <!-- src/components/Icons/QrIcon.vue -->
 <template>
-  <svg
-    class="qr-icon"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-    focusable="false"
-  >
+  <svg class="qr-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path
       d="M2 2H10V10H2V2ZM14 2H22V10H14V2ZM2 14H10V22H2V14Z"
       stroke="currentColor"

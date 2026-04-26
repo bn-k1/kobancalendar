@@ -2,9 +2,9 @@
 <template>
   <button
     class="dark-toggle"
-    @click="toggleDarkMode"
     :aria-pressed="isDark"
     aria-label="ダークモード切替"
+    @click="toggleDarkMode"
   >
     {{ isDark ? "☀️" : "🌙" }}
   </button>

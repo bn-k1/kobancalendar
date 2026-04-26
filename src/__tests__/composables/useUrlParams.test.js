@@ -119,13 +119,19 @@ describe("useUrlParams", () => {
     it("returns nulls when path is not home", () => {
       setLocation("/", "", "#/meetup?p=12");
       const { readCanonicalCalendar } = useUrlParams();
-      expect(readCanonicalCalendar()).toEqual({ position: null, version: null });
+      expect(readCanonicalCalendar()).toEqual({
+        position: null,
+        version: null,
+      });
     });
 
     it("returns nulls on bare home", () => {
       setLocation("/", "", "#/");
       const { readCanonicalCalendar } = useUrlParams();
-      expect(readCanonicalCalendar()).toEqual({ position: null, version: null });
+      expect(readCanonicalCalendar()).toEqual({
+        position: null,
+        version: null,
+      });
     });
   });
 
@@ -246,7 +252,11 @@ describe("useUrlParams", () => {
     it("sets ps/t/d in hash query", () => {
       setLocation("/", "", "#/meetup");
       const { writeMeetupUrl } = useUrlParams();
-      writeMeetupUrl({ participants: [1, 7, 12], startTime: "19:00", period: 120 });
+      writeMeetupUrl({
+        participants: [1, 7, 12],
+        startTime: "19:00",
+        period: 120,
+      });
       const params = new URLSearchParams(window.location.hash.split("?")[1]);
       expect(params.get("ps")).toBe("1,7,12");
       expect(params.get("t")).toBe("19:00");

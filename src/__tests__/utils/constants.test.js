@@ -131,6 +131,8 @@ describe("ERROR_MESSAGES", () => {
 
 describe("EDITED_SCHEDULE_EMPTY_NOTICE", () => {
   it("長押し案内文が設定されている", () => {
-    expect(EDITED_SCHEDULE_EMPTY_NOTICE).toBe("既存の予定を長押しして編集できます。");
+    expect(EDITED_SCHEDULE_EMPTY_NOTICE).toBe(
+      "既存の予定を長押しして編集できます。",
+    );
   });
 });

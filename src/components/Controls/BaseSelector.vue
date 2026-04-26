@@ -19,7 +19,7 @@
         :value="modelValue"
         @change="handleChange"
       >
-        <option value="" disabled selected v-if="!modelValue">
+        <option v-if="!modelValue" value="" disabled selected>
           コマ位置を選択
         </option>
         <option
@@ -36,14 +36,15 @@
     </div>
 
     <div v-if="displayScheduleUpdateNotice" class="schedule-update-notice">
-      ※交番表更新: {{ scheduleUpdateNotice }}{{ isScheduleApplied ? '以降の表示に対して新データ適用済み' : '' }}
+      ※交番表更新: {{ scheduleUpdateNotice
+      }}{{ isScheduleApplied ? "以降の表示に対して新データ適用済み" : "" }}
     </div>
   </fieldset>
 </template>
 
 <script setup>
 import { computed } from "vue";
-import { useSchedule } from '@/composables/useSchedule';
+import { useSchedule } from "@/composables/useSchedule";
 
 const props = defineProps({
   id: {
@@ -96,7 +97,7 @@ const displayScheduleUpdateNotice = computed(() => {
 // Check if next schedule is applied (both conditions must be met)
 const isScheduleApplied = computed(() => {
   if (!props.scheduleUpdateNotice) return false;
-  
+
   // Check if next schedule data exists and has valid rotation cycle length
   const nextData = scheduleDataSets.value?.next;
   return nextData && nextData.rotationCycleLength > 0;
