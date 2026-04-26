@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>使い方ガイド — KobanCalendar</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --primary: #3c6e71;
+      --text: #212529;
+      --text-muted: #6c757d;
+      --border: #dee2e6;
+      --accent: #fff3cd;
+      --accent-border: #ffc107;
+      --radius: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a2e;
+        --surface: #16213e;
+        --primary: #4a9d9f;
+        --text: #e9ecef;
+        --text-muted: #adb5bd;
+        --border: #2d3748;
+        --accent: #3d2e00;
+        --accent-border: #d4a017;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP",
+        "Yu Gothic", sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      padding: 24px 16px 64px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 20px 0 8px;
+    }
+
+    h3:first-child { margin-top: 0; }
+
+    p { margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+
+    .step:last-child { margin-bottom: 0; }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+
+    .note {
+      background: var(--accent);
+      border-left: 4px solid var(--accent-border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    ul li { margin-bottom: 6px; }
+
+    .features {
+      display: grid;
+      gap: 10px;
+    }
+
+    .feature-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .feature-label {
+      flex-shrink: 0;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>KobanCalendar 使い方ガイド</h1>
+      <p>交番表をもとに、あなたの勤務スケジュールをスマホで確認できるアプリです。</p>
+    </header>
+
+    <section>
+      <h2>セットアップ（初回のみ）</h2>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p><strong>コマ位置を選ぶ</strong></p>
+          <p>アプリを開くと「基準日」と「コマ位置」を選ぶ画面が表示されます。職場の掲示板に貼ってあるコマ位置の表を見て、<strong>基準日の時点で自分が何コマ目か</strong>を選んでください。</p>
+          <p>選んだ時点でこの端末に保存されるので、次からは自動で自分のスケジュールが表示されます。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p><strong>ホーム画面に追加する</strong></p>
+          <p>ブラウザのメニューから「ホーム画面に追加」を選ぶと、アプリのようにすぐ開けます。やり方がわからない場合は職場の人に聞くか、ブラウザのブックマークに登録してください。</p>
+          <p><strong>これで完了です。</strong>次からはホーム画面やブックマークからすぐに確認できます。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>できること</h2>
+
+      <h3>カレンダーの予定を書き換える</h3>
+      <p>休日出勤が決まったときなど、日付を長押しすると予定を変更できます。</p>
+      <ul>
+        <li>選択肢にない内容に変えたいときは「✏ 自分で入力」ボタンから手入力できます。</li>
+        <li>書き換えた予定は「編集済み」メニューから削除・非表示にできます。</li>
+      </ul>
+      <div class="note">書き換えた予定はあなたのスマホにしか保存されません。機種変更やブラウザのデータ消去を行うと消えてしまうので注意してください。</div>
+
+      <h3>飲みに行くンダー</h3>
+      <p>ビールのアイコンをタップすると、同僚と飲みに行ける日を探せます。</p>
+      <ul>
+        <li>開始時間と、何ヶ月先まで探すかを選ぶ</li>
+        <li>参加したい全員のコマ位置を入力する</li>
+        <li>全員または何人かが行ける日がリストアップされる</li>
+      </ul>
+      <p>「詳細」を押すと当日・翌日の勤務内容が確認できます。</p>
+
+      <h3>ダイヤ検索</h3>
+      <p>ダイヤ番号を入力すると、その予定が何時から何時までで、何コマ目にあたるかが確認できます。</p>
+
+      <h3>そのほか</h3>
+      <div class="features">
+        <div class="feature-item">
+          <span class="feature-label">共有</span>
+          <span>自分のスケジュールをLINEなどで送れます</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-label">QRコード</span>
+          <span>同僚にQRコードを見せてアプリを教えられます</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-label">食堂メニュー</span>
+          <span>その日の食堂のメニューが見られます</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-label">印刷</span>
+          <span>PCで、カレンダーのみを印刷できます</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-label">ダークモード</span>
+          <span>端末の設定に合わせて自動で切り替わります</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>交番表・コマ位置が変わったら</h2>
+
+      <h3>交番表が更新されたとき</h3>
+      <p>職場の掲示板に新しい交番表が貼り出されたら、アプリは自動的に新しいスケジュールに切り替わります。特別な操作は不要です。</p>
+
+      <h3>自分のコマ位置が変わったとき</h3>
+      <p>異動や組替えでコマ位置が変わった場合は、新しい<strong>基準日のコマ位置</strong>を選び直してください。変更はこの端末に保存され、次回以降も反映されます。</p>
+
+      <h3>基準日が切り替わる期間</h3>
+      <p>旧基準日と新基準日がまたがる期間は、基準日欄に「新版 / 旧版」の切替リンクが表示されます。それぞれのコマ位置と飲みに行くンダーの設定は別々に記憶されるので、自由に切り替えて確認できます。</p>
+    </section>
+
+    <section>
+      <h2>うまく表示されないときは</h2>
+      <p>スケジュールがおかしいと感じたら、<strong>基準日とコマ位置の組み合わせが正しいか</strong>を確認してみてください。</p>
+    </section>
+  </div>
+</body>
+</html>
