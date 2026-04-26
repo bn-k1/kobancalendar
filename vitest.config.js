@@ -15,5 +15,17 @@ export default defineConfig({
     environment: "happy-dom",
     globals: true,
     setupFiles: ["src/__tests__/setup.js"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "lcov"],
+      reportsDirectory: "./coverage",
+      include: ["src/**/*.{js,vue}"],
+      exclude: [
+        "src/__tests__/**",
+        "src/main.js",
+        "src/router/**",
+        "src/**/*.spec.{js,vue}",
+      ],
+    },
   },
 });
