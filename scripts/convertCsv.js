@@ -72,43 +72,135 @@ function parseCSVToScheduleObjects(csvData) {
 }
 
 /**
- * Read the schedule folder names referenced by config.schedules.
- * @returns {string[]} Distinct, deterministically ordered folder names
+ * Read and parse config/config.json.
+ * @returns {Object} parsed config
  */
-function readReferencedFolders() {
+function readConfig() {
   if (!fs.existsSync(CONFIG_PATH)) {
     throw new Error(`Config file not found: ${CONFIG_PATH}`);
   }
-
-  let config;
   try {
-    config = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
+    return JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
   } catch (err) {
     throw new Error(`Failed to parse config.json: ${err.message}`, {
       cause: err,
     });
   }
+}
 
+/**
+ * Normalize config.schedules into resolved epochs.
+ *
+ * `data` may be omitted on any epoch except the first — in that case it is
+ * inherited from the preceding epoch (a "position shift only" migration written
+ * as just `{ from }`). The first epoch must specify `data`.
+ *
+ * @param {Object} config - parsed config.json
+ * @returns {Array<{from: string, data: string}>} resolved epochs in config order
+ */
+function resolveEpochs(config) {
   if (!Array.isArray(config.schedules) || config.schedules.length === 0) {
     throw new Error(
       "config.schedules must be a non-empty array of { from, data } epochs.",
     );
   }
 
-  const folders = [];
-  for (const epoch of config.schedules) {
-    if (!epoch || typeof epoch.data !== "string" || !epoch.data) {
+  const resolved = [];
+  for (let i = 0; i < config.schedules.length; i += 1) {
+    const epoch = config.schedules[i];
+    if (!epoch || typeof epoch !== "object") {
       throw new Error(
-        `Every config.schedules entry needs a non-empty "data" folder name. Got: ${JSON.stringify(
-          epoch,
-        )}`,
+        `config.schedules[${i}] must be an object. Got: ${JSON.stringify(epoch)}`,
       );
     }
+    let data = epoch.data;
+    if (typeof data !== "string" || !data) {
+      if (i === 0) {
+        throw new Error(
+          `config.schedules[0] must specify a non-empty "data" folder name ` +
+            `(the first epoch cannot inherit). Got: ${JSON.stringify(epoch)}`,
+        );
+      }
+      // 直前の解決済み世代から data を継承
+      data = resolved[i - 1].data;
+    }
+    resolved.push({ from: epoch.from, data });
+  }
+  return resolved;
+}
+
+/**
+ * Read the schedule folder names referenced by config.schedules.
+ * @param {Array<{from: string, data: string}>} epochs - resolved epochs
+ * @returns {string[]} Distinct, deterministically ordered folder names
+ */
+function readReferencedFolders(epochs) {
+  const folders = [];
+  for (const epoch of epochs) {
     if (!folders.includes(epoch.data)) {
       folders.push(epoch.data);
     }
   }
   return folders;
+}
+
+/**
+ * Emit (console.warn) cleanup hints for the admin. Never deletes anything —
+ * past epochs still serve as the baseline for migration alerts.
+ *
+ * Two kinds of hints:
+ *  1. Epochs two or more generations older than the "current" epoch
+ *     (the latest epoch whose `from` is on or before today).
+ *  2. Folders under data/ that no config.schedules[].data references.
+ *
+ * @param {Array<{from: string, data: string}>} epochs - resolved epochs
+ * @param {string[]} referencedFolders - distinct referenced folder names
+ */
+function warnStaleArtifacts(epochs, referencedFolders) {
+  // --- 1. 古い世代 ---
+  const todayStr = new Date().toISOString().slice(0, 10);
+  // from 昇順で並べた上で current epoch（from <= today の最後）を求める
+  const sorted = [...epochs].sort((a, b) => (a.from < b.from ? -1 : 1));
+  let currentIndex = 0;
+  for (let i = 0; i < sorted.length; i += 1) {
+    if (sorted[i].from <= todayStr) currentIndex = i;
+    else break;
+  }
+  const staleEpochs = sorted.slice(0, Math.max(0, currentIndex - 1));
+  if (staleEpochs.length > 0) {
+    console.warn(
+      `\n⚠️  整理候補の世代: current epoch より 2 世代以上前の世代があります ` +
+        `(削除はされません。移行アラートの基準として残せます):`,
+    );
+    for (const epoch of staleEpochs) {
+      console.warn(`   - ${epoch.from} (data: ${epoch.data})`);
+    }
+  }
+
+  // --- 2. 未参照の data/ フォルダ ---
+  const dataDir = resolve(PROJECT_ROOT, "data");
+  let entries;
+  try {
+    entries = fs
+      .readdirSync(dataDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name);
+  } catch {
+    entries = [];
+  }
+  // menu は CSV スケジュールではないので除外
+  const orphanFolders = entries.filter(
+    (name) => name !== "menu" && !referencedFolders.includes(name),
+  );
+  if (orphanFolders.length > 0) {
+    console.warn(
+      `\n⚠️  整理候補のフォルダ: どの config.schedules[].data からも参照されていない ` +
+        `data/ 配下のフォルダがあります (削除はされません):`,
+    );
+    for (const name of orphanFolders) {
+      console.warn(`   - data/${name}/`);
+    }
+  }
 }
 
 /**
@@ -170,7 +262,9 @@ function convertFolder(folderName) {
 }
 
 function main() {
-  const folders = readReferencedFolders();
+  const config = readConfig();
+  const epochs = resolveEpochs(config);
+  const folders = readReferencedFolders(epochs);
   console.log(`Folders referenced by config.schedules: ${folders.join(", ")}`);
 
   const bundle = {};
@@ -192,6 +286,9 @@ function main() {
       `  - ${folder}: cycle length ${bundle[folder].rotationCycleLength}`,
     );
   }
+
+  // 整理候補（古い世代・未参照フォルダ）を管理者に通知（削除はしない）
+  warnStaleArtifacts(epochs, folders);
 }
 
 try {

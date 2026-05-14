@@ -55,8 +55,8 @@ npm install
 
 | キー | 説明 |
 |------|------|
-| `from` | その世代が有効になる日（`YYYY-MM-DD`）。配列は `from` 昇順 |
-| `data` | その世代の交番表CSVが入るフォルダ名（`data/<data>/`）。中身が変わらない移行なら前の世代と同じフォルダを指す |
+| `from` | その世代が有効になる日（`YYYY-MM-DD`）。配列は `from` 昇順・重複不可（違反はビルドエラー） |
+| `data` | その世代の交番表CSVが入るフォルダ名（`data/<data>/`）。**省略すると直前の世代の `data` を継承します**（コマ位置シフトのみの移行）。先頭世代の `data` は省略不可 |
 
 - ある世代の表示窓は `[from, 次の世代の from)`。最後の世代は `[from, ∞)`。
 - シフト計算の基準日は、いま表示している世代の `from` です（`(コマ位置-1 + 基準日からの日数差) % サイクル長` で当日のコマを決めます）。
@@ -138,13 +138,25 @@ npm run dev            # 開発サーバー起動 (http://localhost:5173)
 npm run build-prep     # CSV→JSON変換 + QR生成のみ
 npm run build          # build-prep + 本番ビルド → dist/
 npm run build-gh-pages # build-prep + GitHub Pages用ビルド → docs/
+npm run release        # build-prep → build → build-gh-pages を一括実行（dist/ と docs/ を同時更新）
 npm run preview        # 直前のビルド結果をローカルでプレビュー
 
 # 個別実行
 npm run convert-csv    # config.schedules が参照する CSV → data/scheduleData.json
 npm run convert-menu   # data/menu/*.txt → JSON
 npm run create-qr      # config.json の url フィールドからQR生成
+npm run check-bundle   # 生成バンドルが stale でないか確認（pre-commit hook と同じ）
 ```
+
+### pre-commit hook（任意・推奨）
+
+`config/config.json` や `data/` 配下を編集したのに生成バンドル（`data/scheduleData.json` 等）を再生成し忘れたままコミットするのを防ぐフックを同梱しています。クローンごとに一度だけ有効化してください。
+
+```bash
+git config core.hooksPath .githooks
+```
+
+有効化すると、ソースだけを stage してバンドルが stale なコミットを中断します（意図的にソースだけコミットする場合は `git commit --no-verify` でスキップ）。
 
 ### デプロイ
 
@@ -163,19 +175,24 @@ npm run create-qr      # config.json の url フィールドからQR生成
 {
   "schedules": [
     { "from": "2025-11-16", "data": "default" },
-    { "from": "2026-05-16", "data": "default" }
+    { "from": "2026-05-16" },
+    { "from": "2026-08-01", "data": "rev2026h2" }
   ]
 }
 ```
 
-1. `config.json` の `schedules` に `{ "from": 移行日, "data": フォルダ名 }` を追記する。
-2. **交番表の中身が変わらない場合**（基準日の更新／コマ位置の一斉移動）→ `data` は前の世代と同じフォルダ名を指す。
+1. `config.json` の `schedules` に世代を1つ追記する。
+2. **交番表の中身が変わらない場合**（基準日の更新／コマ位置の一斉移動）→ `data` を**省略**する。直前の世代の `data`（CSVフォルダ）を継承します。
+   - 例: `{ "from": "2026-05-16" }` … コマ位置シフトのみ（前世代のCSVをそのまま使う）
 3. **交番表の中身が変わる場合** → `data/<新フォルダ>/` に新しいCSV3点を用意し、`data` にそのフォルダ名を指定する。
-4. `npm run build-prep`（または `npm run build` / `build-gh-pages`）を実行する。
+   - 例: `{ "from": "2026-08-01", "data": "rev2026h2" }` … 交番表の内容が変わる移行
+4. `npm run build-prep`（または `npm run build` / `build-gh-pages` / `npm run release`）を実行する。
 
 これだけで、移行日以降は新しい世代が「いまの世代」になり、移行日前は基準日選択UIに「新版」としてプレビュー表示されます。過去の世代を保存しているユーザーには、コマ位置の移行アラートが自動で出ます（コマ位置のずれ＝世代間の日数差として算出）。
 
-> 古くなった世代は配列に残しておけば移行アラートの基準として機能し続けます。表示UIには「いまの世代」と隣接する世代しか出ないため、配列が伸びても画面は煩雑になりません。十分に古い世代は、参照しているデータフォルダごと手動で整理して構いません。
+> ビルド時、`from` の昇順・重複はチェックされます（違反はビルドエラー）。コマ位置シフト移行（`data` 継承）なのに世代間の日数差がサイクル長の倍数でない場合や、`from` が極端な未来/過去の場合は警告が出ます — `from` の typo を疑ってください。
+
+> 古くなった世代は配列に残しておけば移行アラートの基準として機能し続けます。表示UIには「いまの世代」と隣接する世代しか出ないため、配列が伸びても画面は煩雑になりません。十分に古い世代（current epoch より2世代以上前）や、どの `schedules[].data` からも参照されていない `data/` 配下のフォルダは、ビルド時に「整理候補」として警告表示されます（自動削除はされません — 移行アラートの基準として残せます）。十分に古いものは参照フォルダごと手動で整理して構いません。
 
 ---
 
