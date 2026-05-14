@@ -23,7 +23,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory("/kobancalendar/"),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes,
 });
 

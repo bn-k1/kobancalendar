@@ -10,14 +10,14 @@
           <a
             v-if="isHomePage"
             class="mode-link"
-            href="/kobancalendar/#/meetup"
+            :href="`${baseUrl}#/meetup`"
             aria-label="飲み会モードへ"
             >🍻</a
           >
           <a
             v-if="isMeetupPage"
             class="mode-link"
-            href="/kobancalendar/#/"
+            :href="`${baseUrl}#/`"
             aria-label="勤務モードへ"
             >🚨</a
           >
@@ -127,6 +127,9 @@ const props = defineProps({
 const emit = defineEmits(["title-click"]);
 
 const route = useRoute();
+
+// Deploy base path ("/" or a gh-pages repo subpath); set by Vite from config.json.
+const baseUrl = import.meta.env.BASE_URL;
 
 // Detect current page
 const isHomePage = computed(() => route.path === "/" || route.path === "");

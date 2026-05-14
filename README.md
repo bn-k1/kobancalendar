@@ -47,7 +47,7 @@ npm install
 |-----------|------|------|
 | `schedules` | ✅ | 交番表の「世代」を時系列に並べた配列です。詳細は下記 |
 | `custom_holidays` | - | 祝日ライブラリに含まれない独自休日（`MM-DD` 形式）です。毎年繰り返し適用されます |
-| `url` | - | QRコード生成に使うURLです |
+| `url` | △ | 配信先のURLです。QRコード生成に使うほか、GitHub Pagesビルド（`build-gh-pages`）はこのURLのパス部分をビルドの base path に流用します。GitHub Pagesに出すなら必須です |
 
 #### `schedules` — 交番表の世代リスト
 
@@ -160,10 +160,12 @@ git config core.hooksPath .githooks
 
 ### デプロイ
 
-| 環境 | コマンド | 配信ディレクトリ |
-|------|---------|----------------|
-| 任意のWebサーバー | `npm run build` | `dist/` |
-| GitHub Pages | `npm run build-gh-pages` | `docs/` |
+| 環境 | コマンド | 配信ディレクトリ | base path |
+|------|---------|----------------|-----------|
+| 任意のWebサーバー | `npm run build` | `dist/` | `/`（ルート配信） |
+| GitHub Pages | `npm run build-gh-pages` | `docs/` | `config.json` の `url` のパス部分 |
+
+GitHub Pages 用ビルドの base path は `config.json` の `url` から自動導出されます（例: `url` が `https://yourname.github.io/yourcalendar/` なら base path は `/yourcalendar/`）。リポジトリをフォークして別の営業所で配信する場合、`config.json` の `url` を自分の配信先に書き換えるだけでよく、ソースコード（`vite.config.js` / ルーター等）を触る必要はありません。
 
 ---
 
