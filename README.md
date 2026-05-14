@@ -181,16 +181,24 @@ npm run create-qr      # config.json の url フィールドからQR生成
 
 ## 状態の保存
 
-ユーザー選択（基準日・コマ位置・飲み会検索条件）は URL ではなく `localStorage` に保存されます。
+ユーザー選択（コマ位置・飲み会検索条件）は **URL のハッシュクエリ** に反映され、同時に `localStorage` にも保存されます。URL は共有可能な正（canonical）、`localStorage` は再訪時のキャッシュ、という役割分担です。
 
-| キー | 形状 | 内容 |
+| ビュー | URL 形式 |
+|------|---------|
+| Home | `#/?p=N`（旧版表示時は `#/?v=old&p=N`） |
+| 飲みに行くンダー | `#/meetup?ps=1,7,12&t=19:00&d=120` |
+
+基準日（baseDate）は URL に載せません（`config.schedules` が基準日の真実です）。
+
+| localStorage キー | 形状 | 内容 |
 |------|------|------|
-| `kobancalendar.savedSelection.v1` | `{ active, positions: { [baseDate]: number } }` | Home のコマ位置。版ごとに別々の位置を記憶 |
-| `kobancalendar.savedMeetup.v1` | `{ active, sets: { [baseDate]: { participants, startTime, period } } }` | 飲みに行くンダーの検索条件。版ごとに別々の set を記憶 |
+| `kobancalendar.savedSelection.v1` | `{ active, positions: { [baseDate]: number } }` | Home のコマ位置。世代ごとに別々の位置を記憶 |
+| `kobancalendar.savedMeetup.v1` | `{ active, sets: { [baseDate]: { participants, startTime, period } } }` | 飲みに行くンダーの検索条件。世代ごとに別々の set を記憶 |
 
-- `active` は最後に開いていた baseDate（ISO 文字列）。次回ロード時に復元されます。
-- 旧版では `?baseDate=...&startNumber=...` といった URL クエリでも受け付けます（HomeView が1度だけ読み取って localStorage に移し、URL をクリア）。
-- Meetup は専用の保存データが無い場合、Home の localStorage から現在の baseDate に対応する位置を拾って初期参加者として利用します。
+- `active` は最後に開いていた baseDate（ISO 文字列）。`positions` / `sets` のうち「どの世代の値か」を指すポインタです。
+- 起動時は **legacy URL → canonical URL ハッシュクエリ → localStorage → config 既定値** の順に解決し、確定後は URL と localStorage の両方へ同期します（履歴を汚さない `replaceState` ベース）。
+- 旧ブックマーク互換として `?baseDate=...&startNumber=...`（ハッシュより前のクエリ）も受け付けます。HomeView が mount 時に1度だけ読み取り、localStorage に移してから URL をクリアします。
+- 飲みに行くンダーは専用の保存データが無い場合、Home の localStorage から同じ baseDate のコマ位置を拾って初期参加者として利用します。
 
 ## 備考
 
