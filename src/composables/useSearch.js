@@ -2,17 +2,17 @@ import { ref, computed, watch } from "vue";
 import { useSchedule } from "@/composables/useSchedule";
 
 /**
- * Search composable for finding schedule subjects
- * Provides search functionality with autocomplete for schedule data
+ * Search composable for finding schedule subjects.
+ * Provides search functionality with autocomplete over the active epoch's
+ * shift-table data.
  */
 export function useSearch() {
-  // Get schedule data from store
-  const { scheduleDataSets, scheduleUpdateDate } = useSchedule();
+  // Schedule data for the epoch currently being viewed
+  const { activeScheduleData } = useSchedule();
 
   // Local state
   const searchQuery = ref("");
   const searchResults = ref([]);
-  const selectedScheduleType = ref("current");
   const selectedDayType = ref("weekday");
   const hasSearched = ref(false);
 
@@ -30,23 +30,8 @@ export function useSearch() {
     }
   }
 
-  // Determine if schedule type selector should be shown
-  const showScheduleTypeSelector = computed(() => {
-    return scheduleUpdateDate.value !== undefined;
-  });
-
-  // Get current schedule data based on selected type
-  const currentScheduleData = computed(() => {
-    if (!scheduleDataSets.value) return null;
-
-    if (showScheduleTypeSelector.value) {
-      return selectedScheduleType.value === "next"
-        ? scheduleDataSets.value.next
-        : scheduleDataSets.value.default;
-    }
-
-    return scheduleDataSets.value.default;
-  });
+  // Schedule data for the active epoch
+  const currentScheduleData = computed(() => activeScheduleData.value || null);
 
   // Get current day type data
   const currentDayTypeData = computed(() => {
@@ -109,7 +94,6 @@ export function useSearch() {
           startTime: item.sT || "",
           endTime: item.eT || "",
           position: index + 1,
-          scheduleType: selectedScheduleType.value,
           dayType: selectedDayType.value,
         });
       }
@@ -119,14 +103,6 @@ export function useSearch() {
     results.sort((a, b) => a.position - b.position);
 
     searchResults.value = results;
-  }
-
-  /**
-   * Update schedule type and refresh search if needed
-   */
-  function updateScheduleType(newType) {
-    selectedScheduleType.value = newType;
-    refreshSearchIfNeeded();
   }
 
   /**
@@ -151,37 +127,22 @@ export function useSearch() {
    */
   function resetSearch() {
     clearSearch();
-    selectedScheduleType.value = "current";
     selectedDayType.value = "weekday";
   }
 
   // Watch for schedule data changes and reset if needed
-  watch(scheduleDataSets, () => {
+  watch(activeScheduleData, () => {
     refreshSearchIfNeeded();
   });
-
-  // Initialize default schedule type based on schedule update date
-  watch(
-    showScheduleTypeSelector,
-    (newValue) => {
-      if (newValue) {
-        // If schedule update is available, default to 'current'
-        selectedScheduleType.value = "current";
-      }
-    },
-    { immediate: true },
-  );
 
   return {
     // Reactive state
     searchQuery,
     searchResults,
-    selectedScheduleType,
     selectedDayType,
     hasSearched,
 
     // Computed properties
-    showScheduleTypeSelector,
     filteredSuggestions,
     allSuggestions,
     currentScheduleData,
@@ -189,7 +150,6 @@ export function useSearch() {
 
     // Methods
     performSearch,
-    updateScheduleType,
     updateDayType,
     clearSearch,
     resetSearch,

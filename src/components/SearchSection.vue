@@ -3,30 +3,6 @@
   <fieldset id="searchSection" class="control-group">
     <legend>検索</legend>
 
-    <!-- Schedule type selector (only shown when schedule_update is set) -->
-    <div v-if="showScheduleTypeSelector" class="form-group">
-      <div class="radio-group">
-        <label>
-          <input
-            v-model="selectedScheduleType"
-            type="radio"
-            value="current"
-            @change="handleScheduleTypeChange"
-          />
-          現交番表
-        </label>
-        <label>
-          <input
-            v-model="selectedScheduleType"
-            type="radio"
-            value="next"
-            @change="handleScheduleTypeChange"
-          />
-          新交番表
-        </label>
-      </div>
-    </div>
-
     <!-- Day type selector -->
     <div class="form-group">
       <div class="radio-group">
@@ -128,20 +104,17 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, watch } from "vue";
 import { useSearch } from "@/composables/useSearch";
 
 // Composable for search functionality
 const {
   searchQuery,
   searchResults,
-  selectedScheduleType,
   selectedDayType,
-  showScheduleTypeSelector,
   filteredSuggestions,
   hasSearched,
   performSearch,
-  updateScheduleType,
   updateDayType,
 } = useSearch();
 
@@ -157,14 +130,6 @@ function hasSearchQuery() {
 function handleSearchInput() {
   highlightedIndex.value = -1;
   performSearch();
-}
-
-// Handle schedule type change
-function handleScheduleTypeChange() {
-  updateScheduleType(selectedScheduleType.value);
-  if (hasSearchQuery()) {
-    performSearch();
-  }
 }
 
 // Handle day type change

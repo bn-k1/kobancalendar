@@ -19,7 +19,6 @@
             activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''
           "
           :options="[]"
-          :schedule-update-notice="scheduleUpdateNotice"
         >
           <div
             v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr"
@@ -157,8 +156,7 @@ import {
 } from "@/utils/constants";
 
 // Import consolidated JSON data
-import defaultScheduleData from "@data/default/default.json";
-import nextScheduleData from "@data/next/next.json";
+import scheduleData from "@data/scheduleData.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
@@ -189,7 +187,6 @@ const {
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
-  scheduleUpdateNotice,
 } = useSchedule();
 
 const nextBaseDateStr = computed(() => {
@@ -331,8 +328,7 @@ function findDates() {
 async function initialize() {
   try {
     const result = await initializeApp({
-      defaultScheduleData,
-      nextScheduleData,
+      scheduleData,
       config,
       eventConfig,
     });

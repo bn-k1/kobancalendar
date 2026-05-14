@@ -34,18 +34,10 @@
 
       <slot></slot>
     </div>
-
-    <div v-if="displayScheduleUpdateNotice" class="schedule-update-notice">
-      ※交番表更新: {{ scheduleUpdateNotice
-      }}{{ isScheduleApplied ? "以降の表示に対して新データ適用済み" : "" }}
-    </div>
   </fieldset>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useSchedule } from "@/composables/useSchedule";
-
 const props = defineProps({
   id: {
     type: String,
@@ -78,30 +70,9 @@ const props = defineProps({
   formatter: {
     type: Function,
   },
-  scheduleUpdateNotice: {
-    type: String,
-    default: "",
-  },
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
-
-// Get schedule composable to check next schedule data
-const { scheduleDataSets } = useSchedule();
-
-// Check if schedule update notice should be displayed
-const displayScheduleUpdateNotice = computed(() => {
-  return props.scheduleUpdateNotice && props.scheduleUpdateNotice.trim() !== "";
-});
-
-// Check if next schedule is applied (both conditions must be met)
-const isScheduleApplied = computed(() => {
-  if (!props.scheduleUpdateNotice) return false;
-
-  // Check if next schedule data exists and has valid rotation cycle length
-  const nextData = scheduleDataSets.value?.next;
-  return nextData && nextData.rotationCycleLength > 0;
-});
 
 // Format option for display
 function formatOption(option) {
@@ -128,12 +99,3 @@ function handleChange(event) {
   emit("change", newValue);
 }
 </script>
-
-<style scoped>
-.schedule-update-notice {
-  color: var(--error-color);
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-  font-weight: var(--font-weight-medium);
-}
-</style>

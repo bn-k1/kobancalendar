@@ -1,5 +1,5 @@
 // src/__tests__/stores/schedule.test.js
-// Characterization tests for schedule store
+// Characterization tests for schedule store (epoch model)
 import { describe, it, expect, beforeEach } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import dayjs from "dayjs";
@@ -10,128 +10,98 @@ beforeEach(() => {
 });
 
 describe("useScheduleStore 初期状態", () => {
-  it("scheduleDataSets.default の rotationCycleLength は 0", () => {
+  it("epochs は空配列", () => {
     const store = useScheduleStore();
-    expect(store.scheduleDataSets.default.rotationCycleLength).toBe(0);
+    expect(store.epochs).toEqual([]);
   });
 
-  it("scheduleDataSets.next の rotationCycleLength は 0", () => {
+  it("scheduleData は空オブジェクト", () => {
     const store = useScheduleStore();
-    expect(store.scheduleDataSets.next.rotationCycleLength).toBe(0);
+    expect(store.scheduleData).toEqual({});
   });
 
-  it("scheduleDataSets の default と next はともに空配列のデータを持つ", () => {
+  it("activeEpochIndex は 0", () => {
     const store = useScheduleStore();
-    expect(store.scheduleDataSets.default.holiday).toEqual([]);
-    expect(store.scheduleDataSets.default.saturday).toEqual([]);
-    expect(store.scheduleDataSets.default.weekday).toEqual([]);
+    expect(store.activeEpochIndex).toBe(0);
   });
 
-  it("defaultBaseDate は undefined", () => {
-    const store = useScheduleStore();
-    expect(store.defaultBaseDate).toBeUndefined();
-  });
-
-  it("activeBaseDate は undefined", () => {
-    const store = useScheduleStore();
-    expect(store.activeBaseDate).toBeUndefined();
-  });
-
-  it("nextBaseDate は undefined", () => {
-    const store = useScheduleStore();
-    expect(store.nextBaseDate).toBeUndefined();
-  });
-
-  it("scheduleUpdateDate は undefined", () => {
-    const store = useScheduleStore();
-    expect(store.scheduleUpdateDate).toBeUndefined();
-  });
-
-  it("isDataLoaded は false（cycleLength が 0）", () => {
+  it("isDataLoaded は false（データ未ロード）", () => {
     const store = useScheduleStore();
     expect(store.isDataLoaded).toBe(false);
   });
 });
 
-describe("setScheduleDataSets()", () => {
-  it("データセットを上書きできる", () => {
+describe("setScheduleData()", () => {
+  it("データを上書きできる", () => {
     const store = useScheduleStore();
-    const dataSets = {
+    store.setScheduleData({
       default: {
         holiday: [{ s: "公休" }],
         saturday: [{ s: "公休" }],
         weekday: [{ s: "早番", sT: "08:00", eT: "16:00" }],
         rotationCycleLength: 1,
       },
-      next: {
-        holiday: [],
-        saturday: [],
-        weekday: [],
-        rotationCycleLength: 0,
-      },
-    };
-    store.setScheduleDataSets(dataSets);
-    expect(store.scheduleDataSets.default.rotationCycleLength).toBe(1);
-    expect(store.scheduleDataSets.default.weekday[0].s).toBe("早番");
+    });
+    expect(store.scheduleData.default.rotationCycleLength).toBe(1);
+    expect(store.scheduleData.default.weekday[0].s).toBe("早番");
   });
 
-  it("isDataLoaded が true になる（default cycleLength > 0）", () => {
+  it("rotationCycleLength > 0 のフォルダがあれば isDataLoaded は true", () => {
     const store = useScheduleStore();
-    store.setScheduleDataSets({
+    store.setScheduleData({
       default: {
         holiday: [],
         saturday: [],
         weekday: [],
         rotationCycleLength: 5,
       },
-      next: { holiday: [], saturday: [], weekday: [], rotationCycleLength: 0 },
     });
     expect(store.isDataLoaded).toBe(true);
   });
 
-  it("isDataLoaded が true になる（next cycleLength > 0）", () => {
+  it("全フォルダが rotationCycleLength 0 なら isDataLoaded は false", () => {
     const store = useScheduleStore();
-    store.setScheduleDataSets({
+    store.setScheduleData({
       default: {
         holiday: [],
         saturday: [],
         weekday: [],
         rotationCycleLength: 0,
       },
-      next: { holiday: [], saturday: [], weekday: [], rotationCycleLength: 3 },
     });
-    expect(store.isDataLoaded).toBe(true);
+    expect(store.isDataLoaded).toBe(false);
+  });
+
+  it("オブジェクトでない値は空オブジェクトに正規化される", () => {
+    const store = useScheduleStore();
+    store.setScheduleData(null);
+    expect(store.scheduleData).toEqual({});
   });
 });
 
-describe("setDefaultBaseDate() / updateActiveBaseDate() / setNextBaseDate()", () => {
-  it("defaultBaseDate をセットできる", () => {
+describe("setEpochs()", () => {
+  it("epoch リストをセットできる", () => {
     const store = useScheduleStore();
-    const d = dayjs("2025-11-16");
-    store.setDefaultBaseDate(d);
-    expect(store.defaultBaseDate.isSame(d, "day")).toBe(true);
+    store.setEpochs([
+      { from: dayjs("2025-11-16"), dataKey: "default" },
+      { from: dayjs("2026-05-16"), dataKey: "default" },
+    ]);
+    expect(store.epochs).toHaveLength(2);
+    expect(store.epochs[0].dataKey).toBe("default");
+    expect(store.epochs[1].from.isSame(dayjs("2026-05-16"), "day")).toBe(true);
   });
 
-  it("activeBaseDate を更新できる", () => {
+  it("配列でない値は空配列に正規化される", () => {
     const store = useScheduleStore();
-    const d = dayjs("2025-11-16");
-    store.updateActiveBaseDate(d);
-    expect(store.activeBaseDate.isSame(d, "day")).toBe(true);
-  });
-
-  it("nextBaseDate をセットできる", () => {
-    const store = useScheduleStore();
-    const d = dayjs("2026-05-16");
-    store.setNextBaseDate(d);
-    expect(store.nextBaseDate.isSame(d, "day")).toBe(true);
+    store.setEpochs(undefined);
+    expect(store.epochs).toEqual([]);
   });
 });
 
-describe("setScheduleUpdateDate()", () => {
-  it("scheduleUpdateDate をセットできる", () => {
+describe("setActiveEpochIndex()", () => {
+  it("active epoch index を更新できる", () => {
     const store = useScheduleStore();
-    const d = dayjs("2026-05-16");
-    store.setScheduleUpdateDate(d);
-    expect(store.scheduleUpdateDate.isSame(d, "day")).toBe(true);
+    store.setActiveEpochIndex(2);
+    expect(store.activeEpochIndex).toBe(2);
   });
 });

@@ -46,12 +46,10 @@ function setupAll(options = {}) {
   calendarStore.setStartPosition(options.startPosition ?? 1);
 
   const data = makeScheduleData();
-  scheduleStore.setScheduleDataSets({ default: data, next: data });
-
   const baseDate = options.baseDate ?? dayjs("2025-11-16");
-  scheduleStore.setDefaultBaseDate(baseDate);
-  scheduleStore.updateActiveBaseDate(baseDate);
-  scheduleStore.setNextBaseDate(baseDate);
+  scheduleStore.setScheduleData({ default: data });
+  scheduleStore.setEpochs([{ from: baseDate, dataKey: "default" }]);
+  scheduleStore.setActiveEpochIndex(0);
 
   holidayStore.setHolidays(options.holidays ?? {});
   editedSchedulesStore.initEditedSchedules();
@@ -263,7 +261,7 @@ describe("generateCalendarEvents()", () => {
       weekday: [{ s: "公休" }],
       rotationCycleLength: 1,
     };
-    scheduleStore.setScheduleDataSets({ default: data, next: data });
+    scheduleStore.setScheduleData({ default: data });
 
     const { generateCalendarEvents } = useCalendar();
     // 2025-11-17 は平日
@@ -282,7 +280,7 @@ describe("generateCalendarEvents()", () => {
       weekday: [{ s: "早番", sT: "08:00", eT: "16:00" }],
       rotationCycleLength: 1,
     };
-    scheduleStore.setScheduleDataSets({ default: data, next: data });
+    scheduleStore.setScheduleData({ default: data });
 
     const { generateCalendarEvents } = useCalendar();
     const events = generateCalendarEvents(

@@ -7,46 +7,59 @@ import { createDate } from "@/utils/date";
 import { APP_CONFIG } from "@/utils/constants";
 
 /**
- * Shared application initialization logic
- * Centralized the setup code used by both views
+ * Shared application initialization logic.
+ * Centralizes the setup code used by both views.
  */
 export function useAppInitializer() {
   const isLoaded = ref(false);
 
   const { setEventConfig } = useCalendar();
-  const {
-    loadScheduleData,
-    setDefaultBaseDate,
-    setNextBaseDate,
-    setScheduleUpdateDate,
-  } = useSchedule();
+  const { loadSchedule } = useSchedule();
 
   const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
     useHolidays();
 
   /**
-   * next_base_date と schedule_update は運用モードが異なるため同時指定は不可
+   * Build the sorted epoch list from config.schedules and validate it against
+   * the loaded schedule data bundle.
+   * @param {Object} config - application configuration
+   * @param {Object} scheduleData - consolidated bundle keyed by folder name
+   * @returns {Array<{from: import('dayjs').Dayjs, dataKey: string}>}
    */
-  function validateConfig(config) {
-    if (config.next_base_date && config.schedule_update) {
+  function buildEpochs(config, scheduleData) {
+    if (!Array.isArray(config.schedules) || config.schedules.length === 0) {
       throw new Error(
-        "config.next_base_date と config.schedule_update は同時に指定できません",
+        "config.schedules は { from, data } を要素とする非空配列である必要があります",
       );
     }
+
+    const epochs = config.schedules.map((entry) => {
+      const from = createDate(entry.from);
+      if (!from.isValid()) {
+        throw new Error(`config.schedules の from が不正です: ${entry?.from}`);
+      }
+      if (!entry.data || !scheduleData[entry.data]) {
+        throw new Error(
+          `config.schedules が参照するデータフォルダが見つかりません: ${entry?.data}`,
+        );
+      }
+      return { from, dataKey: entry.data };
+    });
+
+    // config 上の順序は信用せず from 昇順で並べ替える
+    epochs.sort((a, b) => a.from.valueOf() - b.from.valueOf());
+    return epochs;
   }
 
   /**
-   * Initialize the application with configuration data
-   * @param {Object} data - Application data object
-   * @param {Object} data.defaultScheduleData - Default schedule data from consolidated JSON
-   * @param {Object} data.nextScheduleData - Next schedule data from consolidated JSON
-   * @param {Object} data.config - Application configuration
-   * @param {Object} data.eventConfig - Event configuration
+   * Initialize the application with configuration data.
+   * @param {Object} data
+   * @param {Object} data.scheduleData - consolidated bundle keyed by folder name
+   * @param {Object} data.config - application configuration
+   * @param {Object} data.eventConfig - event configuration
    */
   async function initializeApp(data) {
-    const { defaultScheduleData, nextScheduleData, config, eventConfig } = data;
-
-    validateConfig(config);
+    const { scheduleData, config, eventConfig } = data;
 
     // Holiday configuration
     setHolidayYearsRange(APP_CONFIG.DEFAULT_HOLIDAY_YEARS);
@@ -56,36 +69,13 @@ export function useAppInitializer() {
     // Calendar configuration
     setEventConfig(eventConfig);
 
-    // Load schedule data from consolidated JSON format
-    const scheduleData = loadScheduleData(
-      defaultScheduleData,
-      nextScheduleData,
-    );
-
-    // Process base dates
-    const defaultBaseDateObj = createDate(config.default_base_date);
-    setDefaultBaseDate(defaultBaseDateObj);
-
-    // Set next base date only if configured; otherwise leave undefined
-    if (config.next_base_date) {
-      const nextBaseDateObj = createDate(config.next_base_date);
-      setNextBaseDate(nextBaseDateObj);
-    }
-
-    // Set schedule update date if available
-    if (config.schedule_update) {
-      const scheduleUpdateDateObj = createDate(config.schedule_update);
-      if (scheduleUpdateDateObj.isValid()) {
-        setScheduleUpdateDate(scheduleUpdateDateObj);
-      }
-    }
+    // Build + load the epoch timeline
+    const epochs = buildEpochs(config, scheduleData);
+    const activeScheduleData = loadSchedule(epochs, scheduleData);
 
     isLoaded.value = true;
 
-    return {
-      scheduleData,
-      defaultBaseDate: defaultBaseDateObj,
-    };
+    return { activeScheduleData };
   }
 
   return {

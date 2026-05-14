@@ -6,57 +6,88 @@ import { ERROR_MESSAGES } from "@/utils/constants";
 import {
   createDate,
   formatAsISODate,
-  formatAsDisplayDate,
   isBefore,
   addDays,
-  isSame,
+  today,
+  isSameDay,
   isSameOrAfter,
 } from "@/utils/date";
 
+const EMPTY_SCHEDULE_DATA = {
+  holiday: [],
+  saturday: [],
+  weekday: [],
+  rotationCycleLength: 0,
+};
+
 /**
- * Schedule management composable
- * Contains all schedule-related logic
+ * Schedule management composable.
+ *
+ * The schedule is an append-only list of *epochs* (`{ from, dataKey }`). The
+ * epoch the user is viewing is the "active" epoch; it determines the calculation
+ * anchor, the visible date window `[from, nextEpoch.from)` and which folder of
+ * shift-table data is used. The "current" epoch is the latest epoch whose `from`
+ * is on or before today — it is the default selection, and `defaultBaseDate` /
+ * `nextBaseDate` below expose it (and its successor) under the names the views
+ * historically used.
  */
 export function useSchedule() {
-  // Get stores for state management only
   const scheduleStore = useScheduleStore();
-
-  // Dependencies
   const { isHoliday } = useHolidays();
 
-  // Local cached references to avoid recursion
-  const storeScheduleDataSets = computed(() => scheduleStore.scheduleDataSets);
-  const storeDefaultBaseDate = computed(() => scheduleStore.defaultBaseDate);
-  const storeActiveBaseDate = computed(() => scheduleStore.activeBaseDate);
-  const storeNextBaseDate = computed(() => scheduleStore.nextBaseDate);
-  const storeScheduleUpdateDate = computed(
-    () => scheduleStore.scheduleUpdateDate,
+  const storeEpochs = computed(() => scheduleStore.epochs);
+  const storeScheduleData = computed(() => scheduleStore.scheduleData);
+  const storeActiveEpochIndex = computed(() => scheduleStore.activeEpochIndex);
+
+  /** Schedule data for a given epoch (empty placeholder when absent). */
+  function dataForEpoch(epoch) {
+    if (!epoch) return EMPTY_SCHEDULE_DATA;
+    return storeScheduleData.value[epoch.dataKey] || EMPTY_SCHEDULE_DATA;
+  }
+
+  const activeEpoch = computed(
+    () => storeEpochs.value[storeActiveEpochIndex.value] || null,
   );
 
-  // Determine which schedule data to use based on target date
-  const getScheduleDataForDate = (targetDate) => {
-    if (
-      storeScheduleUpdateDate.value &&
-      isSameOrAfter(targetDate, storeScheduleUpdateDate.value)
-    ) {
-      return storeScheduleDataSets.value.next;
-    }
+  const activeScheduleData = computed(() => dataForEpoch(activeEpoch.value));
 
-    return storeScheduleDataSets.value.default;
-  };
-
-  const storeScheduleData = computed(() => {
-    // For backward compatibility, return default data when no specific date is provided
-    return storeScheduleDataSets.value.default;
-  });
+  /** The active epoch's anchor date. */
+  const activeBaseDate = computed(() => activeEpoch.value?.from);
 
   /**
-   * Calculate shift index for a given date
-   * @param {dayjs} targetDate - Target date
-   * @param {number} startPosition - Starting position in rotation
-   * @param {dayjs} baseDate - Base date for calculation
-   * @param {Object} scheduleData - Schedule data to use for calculation
-   * @returns {number} Shift index
+   * Index of the "current" epoch — the latest epoch whose `from` is on or
+   * before today. Falls back to the first epoch when today predates all of them.
+   */
+  function currentEpochIndex() {
+    const epochs = storeEpochs.value;
+    const todayDate = today();
+    let index = 0;
+    for (let i = 0; i < epochs.length; i += 1) {
+      if (isSameOrAfter(todayDate, epochs[i].from)) {
+        index = i;
+      } else {
+        break;
+      }
+    }
+    return index;
+  }
+
+  // The current epoch (default selection / "旧版" toggle target) and its
+  // immediate successor (the "新版" toggle target), exposed under legacy names.
+  const defaultBaseDate = computed(
+    () => storeEpochs.value[currentEpochIndex()]?.from,
+  );
+  const nextBaseDate = computed(
+    () => storeEpochs.value[currentEpochIndex() + 1]?.from,
+  );
+
+  /**
+   * Calculate the rotation shift index for a given date.
+   * @param {dayjs} targetDate
+   * @param {number} startPosition - 1-based position in the rotation
+   * @param {dayjs} baseDate - anchor date for the calculation
+   * @param {Object} scheduleData - schedule data providing rotationCycleLength
+   * @returns {number} shift index (0-based)
    */
   function calculateShiftIndex(
     targetDate,
@@ -70,67 +101,58 @@ export function useSchedule() {
     const adjustedStartPosition = startPosition - 1;
     const cycleLength = scheduleData.rotationCycleLength;
 
-    const shiftIndex =
+    return (
       (((adjustedStartPosition + daysDifference) % cycleLength) + cycleLength) %
-      cycleLength;
-
-    return shiftIndex;
+      cycleLength
+    );
   }
 
   /**
-   * Get schedule for a specific date
-   * @param {dayjs} targetDate - Date to get schedule for
-   * @param {number} startPosition - Starting position
-   * @param {dayjs} baseDateParam - Optional override for base date
-   * @returns {Object} Schedule information
+   * Get the schedule for a specific date, evaluated against the active epoch.
+   * Dates outside the active epoch's window `[from, nextEpoch.from)` return
+   * undefined.
+   * @param {dayjs} targetDate
+   * @param {number} startPosition
+   * @returns {Object|undefined}
    */
-  function getScheduleForDate(targetDate, startPosition, baseDateParam) {
-    const target = createDate(targetDate);
+  function getScheduleForDate(targetDate, startPosition) {
+    const epoch = activeEpoch.value;
+    if (!epoch) return undefined;
 
-    const baseDate = baseDateParam
-      ? createDate(baseDateParam)
-      : storeActiveBaseDate.value;
-    const isHolidayFlag = isHoliday(target);
-    const isSaturday = target.day() === 6;
+    const target = createDate(targetDate);
     const dateStr = formatAsISODate(target);
 
-    // Check if date is within valid range
-    const baseStr = formatAsISODate(baseDate);
-    if (dateStr < baseStr) {
+    // Lower bound: the active epoch's anchor date.
+    if (dateStr < formatAsISODate(epoch.from)) return undefined;
+
+    // Upper bound: the next epoch's anchor date (exclusive), when there is one.
+    const following = storeEpochs.value[storeActiveEpochIndex.value + 1];
+    if (following && dateStr >= formatAsISODate(following.from)) {
       return undefined;
     }
 
-    const nextBase = storeNextBaseDate.value;
-    const hasDistinctNextBase =
-      !!nextBase?.isValid?.() && !isSame(baseDate, nextBase, "day");
-    if (hasDistinctNextBase && dateStr >= formatAsISODate(nextBase)) {
-      return undefined;
-    }
+    const scheduleData = dataForEpoch(epoch);
+    const isHolidayFlag = isHoliday(target);
+    const isSaturday = target.day() === 6;
 
-    // Get appropriate schedule data based on target date and schedule_update logic
-    const currentScheduleData = getScheduleDataForDate(target);
-
-    // Calculate shift index
     const shiftIndex = calculateShiftIndex(
       target,
       startPosition,
-      baseDate,
-      currentScheduleData,
+      epoch.from,
+      scheduleData,
     );
 
-    // Get appropriate data based on date type
     let shiftData;
     if (isHolidayFlag) {
-      shiftData = currentScheduleData.holiday[shiftIndex];
+      shiftData = scheduleData.holiday[shiftIndex];
     } else if (isSaturday) {
-      shiftData = currentScheduleData.saturday[shiftIndex];
+      shiftData = scheduleData.saturday[shiftIndex];
     } else {
-      shiftData = currentScheduleData.weekday[shiftIndex];
+      shiftData = scheduleData.weekday[shiftIndex];
     }
 
     if (!shiftData) return undefined;
 
-    // Return schedule data directly (no more split() processing needed)
     return {
       dateStr,
       subject: shiftData.s,
@@ -143,29 +165,19 @@ export function useSchedule() {
   }
 
   /**
-   * Calculate schedule for a date range
-   * @param {dayjs} startDate - Range start date
-   * @param {dayjs} endDate - Range end date
-   * @param {number} startPosition - Starting position
-   * @param {dayjs} baseDateParam - Optional override for base date
-   * @returns {Array} Schedule range
+   * Calculate the schedule for a date range (endDate exclusive).
+   * @param {dayjs} startDate
+   * @param {dayjs} endDate
+   * @param {number} startPosition
+   * @returns {Array}
    */
-  function calculateScheduleRange(
-    startDate,
-    endDate,
-    startPosition,
-    baseDateParam,
-  ) {
+  function calculateScheduleRange(startDate, endDate, startPosition) {
     const scheduleRange = [];
     let currentDate = createDate(startDate);
     const finalEndDate = createDate(endDate);
 
     while (isBefore(currentDate, finalEndDate)) {
-      const scheduleInfo = getScheduleForDate(
-        currentDate,
-        startPosition,
-        baseDateParam,
-      );
+      const scheduleInfo = getScheduleForDate(currentDate, startPosition);
 
       if (scheduleInfo) {
         scheduleRange.push({
@@ -181,23 +193,18 @@ export function useSchedule() {
   }
 
   /**
-   * Load schedule data from consolidated JSON format
-   * @param {Object} defaultData - Default schedule data object
-   * @param {Object} nextData - Next schedule data object
-   * @returns {Object} Loaded active schedule data
+   * Load the epoch timeline and schedule data into the store. The active epoch
+   * defaults to the current epoch (latest `from` on or before today).
+   * @param {Array<{from: dayjs, dataKey: string}>} epochs
+   * @param {Object} scheduleData - consolidated bundle keyed by folder name
+   * @returns {Object} the active epoch's schedule data
    */
-  function loadScheduleData(defaultData, nextData) {
+  function loadSchedule(epochs, scheduleData) {
     try {
-      const dataSets = {
-        default: defaultData,
-        next: nextData,
-      };
-
-      // Update store
-      scheduleStore.setScheduleDataSets(dataSets);
-
-      // Return the current active data set based on the active base date
-      return storeScheduleData.value;
+      scheduleStore.setScheduleData(scheduleData);
+      scheduleStore.setEpochs(epochs);
+      scheduleStore.setActiveEpochIndex(currentEpochIndex());
+      return activeScheduleData.value;
     } catch (error) {
       console.error(ERROR_MESSAGES.SCHEDULE_DATA_ERROR, error);
       throw error;
@@ -205,102 +212,69 @@ export function useSchedule() {
   }
 
   /**
-   * Set default base date
-   * @param {dayjs} date - Default base date
-   */
-  function setDefaultBaseDate(date) {
-    scheduleStore.setDefaultBaseDate(date);
-  }
-
-  /**
-   * Update active base date
-   * @param {dayjs} date - New active base date
+   * Switch the active epoch to the one anchored at the given date.
+   * Unknown dates are ignored (the active epoch is left unchanged).
+   * @param {dayjs|string|Date} date
    */
   function updateActiveBaseDate(date) {
-    const newDate = createDate(date);
-    scheduleStore.updateActiveBaseDate(newDate);
+    const target = createDate(date);
+    if (!target.isValid()) return;
+    const index = storeEpochs.value.findIndex((epoch) =>
+      isSameDay(epoch.from, target),
+    );
+    if (index !== -1) {
+      scheduleStore.setActiveEpochIndex(index);
+    }
   }
 
   /**
-   * Set next base date
-   * @param {dayjs|string|Date|null|undefined} date - Next base date; null/undefined/invalid clears it
+   * If the given date is the anchor of a *past* epoch (one before the current
+   * epoch), return the position shift needed to migrate a selection from that
+   * epoch to the current epoch. Otherwise return null.
+   *
+   * The shift is simply the day-count between the two anchors: moving the anchor
+   * forward by N days requires adding N to every position to keep the same
+   * rotation slot.
+   * @param {dayjs|string|Date} date
+   * @returns {number|null}
    */
-  function setNextBaseDate(date) {
-    if (date === undefined || date === null) {
-      scheduleStore.setNextBaseDate(undefined);
-      return;
-    }
-    const d = createDate(date);
-    scheduleStore.setNextBaseDate(d.isValid() ? d : undefined);
-  }
+  function getMigrationShift(date) {
+    const target = createDate(date);
+    if (!target.isValid()) return null;
 
-  /**
-   * Set schedule update date - date from which to use next schedule data
-   * @param {dayjs|string} date - Schedule update date
-   */
-  function setScheduleUpdateDate(date) {
-    if (date) {
-      scheduleStore.setScheduleUpdateDate(createDate(date));
+    const epochs = storeEpochs.value;
+    const currentIndex = currentEpochIndex();
+    const currentFrom = epochs[currentIndex]?.from;
+    if (!currentFrom) return null;
+
+    for (let i = 0; i < currentIndex; i += 1) {
+      if (isSameDay(epochs[i].from, target)) {
+        return currentFrom.diff(epochs[i].from, "day");
+      }
     }
+    return null;
   }
 
   return {
-    // Computed state from store
-    scheduleData: storeScheduleData,
-    scheduleDataSets: storeScheduleDataSets,
-    defaultBaseDate: storeDefaultBaseDate,
-    activeBaseDate: storeActiveBaseDate,
-    nextBaseDate: storeNextBaseDate,
-    scheduleUpdateDate: storeScheduleUpdateDate,
+    // Reactive state
+    epochs: storeEpochs,
+    activeScheduleData,
+    activeBaseDate,
+    defaultBaseDate,
+    nextBaseDate,
     isDataLoaded: computed(
-      () => storeScheduleData.value.rotationCycleLength > 0,
+      () => activeScheduleData.value.rotationCycleLength > 0,
     ),
     rotationCycleLength: computed(
-      () => storeScheduleData.value.rotationCycleLength,
+      () => activeScheduleData.value.rotationCycleLength,
     ),
 
-    // Formatted base date options for selectors
-    formattedBaseDates: computed(() => {
-      const dates = [];
-      if (storeDefaultBaseDate.value) {
-        dates.push({
-          value: formatAsISODate(storeDefaultBaseDate.value),
-          text: formatAsDisplayDate(storeDefaultBaseDate.value),
-        });
-      }
-      if (
-        storeNextBaseDate.value &&
-        storeNextBaseDate.value.isValid &&
-        storeNextBaseDate.value.isValid() &&
-        !(
-          storeDefaultBaseDate.value &&
-          formatAsISODate(storeDefaultBaseDate.value) ===
-            formatAsISODate(storeNextBaseDate.value)
-        )
-      ) {
-        dates.push({
-          value: formatAsISODate(storeNextBaseDate.value),
-          text: formatAsDisplayDate(storeNextBaseDate.value),
-        });
-      }
-      return dates;
-    }),
-
-    scheduleUpdateNotice: computed(() =>
-      storeScheduleUpdateDate.value
-        ? formatAsDisplayDate(storeScheduleUpdateDate.value)
-        : "",
-    ),
-
-    // All business logic functions
+    // Business logic
     calculateShiftIndex,
     getScheduleForDate,
     calculateScheduleRange,
-    loadScheduleData,
-    setDefaultBaseDate,
+    loadSchedule,
     updateActiveBaseDate,
-    setNextBaseDate,
-    setScheduleUpdateDate,
-    getScheduleDataForDate,
+    getMigrationShift,
   };
 }

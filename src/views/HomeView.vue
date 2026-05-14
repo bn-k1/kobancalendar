@@ -14,7 +14,6 @@
             activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''
           "
           :options="[]"
-          :schedule-update-notice="scheduleUpdateNotice"
         >
           <div
             v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr"
@@ -124,8 +123,7 @@ import {
 import { ERROR_MESSAGES } from "@/utils/constants";
 import { useAlertModalStore } from "@/stores/alertModal";
 
-import defaultScheduleData from "@data/default/default.json";
-import nextScheduleData from "@data/next/next.json";
+import scheduleData from "@data/scheduleData.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
@@ -170,7 +168,7 @@ const {
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
-  scheduleUpdateNotice,
+  getMigrationShift,
 } = useSchedule();
 
 const nextBaseDateStr = computed(() => {
@@ -305,9 +303,9 @@ function classifyBaseDate(baseDateStr, validBaseDates) {
     return { kind: "active", baseDate: dateObj };
   }
 
-  const oldBaseDate = createDate(config.old_base_date);
-  if (oldBaseDate.isValid() && isSameDay(dateObj, oldBaseDate)) {
-    return { kind: "migrate" };
+  const migrationShift = getMigrationShift(dateObj);
+  if (migrationShift != null) {
+    return { kind: "migrate", shift: migrationShift };
   }
 
   return null;
@@ -346,8 +344,7 @@ async function initialize() {
 
   try {
     const result = await initializeApp({
-      defaultScheduleData,
-      nextScheduleData,
+      scheduleData,
       config,
       eventConfig,
     });
@@ -360,7 +357,7 @@ async function initialize() {
     const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
       Boolean,
     );
-    const cycleLength = result.scheduleData.rotationCycleLength;
+    const cycleLength = result.activeScheduleData.rotationCycleLength;
 
     let applied = false;
     if (legacyParams) {
@@ -408,11 +405,7 @@ function applyFromLegacy(params, validBaseDates, cycleLength) {
 
     const num = validStartNumberOrNull(params.startNumber, cycleLength);
     if (num == null) return false;
-    const shifted = calculateNewPosition(
-      num,
-      config.position_shift,
-      cycleLength,
-    );
+    const shifted = calculateNewPosition(num, cls.shift, cycleLength);
     if (Number.isInteger(shifted)) openMigrationModal(shifted);
     return false;
   }
@@ -487,11 +480,7 @@ function applyFromStorage(validBaseDates, cycleLength) {
   clearCalendarSelection();
   const num = validStartNumberOrNull(stored.startNumber, cycleLength);
   if (num != null) {
-    const shifted = calculateNewPosition(
-      num,
-      config.position_shift,
-      cycleLength,
-    );
+    const shifted = calculateNewPosition(num, cls.shift, cycleLength);
     if (Number.isInteger(shifted)) openMigrationModal(shifted);
   }
   return false;

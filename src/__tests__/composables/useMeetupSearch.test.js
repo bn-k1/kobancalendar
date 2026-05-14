@@ -43,10 +43,9 @@ function setupAll(baseDate = dayjs("2025-11-17")) {
   calendarStore.setStartPosition(1);
 
   const data = makeScheduleData();
-  scheduleStore.setScheduleDataSets({ default: data, next: data });
-  scheduleStore.setDefaultBaseDate(baseDate);
-  scheduleStore.updateActiveBaseDate(baseDate);
-  scheduleStore.setNextBaseDate(baseDate);
+  scheduleStore.setScheduleData({ default: data });
+  scheduleStore.setEpochs([{ from: baseDate, dataKey: "default" }]);
+  scheduleStore.setActiveEpochIndex(0);
 
   holidayStore.setHolidays({});
   editedSchedulesStore.initEditedSchedules();

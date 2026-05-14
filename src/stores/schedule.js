@@ -2,68 +2,50 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
+/**
+ * Schedule store — raw state only.
+ *
+ * The schedule is modeled as an append-only list of *epochs*. Each epoch has a
+ * start date (`from`) and points to a folder of shift-table data (`dataKey`).
+ * An epoch's display window runs from its `from` up to (but not including) the
+ * next epoch's `from`. There is no separate "default/next" duality and no
+ * "schedule update" mode — every transition is just another epoch.
+ */
 export const useScheduleStore = defineStore("schedule", () => {
-  const scheduleDataSets = ref({
-    default: {
-      holiday: [],
-      saturday: [],
-      weekday: [],
-      rotationCycleLength: 0,
-    },
-    next: {
-      holiday: [],
-      saturday: [],
-      weekday: [],
-      rotationCycleLength: 0,
-    },
-  });
+  // [{ from: dayjs, dataKey: string }], sorted ascending by `from`
+  const epochs = ref([]);
+  // { [dataKey]: { holiday, saturday, weekday, rotationCycleLength } }
+  const scheduleData = ref({});
+  // index into `epochs` of the epoch the user is currently viewing
+  const activeEpochIndex = ref(0);
 
-  const defaultBaseDate = ref(undefined);
-  const activeBaseDate = ref(undefined);
-  const nextBaseDate = ref(undefined);
+  const isDataLoaded = computed(() =>
+    Object.values(scheduleData.value).some(
+      (data) => data && data.rotationCycleLength > 0,
+    ),
+  );
 
-  const scheduleUpdateDate = ref(undefined);
-
-  const isDataLoaded = computed(() => {
-    return (
-      scheduleDataSets.value.default.rotationCycleLength > 0 ||
-      scheduleDataSets.value.next.rotationCycleLength > 0
-    );
-  });
-
-  function setScheduleDataSets(dataSets) {
-    scheduleDataSets.value = dataSets;
+  function setEpochs(list) {
+    epochs.value = Array.isArray(list) ? list : [];
   }
 
-  function setDefaultBaseDate(date) {
-    defaultBaseDate.value = date;
+  function setScheduleData(data) {
+    scheduleData.value = data && typeof data === "object" ? data : {};
   }
 
-  function updateActiveBaseDate(date) {
-    activeBaseDate.value = date;
-  }
-
-  function setNextBaseDate(date) {
-    nextBaseDate.value = date;
-  }
-
-  function setScheduleUpdateDate(date) {
-    scheduleUpdateDate.value = date;
+  function setActiveEpochIndex(index) {
+    activeEpochIndex.value = index;
   }
 
   return {
-    scheduleDataSets: computed(() => scheduleDataSets.value),
-    defaultBaseDate: computed(() => defaultBaseDate.value),
-    activeBaseDate: computed(() => activeBaseDate.value),
-    nextBaseDate: computed(() => nextBaseDate.value),
-    scheduleUpdateDate: computed(() => scheduleUpdateDate.value),
+    epochs: computed(() => epochs.value),
+    scheduleData: computed(() => scheduleData.value),
+    activeEpochIndex: computed(() => activeEpochIndex.value),
 
     isDataLoaded,
 
-    setScheduleDataSets,
-    setDefaultBaseDate,
-    updateActiveBaseDate,
-    setNextBaseDate,
-    setScheduleUpdateDate,
+    setEpochs,
+    setScheduleData,
+    setActiveEpochIndex,
   };
 });

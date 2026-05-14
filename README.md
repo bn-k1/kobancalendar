@@ -31,40 +31,42 @@ npm install
 
 ### `config/config.json`
 
-アプリ全体の設定ファイルです。必須フィールドのみの最小構成例：
+アプリ全体の設定ファイルです。最小構成例：
 
 ```json
 {
-  "default_base_date": "YYYY-MM-DD",
-  "custom_holidays":   ["08-12", "08-13", "12-31", "01-02"],
-  "url":               "https://yourname.github.io/yourcalendar/"
-}
-```
-
-運用パターンに応じて以下の任意フィールドを追加できます：
-
-```json
-{
-  "old_base_date":   "YYYY-MM-DD",
-  "position_shift":  31,
-  "next_base_date":  "YYYY-MM-DD",
-  "schedule_update": "YYYY-MM-DD"
+  "schedules": [
+    { "from": "YYYY-MM-DD", "data": "default" }
+  ],
+  "custom_holidays": ["08-12", "08-13", "12-31", "01-02"],
+  "url": "https://yourname.github.io/yourcalendar/"
 }
 ```
 
 | フィールド | 必須 | 説明 |
 |-----------|------|------|
-| `default_base_date` | ✅ | シフト計算の基準日です。`(コマ位置-1 + 基準日からの日数差) % サイクル長` で当日のコマを決めます |
-| `old_base_date` | - | 旧基準日です。`position_shift` と併用して移行アラートを表示できます |
-| `position_shift` | - | 基準日更新時に全員へ加算するコマ数です |
-| `next_base_date` | - | コマ位置移動日です。設定すると基準日選択UIが表示され、移動前後を切り替えられます。`schedule_update` とは同時に設定できません |
-| `schedule_update` | - | 交番表の内容が切り替わる日付です。この日以降は `data/next/` のCSVが使われます。`next_base_date` とは同時に設定できません |
+| `schedules` | ✅ | 交番表の「世代」を時系列に並べた配列です。詳細は下記 |
 | `custom_holidays` | - | 祝日ライブラリに含まれない独自休日（`MM-DD` 形式）です。毎年繰り返し適用されます |
 | `url` | - | QRコード生成に使うURLです |
 
-### `data/default/` — 現行交番表CSV
+#### `schedules` — 交番表の世代リスト
 
-`weekday.csv`（平日）、`saturday.csv`（土曜）、`holiday.csv`（日・祝）の3ファイルを使います。
+交番表の移行履歴を、追記専用（append-only）の配列で表します。各要素（＝世代）は：
+
+| キー | 説明 |
+|------|------|
+| `from` | その世代が有効になる日（`YYYY-MM-DD`）。配列は `from` 昇順 |
+| `data` | その世代の交番表CSVが入るフォルダ名（`data/<data>/`）。中身が変わらない移行なら前の世代と同じフォルダを指す |
+
+- ある世代の表示窓は `[from, 次の世代の from)`。最後の世代は `[from, ∞)`。
+- シフト計算の基準日は、いま表示している世代の `from` です（`(コマ位置-1 + 基準日からの日数差) % サイクル長` で当日のコマを決めます）。
+- 「いまの世代」＝ `from` が今日以前で最後の世代。新規ユーザーや共有URLの受け手はこの世代で開きます。
+- 未来の世代があれば基準日選択UIに「新版」として並び、移行日前にプレビューできます。
+- 過去の世代の `from` を保存しているユーザーには、移行アラート（現世代の `from` までの日数差ぶんコマ位置をずらした候補）が表示されます。
+
+### `data/<folder>/` — 交番表CSV
+
+`schedules[].data` が参照するフォルダです（例: `data/default/`）。各フォルダは `weekday.csv`（平日）、`saturday.csv`（土曜）、`holiday.csv`（日・祝）の3ファイルを持ちます。
 
 フォーマットは `subject,startTime,endTime`（ヘッダー行なし）です。
 
@@ -76,13 +78,10 @@ npm install
 夜勤,00:00,08:00
 ```
 
-- 行数 = サイクル長（全ファイルでそろえてください）
+- 行数 = サイクル長（同一フォルダの3ファイルでそろえてください）
 - 1行目が「コマ1」に対応
 - 休日などで時刻不要な行は `subject,,` とします
-
-### `data/next/` — 次期交番表CSV
-
-`schedule_update` または `next_base_date` を使う運用時に参照されます。フォーマットは `data/default/` と同じです。
+- `schedules` が参照するフォルダは必ず完全な3ファイルを持つ必要があります（空フォルダはビルドエラー）
 
 ### `config/event.json` — イベント表示設定
 
@@ -123,11 +122,12 @@ npm install
 CSVやJSONをアプリが直接読むのではなく、ビルド前処理で中間JSONに変換してからViteでバンドルします。
 
 ```
-data/**/*.csv  ──┐
-data/menu/*.txt ─┤  npm run build-prep  ├─→  data/**/default.json
-config.json ─────┘  (scripts/)          ├─→  data/menu/menu.json
-                                         └─→  data/qr.png
+data/<folder>/*.csv ──┐                       ├─→  data/scheduleData.json
+data/menu/*.txt ──────┤  npm run build-prep   ├─→  data/menu/menu.json
+config.json ──────────┘  (scripts/)           └─→  data/qr.png
 ```
+
+`convert-csv` は `config.json` の `schedules[].data` で参照されるフォルダだけを変換し、`data/scheduleData.json`（フォルダ名をキーにした統合バンドル）を出力します。
 
 **`config.json` やCSVを編集したら、`npm run build-prep` を忘れずに実行してください。**
 
@@ -141,7 +141,7 @@ npm run build-gh-pages # build-prep + GitHub Pages用ビルド → docs/
 npm run preview        # 直前のビルド結果をローカルでプレビュー
 
 # 個別実行
-npm run convert-csv    # data/**/*.csv → JSON
+npm run convert-csv    # config.schedules が参照する CSV → data/scheduleData.json
 npm run convert-menu   # data/menu/*.txt → JSON
 npm run create-qr      # config.json の url フィールドからQR生成
 ```
@@ -155,40 +155,27 @@ npm run create-qr      # config.json の url フィールドからQR生成
 
 ---
 
-## 運用: スケジュール移行パターン
+## 運用: スケジュールの移行
 
-### パターン1 — 掲示物の貼り替え（基準日の単純更新）
+交番表が変わるとき（掲示物の貼り替え、コマ位置の一斉移動、勤務内容の変更）は、種類を問わず **`schedules` 配列に世代を1つ追記するだけ** です。
 
-コマ表自体は変わらず、基準日だけを更新する場合です。
+```json
+{
+  "schedules": [
+    { "from": "2025-11-16", "data": "default" },
+    { "from": "2026-05-16", "data": "default" }
+  ]
+}
+```
 
-1. `config.json` の `default_base_date` を新しい基準日に変更
-2. （任意）`old_base_date` に旧基準日、`position_shift` に全員へのコマ加算数を設定
-   - 設定しておくと、旧基準日を保存しているユーザーへ新コマ位置のアラートを表示できます
+1. `config.json` の `schedules` に `{ "from": 移行日, "data": フォルダ名 }` を追記する。
+2. **交番表の中身が変わらない場合**（基準日の更新／コマ位置の一斉移動）→ `data` は前の世代と同じフォルダ名を指す。
+3. **交番表の中身が変わる場合** → `data/<新フォルダ>/` に新しいCSV3点を用意し、`data` にそのフォルダ名を指定する。
+4. `npm run build-prep`（または `npm run build` / `build-gh-pages`）を実行する。
 
-### パターン2 — 各員のコマ位置のみ移動
+これだけで、移行日以降は新しい世代が「いまの世代」になり、移行日前は基準日選択UIに「新版」としてプレビュー表示されます。過去の世代を保存しているユーザーには、コマ位置の移行アラートが自動で出ます（コマ位置のずれ＝世代間の日数差として算出）。
 
-コマ表の内容は変わらず、全員のコマ位置だけが一斉にずれる場合です。
-
-1. `config.json` の `next_base_date` に移動日を設定
-2. `data/default/` の内容を `data/next/` にコピー
-
-> `schedule_update` は設定しません。ユーザーは基準日選択UIで移動前後を切り替えられます。
-
-### パターン3 — 交番表の内容のみ変更
-
-コマ番号は変わらず、各コマの勤務内容だけが変わる場合です。
-
-1. `config.json` の `schedule_update` に変更開始日を設定
-2. `data/next/` に新しいCSVを作成
-
-> `next_base_date` は設定しません。`schedule_update` 以降は自動的に `data/next/` が参照されます。
-
-### パターン4 — コマ位置移動 + 交番表変更の同時実施
-
-1. `config.json` の `next_base_date` に移動日を設定
-2. `data/next/` に新しいCSVを作成
-
-> `schedule_update` は設定しません（`next_base_date` が優先されます）。
+> 古くなった世代は配列に残しておけば移行アラートの基準として機能し続けます。表示UIには「いまの世代」と隣接する世代しか出ないため、配列が伸びても画面は煩雑になりません。十分に古い世代は、参照しているデータフォルダごと手動で整理して構いません。
 
 ---
 

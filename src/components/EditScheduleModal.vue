@@ -118,12 +118,7 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
-import {
-  formatAsDisplayDate,
-  getWeekdayName,
-  createDate,
-  isSameOrAfter,
-} from "@/utils/date";
+import { formatAsDisplayDate, getWeekdayName, createDate } from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
 
 const props = defineProps({
@@ -147,7 +142,7 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "save"]);
 
-const { scheduleDataSets, scheduleUpdateDate } = useSchedule();
+const { activeScheduleData } = useSchedule();
 
 const selectedSubject = ref("");
 const selectedStartTime = ref("");
@@ -171,23 +166,8 @@ const modalTitle = computed(() => {
   return `${formatAsDisplayDate(dateObj)}（${getWeekdayName(dateObj)}）`;
 });
 
-const activeScheduleData = computed(() => {
-  if (!props.date || !scheduleDataSets.value) return null;
-
-  const dateObj = createDate(props.date);
-
-  if (
-    scheduleUpdateDate.value &&
-    isSameOrAfter(dateObj, scheduleUpdateDate.value)
-  ) {
-    return scheduleDataSets.value.next;
-  }
-
-  return scheduleDataSets.value.default;
-});
-
 const subjectOptions = computed(() => {
-  if (!activeScheduleData.value) return [];
+  if (!props.date || !activeScheduleData.value) return [];
 
   let dayTypeData;
   switch (props.dayType) {

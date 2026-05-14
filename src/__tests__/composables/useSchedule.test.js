@@ -1,6 +1,6 @@
 // src/__tests__/composables/useSchedule.test.js
-// Characterization tests for useSchedule composable
-import { describe, it, expect, beforeEach } from "vitest";
+// Characterization tests for useSchedule composable (epoch model)
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import dayjs from "dayjs";
 import { useSchedule } from "@/composables/useSchedule";
@@ -9,47 +9,45 @@ import { useHolidayStore } from "@/stores/holiday";
 
 // 最小限のスケジュールデータ（cycleLength=5）
 const CYCLE = 5;
-const makeScheduleData = (cycle = CYCLE) => ({
-  holiday: Array.from({ length: cycle }, (_, i) => ({ s: `休日${i}` })),
+const makeScheduleData = (cycle = CYCLE, prefix = "") => ({
+  holiday: Array.from({ length: cycle }, (_, i) => ({ s: `${prefix}休日${i}` })),
   saturday: Array.from({ length: cycle }, (_, i) => ({
-    s: `土曜${i}`,
+    s: `${prefix}土曜${i}`,
     sT: "09:00",
     eT: "17:00",
   })),
   weekday: Array.from({ length: cycle }, (_, i) => ({
-    s: `平日${i}`,
+    s: `${prefix}平日${i}`,
     sT: "08:00",
     eT: "16:00",
   })),
   rotationCycleLength: cycle,
 });
 
+/**
+ * Set up the schedule store with an epoch timeline.
+ * @param {Object} options
+ * @param {Array} options.epochs - [{ from: dayjs, dataKey: string }]
+ *   (default: single epoch at 2025-11-16 / "default")
+ * @param {Object} options.scheduleData - { [dataKey]: data }
+ *   (default: { default: makeScheduleData() })
+ * @param {number} options.activeEpochIndex - default 0
+ * @param {Object} options.holidays
+ */
 function setupStores(options = {}) {
   const scheduleStore = useScheduleStore();
   const holidayStore = useHolidayStore();
 
-  const defaultData = options.defaultData ?? makeScheduleData();
-  const nextData = options.nextData ?? makeScheduleData();
+  const scheduleData = options.scheduleData ?? { default: makeScheduleData() };
+  const epochs = options.epochs ?? [
+    { from: dayjs("2025-11-16"), dataKey: "default" },
+  ];
 
-  scheduleStore.setScheduleDataSets({ default: defaultData, next: nextData });
+  scheduleStore.setScheduleData(scheduleData);
+  scheduleStore.setEpochs(epochs);
+  scheduleStore.setActiveEpochIndex(options.activeEpochIndex ?? 0);
 
-  const baseDate = options.baseDate ?? dayjs("2025-11-16");
-  const nextBaseDate = options.nextBaseDate ?? baseDate;
-
-  scheduleStore.setDefaultBaseDate(baseDate);
-  scheduleStore.updateActiveBaseDate(baseDate);
-  scheduleStore.setNextBaseDate(nextBaseDate);
-
-  if (options.scheduleUpdateDate) {
-    scheduleStore.setScheduleUpdateDate(options.scheduleUpdateDate);
-  }
-
-  // 祝日データ（任意）
-  if (options.holidays) {
-    holidayStore.setHolidays(options.holidays);
-  } else {
-    holidayStore.setHolidays({});
-  }
+  holidayStore.setHolidays(options.holidays ?? {});
 }
 
 beforeEach(() => {
@@ -119,10 +117,7 @@ describe("calculateShiftIndex()", () => {
 describe("getScheduleForDate()", () => {
   it("平日は weekday データを返す", () => {
     // 2025-11-17 は月曜（平日、非祝日）
-    setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2025-11-16"),
-    });
+    setupStores();
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-17"), 1);
     expect(result).not.toBeUndefined();
@@ -131,10 +126,7 @@ describe("getScheduleForDate()", () => {
 
   it("土曜は saturday データを返す", () => {
     // 2025-11-22 は土曜
-    setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2025-11-16"),
-    });
+    setupStores();
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-22"), 1);
     expect(result).not.toBeUndefined();
@@ -143,10 +135,7 @@ describe("getScheduleForDate()", () => {
 
   it("日曜（祝日扱い）は holiday データを返す", () => {
     // 2025-11-16 は日曜（isSunday → isHoliday）
-    setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2025-11-16"),
-    });
+    setupStores();
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-16"), 1);
     expect(result).not.toBeUndefined();
@@ -156,83 +145,82 @@ describe("getScheduleForDate()", () => {
 
   it("祝日フラグが設定された日は holiday データを返す", () => {
     // 2025-11-17（月曜）を祝日に設定
-    setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2025-11-16"),
-      holidays: { "2025-11-17": "テスト祝日" },
-    });
+    setupStores({ holidays: { "2025-11-17": "テスト祝日" } });
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-17"), 1);
     expect(result.isHoliday).toBe(true);
     expect(result.subject).toMatch(/^休日/);
   });
 
-  it("基準日より前の日付は undefined を返す", () => {
+  it("active epoch の from より前の日付は undefined を返す", () => {
     setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2026-05-16"),
+      epochs: [
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-05-16"), dataKey: "default" },
+      ],
+      activeEpochIndex: 0,
     });
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2025-11-15"), 1);
     expect(result).toBeUndefined();
   });
 
-  it("baseDate と nextBaseDate が異なる場合、nextBaseDate 以降は undefined を返す", () => {
+  it("後続の世代がある場合、その from 以降は undefined を返す", () => {
     setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2026-05-16"),
+      epochs: [
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-05-16"), dataKey: "default" },
+      ],
+      activeEpochIndex: 0,
     });
     const { getScheduleForDate } = useSchedule();
     const result = getScheduleForDate(dayjs("2026-05-16"), 1);
     expect(result).toBeUndefined();
   });
 
-  it("baseDate と nextBaseDate が同じ場合、nextBaseDate 以降でも undefined にならない", () => {
+  it("後続の世代が無ければ上限なし（最終世代）", () => {
     setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2025-11-16"),
+      epochs: [
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-05-16"), dataKey: "default" },
+      ],
+      activeEpochIndex: 1,
     });
     const { getScheduleForDate } = useSchedule();
-    // 基準日と同じ日（日曜・祝日扱い）なので holiday データが返るはず
-    const result = getScheduleForDate(dayjs("2025-11-16"), 1);
+    // 最終世代を選択中。from 以降ずっと表示される
+    const result = getScheduleForDate(dayjs("2027-01-01"), 1);
     expect(result).not.toBeUndefined();
   });
 
-  it("scheduleUpdateDate 以降は next データを使う", () => {
-    const defaultData = makeScheduleData(5);
-    const nextData = {
-      holiday: Array.from({ length: 5 }, (_, i) => ({ s: `次休日${i}` })),
-      saturday: Array.from({ length: 5 }, (_, i) => ({ s: `次土曜${i}` })),
-      weekday: Array.from({ length: 5 }, (_, i) => ({ s: `次平日${i}` })),
-      rotationCycleLength: 5,
-    };
+  it("後続世代を選択するとその世代のデータを使う", () => {
     setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2025-11-16"),
-      defaultData,
-      nextData,
-      scheduleUpdateDate: dayjs("2026-01-01"),
+      scheduleData: {
+        default: makeScheduleData(5),
+        next: makeScheduleData(5, "次"),
+      },
+      epochs: [
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-01-01"), dataKey: "next" },
+      ],
+      activeEpochIndex: 1,
     });
     const { getScheduleForDate } = useSchedule();
-    // 2026-01-01 は木曜・元日（祝日）
-    const result = getScheduleForDate(dayjs("2026-01-02"), 1); // 金曜
+    // 2026-01-02 は金曜
+    const result = getScheduleForDate(dayjs("2026-01-02"), 1);
     expect(result?.subject).toMatch(/^次平日/);
   });
 
-  it("scheduleUpdateDate より前は default データを使う", () => {
-    const defaultData = makeScheduleData(5);
-    const nextData = {
-      holiday: Array.from({ length: 5 }, (_, i) => ({ s: `次休日${i}` })),
-      saturday: Array.from({ length: 5 }, (_, i) => ({ s: `次土曜${i}` })),
-      weekday: Array.from({ length: 5 }, (_, i) => ({ s: `次平日${i}` })),
-      rotationCycleLength: 5,
-    };
+  it("現世代を選択すると現世代のデータを使う", () => {
     setupStores({
-      baseDate: dayjs("2025-11-16"),
-      nextBaseDate: dayjs("2025-11-16"),
-      defaultData,
-      nextData,
-      scheduleUpdateDate: dayjs("2026-01-01"),
+      scheduleData: {
+        default: makeScheduleData(5),
+        next: makeScheduleData(5, "次"),
+      },
+      epochs: [
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-01-01"), dataKey: "next" },
+      ],
+      activeEpochIndex: 0,
     });
     const { getScheduleForDate } = useSchedule();
     // 2025-11-17 は平日
@@ -241,10 +229,7 @@ describe("getScheduleForDate()", () => {
   });
 
   it("shiftIndex を返す", () => {
-    setupStores({
-      baseDate: dayjs("2025-11-17"),
-      nextBaseDate: dayjs("2025-11-17"),
-    });
+    setupStores({ epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }] });
     const { getScheduleForDate } = useSchedule();
     // 基準日当日 pos=1 → shiftIndex=0
     const r0 = getScheduleForDate(dayjs("2025-11-17"), 1);
@@ -259,10 +244,7 @@ describe("getScheduleForDate()", () => {
 
 describe("calculateScheduleRange()", () => {
   it("日付範囲のスケジュールを配列で返す（endDate は含まない）", () => {
-    setupStores({
-      baseDate: dayjs("2025-11-17"),
-      nextBaseDate: dayjs("2025-11-17"),
-    });
+    setupStores({ epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }] });
     const { calculateScheduleRange } = useSchedule();
     const result = calculateScheduleRange(
       dayjs("2025-11-17"),
@@ -273,10 +255,7 @@ describe("calculateScheduleRange()", () => {
   });
 
   it("各要素に dateStr が含まれる", () => {
-    setupStores({
-      baseDate: dayjs("2025-11-17"),
-      nextBaseDate: dayjs("2025-11-17"),
-    });
+    setupStores({ epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }] });
     const { calculateScheduleRange } = useSchedule();
     const result = calculateScheduleRange(
       dayjs("2025-11-17"),
@@ -288,10 +267,13 @@ describe("calculateScheduleRange()", () => {
   });
 
   it("スケジュールが undefined になる日はスキップされる", () => {
-    // baseDate=2025-11-17, nextBaseDate=2025-11-17+5 → 5日後以降 undefined
+    // active epoch 2025-11-17、後続世代 2025-11-19 → 17, 18 だけ有効
     setupStores({
-      baseDate: dayjs("2025-11-17"),
-      nextBaseDate: dayjs("2025-11-19"), // 17, 18 だけ有効
+      epochs: [
+        { from: dayjs("2025-11-17"), dataKey: "default" },
+        { from: dayjs("2025-11-19"), dataKey: "default" },
+      ],
+      activeEpochIndex: 0,
     });
     const { calculateScheduleRange } = useSchedule();
     const result = calculateScheduleRange(
@@ -299,9 +281,80 @@ describe("calculateScheduleRange()", () => {
       dayjs("2025-11-22"),
       1,
     );
-    // 17, 18 が返るはず（19以降は undefined → skip）
     result.forEach((r) => {
       expect(["2025-11-17", "2025-11-18"]).toContain(r.dateStr);
     });
+  });
+});
+
+// ---------- epoch resolution (today-dependent) ----------
+
+describe("世代の解決（today 依存）", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("defaultBaseDate は today 以前で最後の世代、nextBaseDate はその次", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-14T00:00:00+09:00"));
+    setupStores({
+      epochs: [
+        { from: dayjs("2025-10-16"), dataKey: "default" },
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-05-16"), dataKey: "default" },
+      ],
+    });
+    const { defaultBaseDate, nextBaseDate } = useSchedule();
+    expect(defaultBaseDate.value.isSame(dayjs("2025-11-16"), "day")).toBe(true);
+    expect(nextBaseDate.value.isSame(dayjs("2026-05-16"), "day")).toBe(true);
+  });
+
+  it("最終世代が現世代なら nextBaseDate は undefined", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-01T00:00:00+09:00"));
+    setupStores({
+      epochs: [
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-05-16"), dataKey: "default" },
+      ],
+    });
+    const { defaultBaseDate, nextBaseDate } = useSchedule();
+    expect(defaultBaseDate.value.isSame(dayjs("2026-05-16"), "day")).toBe(true);
+    expect(nextBaseDate.value).toBeUndefined();
+  });
+
+  it("getMigrationShift は過去世代の from に対し現世代との日数差を返す", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-14T00:00:00+09:00"));
+    setupStores({
+      epochs: [
+        { from: dayjs("2025-10-16"), dataKey: "default" },
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-05-16"), dataKey: "default" },
+      ],
+    });
+    const { getMigrationShift } = useSchedule();
+    // 2025-10-16 → 現世代 2025-11-16 は 31 日
+    expect(getMigrationShift("2025-10-16")).toBe(31);
+    // 現世代・後続世代・未知の日付は null
+    expect(getMigrationShift("2025-11-16")).toBeNull();
+    expect(getMigrationShift("2026-05-16")).toBeNull();
+    expect(getMigrationShift("2025-12-01")).toBeNull();
+  });
+
+  it("updateActiveBaseDate は from が一致する世代を active にする", () => {
+    setupStores({
+      epochs: [
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-05-16"), dataKey: "default" },
+      ],
+      activeEpochIndex: 0,
+    });
+    const { updateActiveBaseDate, activeBaseDate } = useSchedule();
+    updateActiveBaseDate(dayjs("2026-05-16"));
+    expect(activeBaseDate.value.isSame(dayjs("2026-05-16"), "day")).toBe(true);
+    // 未知の日付は無視（active は変わらない）
+    updateActiveBaseDate(dayjs("2099-01-01"));
+    expect(activeBaseDate.value.isSame(dayjs("2026-05-16"), "day")).toBe(true);
   });
 });
