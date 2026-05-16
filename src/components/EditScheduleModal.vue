@@ -73,22 +73,40 @@
             </button>
           </div>
           <div class="form-group time-inputs">
-            <label for="customStartTime">開始時間:</label>
-            <input
-              id="customStartTime"
-              v-model="customStartTime"
-              type="time"
-              class="edit-input"
-            />
+            <label>開始時間:</label>
+            <div class="time-select-group">
+              <select v-model="customStartHour" class="edit-select">
+                <option value="">--</option>
+                <option v-for="h in hourOptions" :key="h" :value="h">
+                  {{ h }}
+                </option>
+              </select>
+              <span class="time-separator">:</span>
+              <select v-model="customStartMinute" class="edit-select">
+                <option value="">--</option>
+                <option v-for="m in minuteOptions" :key="m" :value="m">
+                  {{ m }}
+                </option>
+              </select>
+            </div>
           </div>
           <div class="form-group time-inputs">
-            <label for="customEndTime">終了時間:</label>
-            <input
-              id="customEndTime"
-              v-model="customEndTime"
-              type="time"
-              class="edit-input"
-            />
+            <label>終了時間:</label>
+            <div class="time-select-group">
+              <select v-model="customEndHour" class="edit-select">
+                <option value="">--</option>
+                <option v-for="h in hourOptions" :key="h" :value="h">
+                  {{ h }}
+                </option>
+              </select>
+              <span class="time-separator">:</span>
+              <select v-model="customEndMinute" class="edit-select">
+                <option value="">--</option>
+                <option v-for="m in minuteOptions" :key="m" :value="m">
+                  {{ m }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -148,10 +166,29 @@ const selectedSubject = ref("");
 const selectedStartTime = ref("");
 const selectedEndTime = ref("");
 const customSubject = ref("");
-const customStartTime = ref("");
-const customEndTime = ref("");
+const customStartHour = ref("");
+const customStartMinute = ref("");
+const customEndHour = ref("");
+const customEndMinute = ref("");
 const isCustomSelected = ref(false);
 const note = ref("");
+
+const hourOptions = Array.from({ length: 24 }, (_, i) =>
+  String(i).padStart(2, "0"),
+);
+const minuteOptions = Array.from({ length: 60 }, (_, i) =>
+  String(i).padStart(2, "0"),
+);
+
+function combineTime(hour, minute) {
+  if (!hour || !minute) return "";
+  return `${hour}:${minute}`;
+}
+
+function splitTime(value) {
+  if (!value || !/^\d{2}:\d{2}$/.test(value)) return ["", ""];
+  return value.split(":");
+}
 
 const canSave = computed(() => {
   if (isCustomSelected.value) {
@@ -221,8 +258,10 @@ function enterCustomMode() {
 function exitCustomMode() {
   isCustomSelected.value = false;
   customSubject.value = "";
-  customStartTime.value = "";
-  customEndTime.value = "";
+  customStartHour.value = "";
+  customStartMinute.value = "";
+  customEndHour.value = "";
+  customEndMinute.value = "";
   selectedSubject.value = "";
   selectedStartTime.value = "";
   selectedEndTime.value = "";
@@ -234,8 +273,8 @@ function handleSave() {
   const schedule = isCustomSelected.value
     ? {
         subject: customSubject.value.trim(),
-        startTime: customStartTime.value,
-        endTime: customEndTime.value,
+        startTime: combineTime(customStartHour.value, customStartMinute.value),
+        endTime: combineTime(customEndHour.value, customEndMinute.value),
       }
     : {
         subject: selectedSubject.value,
@@ -276,8 +315,12 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
       isCustomSelected.value = true;
       selectedSubject.value = "";
       customSubject.value = currentSubject;
-      customStartTime.value = props.currentSchedule.startTime || "";
-      customEndTime.value = props.currentSchedule.endTime || "";
+      [customStartHour.value, customStartMinute.value] = splitTime(
+        props.currentSchedule.startTime || "",
+      );
+      [customEndHour.value, customEndMinute.value] = splitTime(
+        props.currentSchedule.endTime || "",
+      );
       selectedStartTime.value = "";
       selectedEndTime.value = "";
     } else {
@@ -288,8 +331,10 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
       selectedEndTime.value =
         matchingOption?.endTime || props.currentSchedule.endTime || "";
       customSubject.value = "";
-      customStartTime.value = "";
-      customEndTime.value = "";
+      customStartHour.value = "";
+      customStartMinute.value = "";
+      customEndHour.value = "";
+      customEndMinute.value = "";
     }
     note.value = props.currentSchedule.note || "";
   } else if (!newShow) {
@@ -298,8 +343,10 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
     selectedStartTime.value = "";
     selectedEndTime.value = "";
     customSubject.value = "";
-    customStartTime.value = "";
-    customEndTime.value = "";
+    customStartHour.value = "";
+    customStartMinute.value = "";
+    customEndHour.value = "";
+    customEndMinute.value = "";
     note.value = "";
   }
 });
@@ -402,6 +449,22 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
 
 .time-inputs {
   gap: var(--spacing-xs);
+}
+
+.time-select-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.time-select-group .edit-select {
+  width: auto;
+  flex: 1;
+}
+
+.time-separator {
+  font-weight: var(--font-weight-medium);
+  color: var(--gray-600);
 }
 
 .time-display {
