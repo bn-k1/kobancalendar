@@ -24,7 +24,10 @@ describe("buildEpochs() — 基本", () => {
 
   it("from が不正ならエラー", () => {
     expect(() =>
-      buildEpochs({ schedules: [{ from: "not-a-date", data: "default" }] }, makeBundle()),
+      buildEpochs(
+        { schedules: [{ from: "not-a-date", data: "default" }] },
+        makeBundle(),
+      ),
     ).toThrow(/from が不正/);
   });
 

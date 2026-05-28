@@ -115,7 +115,6 @@ describe("ERROR_MESSAGES", () => {
     const required = [
       "INIT_FAILED",
       "NO_BASE_DATE",
-      "INVALID_BASE_DATE",
       "INVALID_STARTNUMBER",
       "CONFIG_NOT_LOADED",
       "SCHEDULE_DATA_ERROR",

@@ -227,34 +227,6 @@ export function useSchedule() {
     }
   }
 
-  /**
-   * If the given date is the anchor of a *past* epoch (one before the current
-   * epoch), return the position shift needed to migrate a selection from that
-   * epoch to the current epoch. Otherwise return null.
-   *
-   * The shift is simply the day-count between the two anchors: moving the anchor
-   * forward by N days requires adding N to every position to keep the same
-   * rotation slot.
-   * @param {dayjs|string|Date} date
-   * @returns {number|null}
-   */
-  function getMigrationShift(date) {
-    const target = createDate(date);
-    if (!target.isValid()) return null;
-
-    const epochs = storeEpochs.value;
-    const currentIndex = currentEpochIndex();
-    const currentFrom = epochs[currentIndex]?.from;
-    if (!currentFrom) return null;
-
-    for (let i = 0; i < currentIndex; i += 1) {
-      if (isSameDay(epochs[i].from, target)) {
-        return currentFrom.diff(epochs[i].from, "day");
-      }
-    }
-    return null;
-  }
-
   return {
     // Reactive state
     epochs: storeEpochs,
@@ -275,6 +247,5 @@ export function useSchedule() {
     calculateScheduleRange,
     loadSchedule,
     updateActiveBaseDate,
-    getMigrationShift,
   };
 }

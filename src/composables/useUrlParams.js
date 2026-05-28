@@ -1,13 +1,6 @@
-// URL params: canonical (hash query) と legacy (pre-hash search) の両方を扱う。
-//
-// canonical:
+// URL params: canonical (hash query) のみ扱う。
 //   Home   #/?p=N  /  #/?v=old&p=N
 //   Meetup #/meetup?ps=1,7,12&t=19:00&d=120
-//
-// legacy (旧ブックマーク互換、read のみ):
-//   ?baseDate=YYYY-MM-DD&startNumber=N#/
-
-const LEGACY_PARAM_KEYS = ["baseDate", "startNumber"];
 
 const HOME_PATH = "/";
 const MEETUP_PATH = "/meetup";
@@ -46,41 +39,6 @@ function parseIntOrNull(value) {
 }
 
 export function useUrlParams() {
-  function hasLegacyUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    return LEGACY_PARAM_KEYS.some((key) => params.has(key));
-  }
-
-  function readLegacyUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    const out = {};
-    for (const key of LEGACY_PARAM_KEYS) {
-      if (params.has(key)) out[key] = params.get(key);
-    }
-    return out;
-  }
-
-  function clearUrl() {
-    const hash =
-      window.location.hash && window.location.hash !== "#"
-        ? window.location.hash
-        : "#/";
-    window.history.replaceState({}, "", `${window.location.pathname}${hash}`);
-  }
-
-  function calculateNewPosition(
-    currentStartNumber,
-    positionShift,
-    rotationCycleLength,
-  ) {
-    if (!currentStartNumber || !positionShift || !rotationCycleLength)
-      return null;
-    const shifted = currentStartNumber + positionShift;
-    return shifted > rotationCycleLength
-      ? shifted - rotationCycleLength
-      : shifted;
-  }
-
   // ----- canonical: Home -----
 
   function readCanonicalCalendar() {
@@ -159,12 +117,6 @@ export function useUrlParams() {
   }
 
   return {
-    // legacy
-    hasLegacyUrlParams,
-    readLegacyUrlParams,
-    clearUrl,
-    calculateNewPosition,
-    // canonical
     readCanonicalCalendar,
     writeCalendarUrl,
     clearCalendarUrl,

@@ -81,14 +81,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  computed,
-  onMounted,
-  onUnmounted,
-  watch,
-  defineAsyncComponent,
-} from "vue";
+import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
@@ -121,21 +114,13 @@ import {
 } from "@/utils/date";
 
 import { ERROR_MESSAGES } from "@/utils/constants";
-import { useAlertModalStore } from "@/stores/alertModal";
 
 import scheduleData from "@data/scheduleData.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
-const {
-  hasLegacyUrlParams,
-  readLegacyUrlParams,
-  clearUrl,
-  calculateNewPosition,
-  readCanonicalCalendar,
-  writeCalendarUrl,
-  clearCalendarUrl,
-} = useUrlParams();
+const { readCanonicalCalendar, writeCalendarUrl, clearCalendarUrl } =
+  useUrlParams();
 const {
   saveCalendarSelection,
   loadCalendarSelection,
@@ -144,11 +129,6 @@ const {
 } = useLocalParams();
 const { isLoaded, initializeApp } = useAppInitializer();
 const { initEditedSchedules } = useEditedSchedules();
-const {
-  open: openAlertModal,
-  setSuggestedNumberHandler,
-  clearSuggestedNumberHandler,
-} = useAlertModalStore();
 const calendarRef = ref(undefined);
 const selectedBaseDate = ref("");
 const viewRange = ref({ start: null, end: null });
@@ -168,7 +148,6 @@ const {
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
-  getMigrationShift,
 } = useSchedule();
 
 const nextBaseDateStr = computed(() => {
@@ -272,49 +251,18 @@ function handleEditedChanged() {
   }
 }
 
-function applySuggestedStartNumber(suggestedStartNumber) {
-  if (
-    !Number.isInteger(suggestedStartNumber) ||
-    suggestedStartNumber < 1 ||
-    suggestedStartNumber > rotationCycleLength.value
-  ) {
-    return;
-  }
-
-  startPosition.value = suggestedStartNumber;
-  setStartPosition(suggestedStartNumber);
-
-  if (selectedBaseDate.value) {
-    saveCalendarSelection(selectedBaseDate.value, suggestedStartNumber);
-    syncCalendarUrl();
-  }
-
-  if (viewRange.value.start && viewRange.value.end) {
-    generateCalendarEvents(viewRange.value.start, viewRange.value.end);
-  }
-}
-
-function classifyBaseDate(baseDateStr, validBaseDates) {
-  if (!baseDateStr) return null;
-  const dateObj = createDate(baseDateStr);
-  if (!dateObj.isValid()) return null;
-
-  if (validBaseDates.some((d) => d && isSameDay(d, dateObj))) {
-    return { kind: "active", baseDate: dateObj };
-  }
-
-  const migrationShift = getMigrationShift(dateObj);
-  if (migrationShift != null) {
-    return { kind: "migrate", shift: migrationShift };
-  }
-
-  return null;
-}
-
 function validStartNumberOrNull(raw, cycleLength) {
   const n = parseInt(raw, 10);
   if (isNaN(n) || n < 1 || n > cycleLength) return null;
   return n;
+}
+
+function isValidBaseDate(baseDateStr, validBaseDates) {
+  if (!baseDateStr) return null;
+  const dateObj = createDate(baseDateStr);
+  if (!dateObj.isValid()) return null;
+  if (validBaseDates.some((d) => d && isSameDay(d, dateObj))) return dateObj;
+  return null;
 }
 
 function applyDefaultBaseDate() {
@@ -329,19 +277,7 @@ function applyDefaultBaseDate() {
   return true;
 }
 
-function openMigrationModal(suggestedNumber) {
-  openAlertModal({
-    title: "基準日を更新しました",
-    message: ERROR_MESSAGES.INVALID_BASE_DATE,
-    suggestedNumber,
-  });
-}
-
 async function initialize() {
-  const hadUrlParams = hasLegacyUrlParams();
-  const legacyParams = hadUrlParams ? readLegacyUrlParams() : null;
-  if (hadUrlParams) clearUrl();
-
   try {
     const result = await initializeApp({
       scheduleData,
@@ -359,19 +295,9 @@ async function initialize() {
     );
     const cycleLength = result.activeScheduleData.rotationCycleLength;
 
-    let applied = false;
-    if (legacyParams) {
-      applied = applyFromLegacy(legacyParams, validBaseDates, cycleLength);
-    }
-    if (!applied) {
-      applied = applyFromCanonical(validBaseDates, cycleLength);
-    }
-    if (!applied) {
-      applied = applyFromStorage(validBaseDates, cycleLength);
-    }
-    if (!applied) {
-      applied = applyDefaultBaseDate();
-    }
+    let applied = applyFromCanonical(validBaseDates, cycleLength);
+    if (!applied) applied = applyFromStorage(validBaseDates, cycleLength);
+    if (!applied) applied = applyDefaultBaseDate();
 
     syncCalendarUrl();
     return applied;
@@ -380,50 +306,6 @@ async function initialize() {
     alert(ERROR_MESSAGES.INIT_FAILED);
     return false;
   }
-}
-
-// サポートする legacy URL 形式（他は false を返して applyFromCanonical/Storage/Default に委譲）:
-//   - ?baseDate=<active>&startNumber=<1..cycleLength>#/  → 即適用
-//   - ?baseDate=<active>#/                                → localStorage 側の保存値があれば流用
-//   - ?baseDate=<old>&startNumber=<1..cycleLength>#/      → 移行モーダル
-function applyFromLegacy(params, validBaseDates, cycleLength) {
-  const cls = classifyBaseDate(params.baseDate, validBaseDates);
-  if (!cls) return false;
-
-  if (cls.kind === "migrate") {
-    const stored = loadCalendarSelection();
-    if (stored) {
-      const storedCls = classifyBaseDate(stored.baseDate, validBaseDates);
-      if (
-        storedCls?.kind === "active" &&
-        validStartNumberOrNull(stored.startNumber, cycleLength) != null
-      ) {
-        // 既に移行済み — モーダルを抑止し、後段の Storage 解決に委ねる
-        return false;
-      }
-    }
-
-    const num = validStartNumberOrNull(params.startNumber, cycleLength);
-    if (num == null) return false;
-    const shifted = calculateNewPosition(num, cls.shift, cycleLength);
-    if (Number.isInteger(shifted)) openMigrationModal(shifted);
-    return false;
-  }
-
-  const hasStartNumber = params.startNumber != null;
-  const urlNum = hasStartNumber
-    ? validStartNumberOrNull(params.startNumber, cycleLength)
-    : null;
-  if (hasStartNumber && urlNum == null) return false; // 範囲外・非数値 → 切り捨て
-
-  const isoBaseDate = formatAsISODate(cls.baseDate);
-  const num = urlNum ?? loadCalendarPositionFor(isoBaseDate);
-  updateActiveBaseDate(cls.baseDate);
-  selectedBaseDate.value = isoBaseDate;
-  setStartPosition(num ?? undefined);
-  startPosition.value = num ?? undefined;
-  saveCalendarSelection(selectedBaseDate.value, num);
-  return true;
 }
 
 function applyFromCanonical(validBaseDates, cycleLength) {
@@ -461,29 +343,18 @@ function applyFromStorage(validBaseDates, cycleLength) {
   const stored = loadCalendarSelection();
   if (!stored) return false;
 
-  const cls = classifyBaseDate(stored.baseDate, validBaseDates);
-  if (!cls) {
+  const dateObj = isValidBaseDate(stored.baseDate, validBaseDates);
+  if (!dateObj) {
     clearCalendarSelection();
     return false;
   }
 
-  if (cls.kind === "active") {
-    const num = validStartNumberOrNull(stored.startNumber, cycleLength);
-    updateActiveBaseDate(cls.baseDate);
-    selectedBaseDate.value = formatAsISODate(cls.baseDate);
-    setStartPosition(num ?? undefined);
-    startPosition.value = num ?? undefined;
-    return true;
-  }
-
-  // migrate
-  clearCalendarSelection();
   const num = validStartNumberOrNull(stored.startNumber, cycleLength);
-  if (num != null) {
-    const shifted = calculateNewPosition(num, cls.shift, cycleLength);
-    if (Number.isInteger(shifted)) openMigrationModal(shifted);
-  }
-  return false;
+  updateActiveBaseDate(dateObj);
+  selectedBaseDate.value = formatAsISODate(dateObj);
+  setStartPosition(num ?? undefined);
+  startPosition.value = num ?? undefined;
+  return true;
 }
 
 watch(activeBaseDate, (newBaseDate) => {
@@ -499,12 +370,7 @@ watch(computedStartPosition, (newValue) => {
 });
 
 onMounted(async () => {
-  setSuggestedNumberHandler(applySuggestedStartNumber);
   await initialize();
-});
-
-onUnmounted(() => {
-  clearSuggestedNumberHandler();
 });
 </script>
 

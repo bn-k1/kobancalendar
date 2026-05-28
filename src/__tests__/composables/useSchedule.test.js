@@ -10,7 +10,9 @@ import { useHolidayStore } from "@/stores/holiday";
 // 最小限のスケジュールデータ（cycleLength=5）
 const CYCLE = 5;
 const makeScheduleData = (cycle = CYCLE, prefix = "") => ({
-  holiday: Array.from({ length: cycle }, (_, i) => ({ s: `${prefix}休日${i}` })),
+  holiday: Array.from({ length: cycle }, (_, i) => ({
+    s: `${prefix}休日${i}`,
+  })),
   saturday: Array.from({ length: cycle }, (_, i) => ({
     s: `${prefix}土曜${i}`,
     sT: "09:00",
@@ -229,7 +231,9 @@ describe("getScheduleForDate()", () => {
   });
 
   it("shiftIndex を返す", () => {
-    setupStores({ epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }] });
+    setupStores({
+      epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }],
+    });
     const { getScheduleForDate } = useSchedule();
     // 基準日当日 pos=1 → shiftIndex=0
     const r0 = getScheduleForDate(dayjs("2025-11-17"), 1);
@@ -244,7 +248,9 @@ describe("getScheduleForDate()", () => {
 
 describe("calculateScheduleRange()", () => {
   it("日付範囲のスケジュールを配列で返す（endDate は含まない）", () => {
-    setupStores({ epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }] });
+    setupStores({
+      epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }],
+    });
     const { calculateScheduleRange } = useSchedule();
     const result = calculateScheduleRange(
       dayjs("2025-11-17"),
@@ -255,7 +261,9 @@ describe("calculateScheduleRange()", () => {
   });
 
   it("各要素に dateStr が含まれる", () => {
-    setupStores({ epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }] });
+    setupStores({
+      epochs: [{ from: dayjs("2025-11-17"), dataKey: "default" }],
+    });
     const { calculateScheduleRange } = useSchedule();
     const result = calculateScheduleRange(
       dayjs("2025-11-17"),
@@ -321,25 +329,6 @@ describe("世代の解決（today 依存）", () => {
     const { defaultBaseDate, nextBaseDate } = useSchedule();
     expect(defaultBaseDate.value.isSame(dayjs("2026-05-16"), "day")).toBe(true);
     expect(nextBaseDate.value).toBeUndefined();
-  });
-
-  it("getMigrationShift は過去世代の from に対し現世代との日数差を返す", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-05-14T00:00:00+09:00"));
-    setupStores({
-      epochs: [
-        { from: dayjs("2025-10-16"), dataKey: "default" },
-        { from: dayjs("2025-11-16"), dataKey: "default" },
-        { from: dayjs("2026-05-16"), dataKey: "default" },
-      ],
-    });
-    const { getMigrationShift } = useSchedule();
-    // 2025-10-16 → 現世代 2025-11-16 は 31 日
-    expect(getMigrationShift("2025-10-16")).toBe(31);
-    // 現世代・後続世代・未知の日付は null
-    expect(getMigrationShift("2025-11-16")).toBeNull();
-    expect(getMigrationShift("2026-05-16")).toBeNull();
-    expect(getMigrationShift("2025-12-01")).toBeNull();
   });
 
   it("updateActiveBaseDate は from が一致する世代を active にする", () => {

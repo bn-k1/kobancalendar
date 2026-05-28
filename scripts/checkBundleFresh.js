@@ -26,7 +26,10 @@ function stagedFiles() {
   const out = execSync("git diff --cached --name-only --diff-filter=ACMR", {
     encoding: "utf8",
   });
-  return out.split("\n").map((s) => s.trim()).filter(Boolean);
+  return out
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 function main() {
@@ -38,10 +41,9 @@ function main() {
     return 0;
   }
 
-  const isScheduleSource =
-    (p) =>
-      p === "config/config.json" ||
-      (/^data\/.+\.csv$/.test(p) && !p.startsWith("data/menu/"));
+  const isScheduleSource = (p) =>
+    p === "config/config.json" ||
+    (/^data\/.+\.csv$/.test(p) && !p.startsWith("data/menu/"));
   const isMenuSource = (p) => /^data\/menu\/.+\.txt$/.test(p);
 
   const scheduleSourceStaged = staged.some(isScheduleSource);
