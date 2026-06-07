@@ -96,6 +96,38 @@ describe("useUrlParams", () => {
       writeCalendarUrl({ position: 9 });
       expect(window.location.hash).toBe("#/meetup?p=9");
     });
+
+    it("push:true grows history for a changed URL (back button restore)", () => {
+      setLocation("/", "", "#/?p=1");
+      const lengthBefore = window.history.length;
+      const { writeCalendarUrl } = useUrlParams();
+      writeCalendarUrl({ position: 2 }, { push: true });
+      expect(window.location.hash).toBe("#/?p=2");
+      expect(window.history.length).toBe(lengthBefore + 1);
+    });
+
+    it("push:true does not grow history when the URL is unchanged", () => {
+      setLocation("/", "", "#/?p=5");
+      const lengthBefore = window.history.length;
+      const { writeCalendarUrl } = useUrlParams();
+      writeCalendarUrl({ position: 5 }, { push: true });
+      expect(window.location.hash).toBe("#/?p=5");
+      expect(window.history.length).toBe(lengthBefore);
+    });
+  });
+
+  describe("isCalendarRoute", () => {
+    it("is true on the home route", () => {
+      setLocation("/", "", "#/?p=3");
+      const { isCalendarRoute } = useUrlParams();
+      expect(isCalendarRoute()).toBe(true);
+    });
+
+    it("is false on the meetup route", () => {
+      setLocation("/", "", "#/meetup?ps=1");
+      const { isCalendarRoute } = useUrlParams();
+      expect(isCalendarRoute()).toBe(false);
+    });
   });
 
   describe("clearCalendarUrl", () => {

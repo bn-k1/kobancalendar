@@ -21,16 +21,19 @@ function getHashRoute() {
   };
 }
 
-function writeHashQuery(updater) {
+function writeHashQuery(updater, { push = false } = {}) {
   const { path, query } = getHashRoute();
   updater(query);
   const qs = query.toString();
   const newHash = qs ? `#${path}?${qs}` : `#${path}`;
-  window.history.replaceState(
-    {},
-    "",
-    `${window.location.pathname}${window.location.search}${newHash}`,
-  );
+  const url = `${window.location.pathname}${window.location.search}${newHash}`;
+  // push のときだけ、かつ実際に URL が変わるときだけ履歴エントリを積む。
+  // 同値を push すると「戻る」が一度空振りするため差分があるときに限定する。
+  if (push && newHash !== window.location.hash) {
+    window.history.pushState({}, "", url);
+  } else {
+    window.history.replaceState({}, "", url);
+  }
 }
 
 function parseIntOrNull(value) {
@@ -50,7 +53,7 @@ export function useUrlParams() {
     };
   }
 
-  function writeCalendarUrl({ position, version } = {}) {
+  function writeCalendarUrl({ position, version } = {}, { push = false } = {}) {
     writeHashQuery((q) => {
       if (typeof position === "number" && !isNaN(position)) {
         q.set("p", String(position));
@@ -62,7 +65,13 @@ export function useUrlParams() {
       } else {
         q.delete("v");
       }
-    });
+    }, { push });
+  }
+
+  // 現在の hash route が Home（カレンダー）かどうか。popstate ハンドラが
+  // 自分の担当ルートのときだけ反応するためのガード。
+  function isCalendarRoute() {
+    return getHashRoute().path === HOME_PATH;
   }
 
   function clearCalendarUrl() {
@@ -120,6 +129,7 @@ export function useUrlParams() {
     readCanonicalCalendar,
     writeCalendarUrl,
     clearCalendarUrl,
+    isCalendarRoute,
     readCanonicalMeetup,
     writeMeetupUrl,
     clearMeetupUrl,

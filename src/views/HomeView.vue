@@ -81,7 +81,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  watch,
+  defineAsyncComponent,
+} from "vue";
 
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
@@ -119,8 +126,12 @@ import scheduleData from "@data/scheduleData.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
 
-const { readCanonicalCalendar, writeCalendarUrl, clearCalendarUrl } =
-  useUrlParams();
+const {
+  readCanonicalCalendar,
+  writeCalendarUrl,
+  clearCalendarUrl,
+  isCalendarRoute,
+} = useUrlParams();
 const {
   saveCalendarSelection,
   loadCalendarSelection,
@@ -196,16 +207,19 @@ function isOldVersion() {
   return selectedBaseDate.value === formatAsISODate(defaultBaseDate.value);
 }
 
-function syncCalendarUrl() {
+function syncCalendarUrl({ push = false } = {}) {
   if (!selectedBaseDate.value) {
     clearCalendarUrl();
     return;
   }
   const hasPosition = Number.isInteger(startPosition.value);
-  writeCalendarUrl({
-    position: hasPosition ? startPosition.value : null,
-    version: hasPosition && isOldVersion() ? "old" : null,
-  });
+  writeCalendarUrl(
+    {
+      position: hasPosition ? startPosition.value : null,
+      version: hasPosition && isOldVersion() ? "old" : null,
+    },
+    { push },
+  );
 }
 
 function switchBaseDate(dateObj, dateStr) {
@@ -217,7 +231,8 @@ function switchBaseDate(dateObj, dateStr) {
   setStartPosition(num);
   saveCalendarSelection(dateStr, num ?? null);
   navigateCalendarTo(dateObj);
-  syncCalendarUrl();
+  // 版（新/旧）の切替もユーザー操作なので履歴に積み、「戻る」で復帰できるようにする。
+  syncCalendarUrl({ push: true });
 }
 
 function switchToNextBaseDate() {
@@ -236,7 +251,8 @@ function handlePositionChange(newPosition) {
 
   if (selectedBaseDate.value) {
     saveCalendarSelection(selectedBaseDate.value, positionValue);
-    syncCalendarUrl();
+    // 他人のコマ位置を覗いたとき履歴に積み、「戻る」で自分の表示へ復帰できるようにする。
+    syncCalendarUrl({ push: true });
   }
 }
 
@@ -308,7 +324,7 @@ async function initialize() {
   }
 }
 
-function applyFromCanonical(validBaseDates, cycleLength) {
+function applyFromCanonical(validBaseDates, cycleLength, { navigate = false } = {}) {
   const { position, version } = readCanonicalCalendar();
   if (position == null && version == null) return false;
 
@@ -335,6 +351,10 @@ function applyFromCanonical(validBaseDates, cycleLength) {
   startPosition.value = num ?? undefined;
   if (Number.isInteger(num)) {
     saveCalendarSelection(isoBaseDate, num);
+  }
+  // popstate（戻る/進む）からの再適用ではカレンダーの表示位置も移動させる。
+  if (navigate) {
+    navigateCalendarTo(targetBaseDate);
   }
   return true;
 }
@@ -369,8 +389,28 @@ watch(computedStartPosition, (newValue) => {
   }
 });
 
+// 「戻る」「進む」でURLが変わったとき、canonical URL を読み直してカレンダーへ反映する。
+// URL writer は能動的な操作のみ pushState で履歴を積むので、ここで対の reader を用意する。
+function handlePopState() {
+  if (!isCalendarRoute()) return;
+  const applied = applyFromCanonical([], rotationCycleLength.value, {
+    navigate: true,
+  });
+  if (!applied) {
+    // p も v も無いエントリ（コマ位置未選択の既定状態）へ戻った場合。
+    if (applyDefaultBaseDate() && defaultBaseDate.value) {
+      navigateCalendarTo(defaultBaseDate.value);
+    }
+  }
+}
+
 onMounted(async () => {
   await initialize();
+  window.addEventListener("popstate", handlePopState);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("popstate", handlePopState);
 });
 </script>
 
