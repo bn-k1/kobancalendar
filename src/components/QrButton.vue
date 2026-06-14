@@ -19,26 +19,32 @@
       <span class="close-modal" @click="showModal = false">&times;</span>
       <h3>{{ url }}</h3>
       <div class="qr-container">
-        <img src="/data/qr.png" alt="QRコード" class="qr-image" />
+        <img :src="qrDataUrl" alt="QRコード" class="qr-image" />
       </div>
     </div>
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
-import config from "@config/config.json";
+import { ref, watch } from "vue";
+import QRCode from "qrcode";
 import QrIcon from "@/components/Icons/QrIcon.vue";
 
 const showModal = ref(false);
-const url = ref("");
+// The app already knows its own deployed URL, so derive the shareable link and
+// QR image from window.location instead of a hard-coded config value. This keeps
+// the QR correct for any fork/deployment with zero configuration.
+const url = ref(window.location.href);
+const qrDataUrl = ref("");
 
-onMounted(() => {
-  // Get URL from config file
-  if (config && config.url) {
-    url.value = config.url;
-  } else {
-    url.value = "URL not found in config";
-  }
+// Render the QR lazily the first time the modal opens.
+watch(showModal, async (open) => {
+  if (!open || qrDataUrl.value) return;
+  url.value = window.location.href;
+  qrDataUrl.value = await QRCode.toDataURL(url.value, {
+    errorCorrectionLevel: "H",
+    width: 500,
+    margin: 4,
+  });
 });
 
 // Close modal when clicking outside

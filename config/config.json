@@ -1,7 +1,5 @@
 {
-  "schedules": [
-    { "from": "2026-05-16", "data": "default" }
-  ],
+  "schedules": [{ "from": "2026-05-16", "data": "default" }],
   "custom_holidays": [
     "08-12",
     "08-13",
@@ -11,6 +9,5 @@
     "12-31",
     "01-02",
     "01-03"
-  ],
-  "url": "https://bn-k1.github.io/kobancalendar/"
+  ]
 }

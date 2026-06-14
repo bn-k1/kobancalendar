@@ -3,21 +3,23 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
-// gh-pages builds are served from a repo subpath. Derive that subpath from
-// config.json's `url` (the same value the QR code uses) so a forking depot only
-// edits config — never this file. Non-gh-pages builds deploy at root.
+// gh-pages builds are served from a repo subpath. CI passes that subpath via the
+// BASE_PATH env var (derived from the repo name) so a forking office needs zero
+// config. Falls back to an optional config.json `url` (custom domains / local
+// gh-pages builds), then to root. Non-gh-pages builds deploy at root.
 function resolveBasePath(isGHPages) {
   if (!isGHPages) return "/";
-  const configPath = fileURLToPath(
-    new URL("./config/config.json", import.meta.url),
-  );
-  const { url } = JSON.parse(readFileSync(configPath, "utf8"));
-  if (!url) {
-    throw new Error(
-      "gh-pages build needs config.json `url` to derive the base path",
+  if (process.env.BASE_PATH) return process.env.BASE_PATH;
+  try {
+    const configPath = fileURLToPath(
+      new URL("./config/config.json", import.meta.url),
     );
+    const { url } = JSON.parse(readFileSync(configPath, "utf8"));
+    if (url) return new URL(url).pathname;
+  } catch {
+    // config.url is optional — fall through to root.
   }
-  return new URL(url).pathname;
+  return "/";
 }
 
 export default defineConfig(({ mode }) => {

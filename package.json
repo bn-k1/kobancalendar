@@ -4,16 +4,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npm run build-prep",
     "dev": "vite",
     "build": "npm run build-prep && vite build",
     "build-gh-pages": "npm run build-prep && vite build --mode gh-pages",
     "preview": "vite preview",
-    "build-prep": "npm run convert-csv && npm run convert-menu && npm run create-qr",
+    "build-prep": "npm run convert-csv && npm run convert-menu",
     "release": "npm run build-prep && npm run build && npm run build-gh-pages",
     "convert-csv": "node scripts/convertCsv.js",
     "convert-menu": "node scripts/convertMenu.js",
-    "create-qr": "node scripts/createQr.js",
-    "check-bundle": "node scripts/checkBundleFresh.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -28,6 +27,7 @@
     "dayjs": "^1.11.10",
     "japanese-holidays": "^1.0.10",
     "pinia": "^2.1.7",
+    "qrcode": "^1.5.4",
     "vue": "^3.3.7",
     "vue-router": "^4.2.5"
   },
@@ -43,7 +43,6 @@
     "happy-dom": "^20.8.9",
     "papaparse": "^5.4.1",
     "prettier": "^3.5.3",
-    "qrcode": "^1.5.4",
     "vite": "^6.3.2",
     "vitest": "^4.1.2"
   }
