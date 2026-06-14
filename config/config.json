@@ -1,14 +1,5 @@
 {
-  "schedules": [
-    {
-      "from": "2026-05-16",
-      "data": "default"
-    },
-    {
-      "from": "2099-01-01",
-      "data": "rev20990101"
-    }
-  ],
+  "schedules": [{ "from": "2026-05-16", "data": "default" }],
   "custom_holidays": [
     "08-12",
     "08-13",
