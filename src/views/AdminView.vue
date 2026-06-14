@@ -101,6 +101,8 @@
           </li>
         </ul>
       </section>
+
+      <ScheduleImporter v-if="connected" />
     </div>
   </UnifiedPageLayout>
 </template>
@@ -108,12 +110,23 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
+import ScheduleImporter from "@/components/ScheduleImporter.vue";
 import { useAdminToken } from "@/composables/useAdminToken";
 import { useGitHubApi } from "@/composables/useGitHubApi";
 
-const { readToken, saveToken, clearToken, readRepoOverride, saveRepoOverride } =
-  useAdminToken();
+const {
+  readToken,
+  saveToken,
+  clearToken,
+  hasToken,
+  readRepoOverride,
+  saveRepoOverride,
+} = useAdminToken();
 const { resolveRepo, verifyToken } = useGitHubApi();
+
+// Show the importer once a token is stored and a repo is resolvable. Becomes
+// true after a successful connection test, or on mount if both already exist.
+const connected = ref(false);
 
 const tokenInput = ref("");
 const repoInput = ref("");
@@ -143,6 +156,7 @@ onMounted(() => {
     repoInput.value = `${override.owner}/${override.repo}`;
     showRepoOverride.value = true;
   }
+  connected.value = hasToken() && !!resolveRepo();
 });
 
 async function testConnection() {
@@ -158,6 +172,7 @@ async function testConnection() {
     // Only persist the token once it actually authenticated.
     saveToken(tokenInput.value);
     result.value = info;
+    connected.value = info.canPush;
     status.value = info.canPush
       ? { type: "ok", message: "接続成功。トークンを保存しました。" }
       : {
@@ -179,6 +194,7 @@ function clearStored() {
   clearToken();
   tokenInput.value = "";
   result.value = null;
+  connected.value = false;
   status.value = { type: "ok", message: "保存済みトークンを削除しました。" };
 }
 </script>

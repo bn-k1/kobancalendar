@@ -138,7 +138,78 @@ export function useGitHubApi() {
     return data.commit?.sha;
   }
 
-  return { resolveRepo, verifyToken, getFile, putFile };
+  async function getDefaultBranch(token) {
+    const repo = resolveRepo();
+    if (!repo) throw new Error("リポジトリを特定できません");
+    const info = await request(`/repos/${repo.owner}/${repo.repo}`, { token });
+    return info.default_branch;
+  }
+
+  // Atomically commit multiple files in a single commit via the Git Data API.
+  // files: [{ path, content }] (content is UTF-8 text). Returns new commit sha.
+  // Used by the importer so the CSV trio + config.json land together — a partial
+  // commit (CSVs without the config epoch, or vice versa) would deploy broken.
+  async function commitFiles({ message, files, branch, token } = {}) {
+    const repo = resolveRepo();
+    if (!repo) throw new Error("リポジトリを特定できません");
+    if (!files || files.length === 0)
+      throw new Error("コミットするファイルがありません");
+    const base = `/repos/${repo.owner}/${repo.repo}`;
+    const targetBranch = branch || (await getDefaultBranch(token));
+    const refPath = `${base}/git/refs/heads/${encodeURIComponent(targetBranch)}`;
+
+    // 1. latest commit on the branch
+    const ref = await request(
+      `${base}/git/ref/heads/${encodeURIComponent(targetBranch)}`,
+      { token },
+    );
+    const latestCommitSha = ref.object.sha;
+    // 2. its tree
+    const latestCommit = await request(
+      `${base}/git/commits/${latestCommitSha}`,
+      { token },
+    );
+    // 3. new tree layered on top, with inline file contents
+    const newTree = await request(`${base}/git/trees`, {
+      method: "POST",
+      body: {
+        base_tree: latestCommit.tree.sha,
+        tree: files.map((f) => ({
+          path: f.path,
+          mode: "100644",
+          type: "blob",
+          content: f.content,
+        })),
+      },
+      token,
+    });
+    // 4. new commit
+    const commit = await request(`${base}/git/commits`, {
+      method: "POST",
+      body: {
+        message: message || "Update via admin",
+        tree: newTree.sha,
+        parents: [latestCommitSha],
+      },
+      token,
+    });
+    // 5. advance the branch ref
+    await request(refPath, {
+      method: "PATCH",
+      body: { sha: commit.sha },
+      token,
+    });
+    return commit.sha;
+  }
+
+  return {
+    resolveRepo,
+    verifyToken,
+    getFile,
+    putFile,
+    getDefaultBranch,
+    commitFiles,
+  };
 }
 
 // Encode each path segment but keep the slashes that separate them.

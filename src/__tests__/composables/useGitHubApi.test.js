@@ -159,3 +159,81 @@ describe("putFile()", () => {
     expect(body.sha).toBe("old");
   });
 });
+
+// ---------- commitFiles (Trees API) ----------
+
+describe("commitFiles()", () => {
+  it("ref→commit→tree→commit→ref の順で1コミットにまとめる", async () => {
+    const fetchMock = vi
+      .fn()
+      // 1. get ref
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ object: { sha: "base-commit" } }),
+      })
+      // 2. get base commit
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ tree: { sha: "base-tree" } }),
+      })
+      // 3. create tree
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve({ sha: "new-tree" }),
+      })
+      // 4. create commit
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve({ sha: "new-commit" }),
+      })
+      // 5. patch ref
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({}),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { commitFiles } = useGitHubApi();
+    const sha = await commitFiles({
+      message: "import",
+      branch: "main",
+      files: [
+        { path: "data/rev/weekday.csv", content: "公休,,\n" },
+        { path: "config/config.json", content: "{}\n" },
+      ],
+    });
+
+    expect(sha).toBe("new-commit");
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+
+    // tree call carries both files with inline content
+    const treeBody = JSON.parse(fetchMock.mock.calls[2][1].body);
+    expect(treeBody.base_tree).toBe("base-tree");
+    expect(treeBody.tree).toHaveLength(2);
+    expect(treeBody.tree[0]).toMatchObject({
+      path: "data/rev/weekday.csv",
+      mode: "100644",
+      type: "blob",
+    });
+
+    // commit call references the new tree and parent
+    const commitBody = JSON.parse(fetchMock.mock.calls[3][1].body);
+    expect(commitBody.tree).toBe("new-tree");
+    expect(commitBody.parents).toEqual(["base-commit"]);
+
+    // ref patch advances to the new commit
+    const refCall = fetchMock.mock.calls[4];
+    expect(refCall[1].method).toBe("PATCH");
+    expect(JSON.parse(refCall[1].body).sha).toBe("new-commit");
+  });
+
+  it("ファイルが空なら throw", async () => {
+    const { commitFiles } = useGitHubApi();
+    await expect(commitFiles({ files: [] })).rejects.toThrow(/ファイル/);
+  });
+});
