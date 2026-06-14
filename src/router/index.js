@@ -20,6 +20,15 @@ const routes = [
       title: "NominiIkundar🍻",
     },
   },
+  {
+    path: "/admin",
+    name: "admin",
+    // Admin-only; lazy-loaded and not linked from the user-facing UI.
+    component: () => import("../views/AdminView.vue"),
+    meta: {
+      title: "KobanCalendar 管理画面🔧",
+    },
+  },
 ];
 
 const router = createRouter({
