@@ -66,11 +66,11 @@
         </label>
       </div>
 
-      <!-- validation -->
-      <ul v-if="errors.length" class="imp-error-list">
+      <!-- validation (only once the admin has started entering data) -->
+      <ul v-if="hasInput && errors.length" class="imp-error-list">
         <li v-for="(e, i) in errors" :key="i">{{ e }}</li>
       </ul>
-      <ul v-if="warnings.length" class="imp-warn-list">
+      <ul v-if="hasInput && warnings.length" class="imp-warn-list">
         <li v-for="(w, i) in warnings" :key="i">⚠ {{ w }}</li>
       </ul>
 
@@ -183,6 +183,18 @@ const errors = computed(() => [
 ]);
 const warnings = computed(() => epochResult.value.warnings);
 
+// Whether the admin has started entering a new import. Used to suppress the
+// "empty file" / "from invalid" validation noise on a pristine (or just-reset)
+// form — those errors are only meaningful once they've begun.
+const hasInput = computed(
+  () =>
+    !!texts.weekday ||
+    !!texts.saturday ||
+    !!texts.holiday ||
+    !!fromStr.value ||
+    !!folder.value,
+);
+
 const canCommit = computed(
   () =>
     trioResult.value.ok &&
@@ -223,6 +235,20 @@ function rowCount(key) {
 watch(fromStr, (val) => {
   if (!folderTouched.value) folder.value = suggestFolderName(val);
 });
+
+// Once the admin starts a fresh import, dismiss the previous success banner.
+watch(hasInput, (now, prev) => {
+  if (now && !prev) commitResult.value = null;
+});
+
+function resetForm() {
+  texts.weekday = "";
+  texts.saturday = "";
+  texts.holiday = "";
+  fromStr.value = "";
+  folder.value = "";
+  folderTouched.value = false;
+}
 
 async function onDrop(key, event) {
   dragOver.value = "";
@@ -278,9 +304,13 @@ async function commit() {
       message: `data: ${folder.value} 世代を追加 (from ${fromStr.value})`,
       files,
     });
-    commitResult.value = { sha };
-    // Reflect the new epoch locally so a second import validates against it.
+    // Reflect the new epoch locally so a second import validates against it,
+    // then clear the form so the just-committed data doesn't re-trigger a
+    // "duplicate from" error. resetForm() runs before setting commitResult so
+    // the hasInput watcher (which clears the banner) sees an empty form.
     config.value = cfg;
+    resetForm();
+    commitResult.value = { sha };
   } catch (err) {
     commitError.value = err.message;
   } finally {
