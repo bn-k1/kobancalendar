@@ -54,18 +54,21 @@ export function useUrlParams() {
   }
 
   function writeCalendarUrl({ position, version } = {}, { push = false } = {}) {
-    writeHashQuery((q) => {
-      if (typeof position === "number" && !isNaN(position)) {
-        q.set("p", String(position));
-      } else {
-        q.delete("p");
-      }
-      if (version === "old") {
-        q.set("v", "old");
-      } else {
-        q.delete("v");
-      }
-    }, { push });
+    writeHashQuery(
+      (q) => {
+        if (typeof position === "number" && !isNaN(position)) {
+          q.set("p", String(position));
+        } else {
+          q.delete("p");
+        }
+        if (version === "old") {
+          q.set("v", "old");
+        } else {
+          q.delete("v");
+        }
+      },
+      { push },
+    );
   }
 
   // 現在の hash route が Home（カレンダー）かどうか。popstate ハンドラが

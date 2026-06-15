@@ -324,7 +324,11 @@ async function initialize() {
   }
 }
 
-function applyFromCanonical(validBaseDates, cycleLength, { navigate = false } = {}) {
+function applyFromCanonical(
+  validBaseDates,
+  cycleLength,
+  { navigate = false } = {},
+) {
   const { position, version } = readCanonicalCalendar();
   if (position == null && version == null) return false;
 
