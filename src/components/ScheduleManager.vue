@@ -4,6 +4,11 @@
   (content fix), and delete — plus clean up orphan data/ folders. Owns the
   config.json fetch and all GitHub IO; ScheduleEditor is the shared trio UI.
 
+  A generation may also carry in-epoch "table swaps" (`data` as an array): the
+  anchor/rotation stays fixed and only the CSV table changes on a date. These
+  show as indented sub-rows with a "＋ 途中で表を差し替え" affordance, and are
+  added/edited/deleted independently of the generation itself.
+
   Safety: the *current* generation can be edited but not deleted (deleting it
   would blank today's calendar). To retire the current table, add a newer
   generation that supersedes it, then prune the old one. Deleting a generation
@@ -45,45 +50,110 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in rows" :key="row.index">
-            <td>{{ row.from }}</td>
-            <td>
-              {{ row.effectiveData
-              }}<span v-if="row.inherited" class="mgr-inherit">（継承）</span>
-            </td>
-            <td>
-              <span :class="['mgr-badge', `badge-${row.badge}`]">{{
-                row.label
-              }}</span>
-            </td>
-            <td class="mgr-row-actions">
-              <button
-                type="button"
-                class="mgr-link"
-                :disabled="busy"
-                @click="startEdit(row)"
-              >
-                編集
-              </button>
-              <button
-                type="button"
-                class="mgr-link mgr-danger"
-                :disabled="busy || !row.canDelete"
-                :title="row.canDelete ? '' : '現行世代や継承元は削除できません'"
-                @click="deleteGeneration(row)"
-              >
-                削除
-              </button>
-            </td>
-          </tr>
+          <template v-for="gen in generations" :key="gen.index">
+            <!-- generation base row -->
+            <tr>
+              <td>{{ gen.from }}</td>
+              <td>
+                {{ gen.baseFolder
+                }}<span v-if="gen.inherited" class="mgr-inherit">（継承）</span>
+              </td>
+              <td>
+                <span :class="['mgr-badge', `badge-${gen.badge}`]">{{
+                  gen.label
+                }}</span>
+              </td>
+              <td class="mgr-row-actions">
+                <button
+                  type="button"
+                  class="mgr-link"
+                  :disabled="busy"
+                  @click="
+                    startEdit({
+                      index: gen.index,
+                      from: gen.from,
+                      folder: gen.baseFolder,
+                    })
+                  "
+                >
+                  編集
+                </button>
+                <button
+                  type="button"
+                  class="mgr-link mgr-danger"
+                  :disabled="busy || !gen.canDelete"
+                  :title="
+                    gen.canDelete ? '' : '現行世代や継承元は削除できません'
+                  "
+                  @click="deleteGeneration(gen)"
+                >
+                  削除
+                </button>
+              </td>
+            </tr>
+            <!-- in-epoch table-swap segments -->
+            <tr
+              v-for="seg in gen.swapSegments"
+              :key="`${gen.index}-${seg.segIndex}`"
+              class="mgr-seg-row"
+            >
+              <td class="mgr-seg-from">└ {{ seg.from }}〜</td>
+              <td>
+                {{ seg.folder
+                }}<span class="mgr-badge badge-swap">表差し替え</span>
+              </td>
+              <td></td>
+              <td class="mgr-row-actions">
+                <button
+                  type="button"
+                  class="mgr-link"
+                  :disabled="busy"
+                  @click="
+                    startEdit({
+                      index: gen.index,
+                      from: seg.from,
+                      folder: seg.folder,
+                      isSegment: true,
+                    })
+                  "
+                >
+                  編集
+                </button>
+                <button
+                  type="button"
+                  class="mgr-link mgr-danger"
+                  :disabled="busy"
+                  @click="deleteSegment(gen, seg)"
+                >
+                  削除
+                </button>
+              </td>
+            </tr>
+            <!-- add an in-epoch swap to this generation -->
+            <tr v-if="gen.canAddSegment" class="mgr-seg-add-row">
+              <td colspan="4">
+                <button
+                  type="button"
+                  class="mgr-link mgr-seg-add"
+                  :disabled="busy"
+                  @click="openAddSegment(gen)"
+                >
+                  ＋ 途中で表を差し替え
+                </button>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
 
       <!-- edit panel -->
       <div v-if="editing" class="mgr-panel">
-        <h3>世代を編集: {{ editing.from }} → {{ editing.folder }}</h3>
+        <h3>
+          {{ editing.isSegment ? "差し替えを編集" : "世代を編集" }}:
+          {{ editing.from }} → {{ editing.folder }}
+        </h3>
         <ScheduleEditor
-          :key="`edit-${editing.index}`"
+          :key="`edit-${editing.index}-${editing.from}`"
           mode="edit"
           :busy="busy"
           :initial-from="editing.from"
@@ -92,6 +162,35 @@
           @submit="onEditSubmit"
           @cancel="editing = null"
         />
+      </div>
+
+      <!-- add in-epoch swap panel -->
+      <div v-else-if="addingSegment" class="mgr-panel">
+        <h3>途中で表を差し替え（{{ addingSegment.genFrom }} 世代）</h3>
+        <p class="mgr-muted">
+          回転・コマ位置はそのまま、指定日から交番表（CSV）だけが切り替わります。コマ数は世代と同じ
+          {{ addingSegment.requiredCycleLength }} 行にしてください。
+        </p>
+        <ScheduleEditor
+          :key="`seg-${addingSegment.genIndex}-${addKey}`"
+          mode="add-segment"
+          :busy="busy"
+          :window-start="addingSegment.genFrom"
+          :window-end="addingSegment.windowEnd"
+          :existing-segment-froms="addingSegment.existingSegmentFroms"
+          :existing-folders="existingFolders"
+          :required-cycle-length="addingSegment.requiredCycleLength"
+          @submit="onAddSegmentSubmit"
+          @cancel="addingSegment = null"
+        />
+        <button
+          type="button"
+          class="mgr-link"
+          :disabled="busy"
+          @click="addingSegment = null"
+        >
+          閉じる
+        </button>
       </div>
 
       <!-- add panel -->
@@ -171,36 +270,69 @@ const busy = ref(false);
 const opStatus = ref({ type: "", message: "", sha: "" });
 
 const editing = ref(null);
+const addingSegment = ref(null);
 const showAdd = ref(false);
 const addKey = ref(0);
 
 const epochs = computed(() => config.value?.schedules || []);
 
-// Folders referenced by a given schedules array, honoring data inheritance.
+// Folders referenced by a given schedules array, honoring data inheritance and
+// the array (in-epoch swap) form where one entry references several folders.
 function referencedFolders(schedules) {
   let carry = null;
   const set = new Set();
   for (const e of schedules) {
-    const eff = e.data || carry;
-    carry = eff;
-    if (eff) set.add(eff);
+    if (Array.isArray(e.data)) {
+      for (const seg of e.data) {
+        if (seg?.data) {
+          set.add(seg.data);
+          carry = seg.data;
+        }
+      }
+    } else {
+      const eff = e.data || carry;
+      carry = eff;
+      if (eff) set.add(eff);
+    }
   }
   return set;
 }
 
-// Normalized rows: effective data, current/past/future label, delete guard.
-const rows = computed(() => {
+// Expand a schedules entry into its display segments. The base segment anchors
+// at the generation's `from`; array form adds later in-epoch swap segments.
+function entrySegments(entry, baseFolder) {
+  if (Array.isArray(entry.data)) {
+    return entry.data.map((seg, si) => ({
+      from: si === 0 ? entry.from : seg.from,
+      folder: seg.data,
+      segIndex: si,
+    }));
+  }
+  return [{ from: entry.from, folder: baseFolder, segIndex: 0 }];
+}
+
+// Normalized generations: base folder (resolving inheritance), in-epoch swap
+// segments, current/past/future label, and add/delete guards.
+const generations = computed(() => {
   const today0 = today();
   let carry = null;
   const items = epochs.value.map((e, i) => {
-    const eff = e.data || carry;
-    carry = eff;
+    let baseFolder;
+    if (Array.isArray(e.data)) {
+      baseFolder = e.data[0]?.data;
+      carry = e.data[e.data.length - 1]?.data ?? carry;
+    } else {
+      baseFolder = e.data || carry;
+      carry = baseFolder;
+    }
+    const segments = entrySegments(e, baseFolder);
     return {
-      from: e.from,
-      data: e.data,
-      effectiveData: eff,
-      inherited: !e.data,
       index: i,
+      from: e.from,
+      baseFolder,
+      inherited: !Array.isArray(e.data) && !e.data,
+      segments,
+      swapSegments: segments.filter((s) => s.segIndex >= 1),
     };
   });
   let currentIndex = -1;
@@ -219,9 +351,13 @@ const rows = computed(() => {
       label = "未来（新版）";
       badge = "future";
     }
-    const nextInherits = items[i + 1] && !items[i + 1].data;
+    const next = epochs.value[i + 1];
+    const nextInherits = next && !Array.isArray(next.data) && !next.data;
     const canDelete = i !== currentIndex && !nextInherits;
-    return { ...it, label, badge, canDelete };
+    // In-epoch swaps only make sense for the current/future generations.
+    const canAddSegment = i >= currentIndex;
+    const windowEnd = next?.from || "";
+    return { ...it, label, badge, canDelete, canAddSegment, windowEnd };
   });
 });
 
@@ -303,20 +439,23 @@ async function onAddSubmit({ fromStr, folder, trio }) {
   }
 }
 
-async function startEdit(row) {
+// Edit the CSV content of a generation's base folder or one of its swap
+// segments. Both just need the target folder; content-only (from/folder locked).
+async function startEdit({ index, from, folder, isSegment = false }) {
   busy.value = true;
   opStatus.value = { type: "", message: "", sha: "" };
   try {
-    const base = `data/${row.effectiveData}`;
+    const base = `data/${folder}`;
     const [w, s, h] = await Promise.all([
       getFile(`${base}/weekday.csv`),
       getFile(`${base}/saturday.csv`),
       getFile(`${base}/holiday.csv`),
     ]);
     editing.value = {
-      index: row.index,
-      from: row.from,
-      folder: row.effectiveData,
+      index,
+      from,
+      folder,
+      isSegment,
       texts: {
         weekday: w?.content || "",
         saturday: s?.content || "",
@@ -324,6 +463,119 @@ async function startEdit(row) {
       },
     };
     showAdd.value = false;
+    addingSegment.value = null;
+  } catch (err) {
+    fail(err);
+  } finally {
+    busy.value = false;
+  }
+}
+
+// Count non-blank CSV rows = コマ数 (cycle length), matching convertCsv.js.
+function countCsvRows(text) {
+  return (text || "").split(/\r?\n/).filter((l) => l.trim() !== "").length;
+}
+
+// Open the "in-epoch table swap" editor for a generation. Fetches the base
+// folder's コマ数 so the new CSV can be validated against it client-side.
+async function openAddSegment(gen) {
+  busy.value = true;
+  opStatus.value = { type: "", message: "", sha: "" };
+  try {
+    const h = await getFile(`data/${gen.baseFolder}/holiday.csv`);
+    addingSegment.value = {
+      genIndex: gen.index,
+      genFrom: gen.from,
+      baseFolder: gen.baseFolder,
+      windowEnd: gen.windowEnd,
+      existingSegmentFroms: gen.segments.map((s) => s.from),
+      requiredCycleLength: h ? countCsvRows(h.content) : 0,
+    };
+    editing.value = null;
+    showAdd.value = false;
+  } catch (err) {
+    fail(err);
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function onAddSegmentSubmit({ fromStr, folder, trio }) {
+  const ctx = addingSegment.value;
+  if (!ctx) return;
+  busy.value = true;
+  opStatus.value = { type: "", message: "", sha: "" };
+  try {
+    const sha = await commitConfig({
+      build: (cfg) => {
+        const list = cfg.schedules || [];
+        const e = list[ctx.genIndex];
+        // Materialize the generation into segment-array form, then append.
+        const arr = Array.isArray(e.data)
+          ? e.data.map((seg) => ({ ...seg }))
+          : [{ data: ctx.baseFolder }];
+        arr.push({ from: fromStr, data: folder });
+        e.data = arr;
+        cfg.schedules = list;
+        return {
+          config: cfg,
+          message: `data: ${ctx.genFrom} 世代に ${fromStr}〜 ${folder} の表差し替えを追加`,
+          extraFiles: [
+            csvFile(folder, "weekday", trio.weekday),
+            csvFile(folder, "saturday", trio.saturday),
+            csvFile(folder, "holiday", trio.holiday),
+          ],
+        };
+      },
+    });
+    addingSegment.value = null;
+    addKey.value += 1;
+    await afterCommit(
+      sha,
+      `${ctx.genFrom} 世代に ${fromStr}〜 表差し替えを追加しました`,
+    );
+  } catch (err) {
+    fail(err);
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function deleteSegment(gen, seg) {
+  if (
+    !window.confirm(
+      `差し替え「${seg.from}〜 ${seg.folder}」を削除します。よろしいですか？`,
+    )
+  ) {
+    return;
+  }
+  busy.value = true;
+  opStatus.value = { type: "", message: "", sha: "" };
+  try {
+    const sha = await commitConfig({
+      build: async (cfg) => {
+        const list = cfg.schedules || [];
+        const e = list[gen.index];
+        const extraFiles = [];
+        if (Array.isArray(e.data)) {
+          const arr = e.data.filter((_, i) => i !== seg.segIndex);
+          // Collapse back to a plain string when only the base segment remains.
+          e.data = arr.length === 1 ? arr[0].data : arr;
+          if (seg.folder && !referencedFolders(list).has(seg.folder)) {
+            const entries = await listDir(`data/${seg.folder}`);
+            for (const x of entries.filter((x) => x.type === "file")) {
+              extraFiles.push({ path: x.path, delete: true });
+            }
+          }
+        }
+        return {
+          config: cfg,
+          message: `data: ${gen.from} 世代の差し替え（${seg.from}〜 ${seg.folder}）を削除`,
+          extraFiles,
+        };
+      },
+    });
+    await afterCommit(sha, `差し替え ${seg.from}〜 を削除しました`);
   } catch (err) {
     fail(err);
   } finally {
@@ -355,11 +607,11 @@ async function onEditSubmit({ trio }) {
   }
 }
 
-async function deleteGeneration(row) {
-  if (!row.canDelete) return;
+async function deleteGeneration(gen) {
+  if (!gen.canDelete) return;
   if (
     !window.confirm(
-      `世代「${row.from} → ${row.effectiveData}」を削除します。よろしいですか？`,
+      `世代「${gen.from} → ${gen.baseFolder}」を削除します。よろしいですか？`,
     )
   ) {
     return;
@@ -372,24 +624,30 @@ async function deleteGeneration(row) {
         // Identify by `from` (unique), not index — the fresh config may differ
         // from what's displayed if another section committed in the meantime.
         cfg.schedules = (cfg.schedules || []).filter(
-          (e) => e.from !== row.from,
+          (e) => e.from !== gen.from,
         );
         const extraFiles = [];
-        // If this epoch owned its folder and nothing else references it, delete it.
-        if (row.data && !referencedFolders(cfg.schedules).has(row.data)) {
-          const entries = await listDir(`data/${row.data}`);
-          for (const e of entries.filter((x) => x.type === "file")) {
-            extraFiles.push({ path: e.path, delete: true });
+        // Delete each folder this generation owned (base + swap segments) that
+        // is no longer referenced after the removal.
+        const stillRef = referencedFolders(cfg.schedules);
+        const ownFolders = [
+          ...new Set(gen.segments.map((s) => s.folder).filter(Boolean)),
+        ];
+        for (const folder of ownFolders) {
+          if (stillRef.has(folder)) continue;
+          const entries = await listDir(`data/${folder}`);
+          for (const x of entries.filter((e) => e.type === "file")) {
+            extraFiles.push({ path: x.path, delete: true });
           }
         }
         return {
           config: cfg,
-          message: `data: ${row.from} → ${row.effectiveData} 世代を削除`,
+          message: `data: ${gen.from} → ${gen.baseFolder} 世代を削除`,
           extraFiles,
         };
       },
     });
-    await afterCommit(sha, `世代 ${row.from} を削除しました`);
+    await afterCommit(sha, `世代 ${gen.from} を削除しました`);
   } catch (err) {
     fail(err);
   } finally {
@@ -488,6 +746,35 @@ async function deleteOrphan(name) {
 .badge-future {
   background: #dbeafe;
   color: #1e40af;
+}
+
+.badge-swap {
+  background: #fef3c7;
+  color: #92400e;
+  margin-left: 0.4rem;
+}
+
+/* In-epoch table-swap segment rows, indented under their generation. */
+.mgr-seg-row td {
+  border-top: none;
+  background: rgba(127, 127, 127, 0.04);
+}
+
+.mgr-seg-from {
+  padding-left: 1.25rem;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.mgr-seg-add-row td {
+  border-top: none;
+  padding-top: 0.1rem;
+  padding-bottom: 0.5rem;
+}
+
+.mgr-seg-add {
+  font-size: 0.85em;
+  padding-left: 1.25rem;
 }
 
 .mgr-row-actions {

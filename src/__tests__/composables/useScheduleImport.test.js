@@ -8,6 +8,7 @@ import {
   serializeCsv,
   suggestFolderName,
   validateEpochMeta,
+  validateSegmentMeta,
 } from "@/composables/useScheduleImport";
 
 // ---------- parseCsvRows ----------
@@ -193,5 +194,85 @@ describe("validateEpochMeta()", () => {
       existingFroms: [],
     });
     expect(r.warnings.some((w) => /過去/.test(w))).toBe(true);
+  });
+});
+
+// ---------- validateSegmentMeta ----------
+
+describe("validateSegmentMeta()", () => {
+  const base = {
+    windowStart: "2026-05-16",
+    windowEnd: "2026-09-01",
+    existingSegmentFroms: ["2026-05-16"],
+    existingFolders: ["default"],
+    requiredCycleLength: 5,
+    trioCycleLength: 5,
+  };
+
+  it("窓内・コマ数一致なら ok", () => {
+    const r = validateSegmentMeta({
+      ...base,
+      fromStr: "2026-07-16",
+      folder: "summer",
+    });
+    expect(r.ok).toBe(true);
+    expect(r.errors).toEqual([]);
+  });
+
+  it("世代の開始日以前はエラー", () => {
+    const r = validateSegmentMeta({
+      ...base,
+      fromStr: "2026-05-16",
+      folder: "summer",
+    });
+    expect(r.errors.some((e) => /開始日/.test(e))).toBe(true);
+  });
+
+  it("次の世代の from 以降はエラー", () => {
+    const r = validateSegmentMeta({
+      ...base,
+      fromStr: "2026-09-01",
+      folder: "summer",
+    });
+    expect(r.errors.some((e) => /次の世代/.test(e))).toBe(true);
+  });
+
+  it("最終世代（windowEnd 無し）は上限なし", () => {
+    const r = validateSegmentMeta({
+      ...base,
+      windowEnd: "",
+      fromStr: "2030-01-01",
+      folder: "summer",
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it("既存の差し替え日と重複はエラー", () => {
+    const r = validateSegmentMeta({
+      ...base,
+      existingSegmentFroms: ["2026-05-16", "2026-07-16"],
+      fromStr: "2026-07-16",
+      folder: "summer",
+    });
+    expect(r.errors.some((e) => /重複/.test(e))).toBe(true);
+  });
+
+  it("コマ数が世代と一致しないとエラー", () => {
+    const r = validateSegmentMeta({
+      ...base,
+      fromStr: "2026-07-16",
+      folder: "summer",
+      trioCycleLength: 7,
+    });
+    expect(r.errors.some((e) => /コマ数/.test(e))).toBe(true);
+  });
+
+  it("不正なフォルダ名はエラー", () => {
+    const r = validateSegmentMeta({
+      ...base,
+      fromStr: "2026-07-16",
+      folder: "summer/2026",
+    });
+    expect(r.errors.some((e) => /フォルダ名/.test(e))).toBe(true);
   });
 });

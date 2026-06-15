@@ -5,8 +5,10 @@
   GitHub IO — the parent (ScheduleManager) owns config + commits, so the same
   component serves both "add a generation" and "edit an existing one".
 
-  mode="add"  — from/folder are editable; full epoch-metadata validation runs.
-  mode="edit" — from/folder are locked (content-only fix); only the CSVs validate.
+  mode="add"         — from/folder editable; full epoch-metadata validation.
+  mode="edit"        — from/folder locked (content-only fix); CSVs validate only.
+  mode="add-segment" — in-epoch table swap (same generation/anchor): from/folder
+                       editable, validated against the generation window + コマ数.
 -->
 <template>
   <div class="editor">
@@ -33,9 +35,14 @@
 
     <div class="ed-meta">
       <label class="ed-field">
-        <span>有効日 (from)</span>
+        <span>{{
+          mode === "add-segment" ? "差し替え日 (from)" : "有効日 (from)"
+        }}</span>
         <input v-model="fromStr" type="date" :disabled="mode === 'edit'" />
         <small v-if="mode === 'edit'">編集では変更できません</small>
+        <small v-else-if="mode === 'add-segment'"
+          >この日から、回転・コマ位置はそのままで交番表だけが切り替わります</small
+        >
         <small v-else>この日からこの交番表が「いまの世代」になります</small>
       </label>
       <label class="ed-field">
@@ -114,6 +121,7 @@ import { reactive, ref, computed, watch } from "vue";
 import {
   validateTrio,
   validateEpochMeta,
+  validateSegmentMeta,
   suggestFolderName,
 } from "@/composables/useScheduleImport";
 
@@ -124,7 +132,7 @@ const SLOTS = [
 ];
 
 const props = defineProps({
-  mode: { type: String, default: "add" }, // 'add' | 'edit'
+  mode: { type: String, default: "add" }, // 'add' | 'edit' | 'add-segment'
   busy: { type: Boolean, default: false },
   existingFroms: { type: Array, default: () => [] },
   existingFolders: { type: Array, default: () => [] },
@@ -134,6 +142,11 @@ const props = defineProps({
     type: Object,
     default: () => ({ weekday: "", saturday: "", holiday: "" }),
   },
+  // add-segment only: the generation window + its コマ数 + existing segment froms
+  windowStart: { type: String, default: "" },
+  windowEnd: { type: String, default: "" },
+  existingSegmentFroms: { type: Array, default: () => [] },
+  requiredCycleLength: { type: Number, default: 0 },
 });
 
 const emit = defineEmits(["submit", "cancel"]);
@@ -153,16 +166,27 @@ const submitLabel = computed(() =>
 );
 
 const trioResult = computed(() => validateTrio(texts));
-const epochResult = computed(() =>
-  props.mode === "edit"
-    ? { ok: true, errors: [], warnings: [] }
-    : validateEpochMeta({
-        fromStr: fromStr.value,
-        folder: folder.value,
-        existingFroms: props.existingFroms,
-        existingFolders: props.existingFolders,
-      }),
-);
+const epochResult = computed(() => {
+  if (props.mode === "edit") return { ok: true, errors: [], warnings: [] };
+  if (props.mode === "add-segment") {
+    return validateSegmentMeta({
+      fromStr: fromStr.value,
+      folder: folder.value,
+      windowStart: props.windowStart,
+      windowEnd: props.windowEnd,
+      existingSegmentFroms: props.existingSegmentFroms,
+      existingFolders: props.existingFolders,
+      requiredCycleLength: props.requiredCycleLength,
+      trioCycleLength: trioResult.value.cycleLength,
+    });
+  }
+  return validateEpochMeta({
+    fromStr: fromStr.value,
+    folder: folder.value,
+    existingFroms: props.existingFroms,
+    existingFolders: props.existingFolders,
+  });
+});
 
 const hasInput = computed(
   () =>
@@ -207,9 +231,9 @@ function rowCount(key) {
   return trioResult.value.trio[key]?.length ?? 0;
 }
 
-// Auto-suggest the folder name from the date (add mode, until the admin edits).
+// Auto-suggest the folder name from the date (add / add-segment, until edited).
 watch(fromStr, (val) => {
-  if (props.mode === "add" && !folderTouched.value) {
+  if (props.mode !== "edit" && !folderTouched.value) {
     folder.value = suggestFolderName(val);
   }
 });

@@ -215,6 +215,83 @@ export function validateEpochMeta({
   return { ok: errors.length === 0, errors, warnings };
 }
 
+// Validate an in-epoch table-swap segment ("同一世代の途中で表だけ差し替え").
+// Unlike a new generation, a segment keeps the generation's anchor/rotation, so
+// its `from` must land strictly inside the generation window and its CSV must
+// have the SAME コマ数 (cycle length) as the generation it joins.
+//   fromStr             — "YYYY-MM-DD" the swap takes effect
+//   folder              — target data folder name
+//   windowStart         — the generation's own `from` (segment must be after it)
+//   windowEnd           — the next generation's `from`, or null/"" if last
+//   existingSegmentFroms— froms already used in this generation (incl. base)
+//   existingFolders     — array of existing data folder names
+//   requiredCycleLength — the generation's コマ数 (CSV row count) to match
+//   trioCycleLength     — the new CSV trio's コマ数
+// Returns { ok, errors: string[], warnings: string[] }.
+export function validateSegmentMeta({
+  fromStr,
+  folder,
+  windowStart,
+  windowEnd,
+  existingSegmentFroms = [],
+  existingFolders = [],
+  requiredCycleLength = 0,
+  trioCycleLength = 0,
+} = {}) {
+  const errors = [];
+  const warnings = [];
+
+  const from = createDate(fromStr);
+  if (!fromStr || !from || !from.isValid()) {
+    errors.push("差し替え日（from）が不正です。YYYY-MM-DD で入力してください");
+  } else {
+    const fromKey = from.format("YYYY-MM-DD");
+    const start = createDate(windowStart);
+    if (start && start.isValid() && !from.isAfter(start, "day")) {
+      errors.push(
+        `差し替え日は世代の開始日（${start.format("YYYY-MM-DD")}）より後にしてください`,
+      );
+    }
+    if (windowEnd) {
+      const end = createDate(windowEnd);
+      if (end && end.isValid() && !from.isBefore(end, "day")) {
+        errors.push(
+          `差し替え日は次の世代（${end.format("YYYY-MM-DD")}）より前にしてください`,
+        );
+      }
+    }
+    const segFroms = existingSegmentFroms
+      .map((f) => createDate(f))
+      .filter((d) => d && d.isValid());
+    if (segFroms.some((d) => d.format("YYYY-MM-DD") === fromKey)) {
+      errors.push(`差し替え日が既存の差し替えと重複しています: ${fromKey}`);
+    }
+  }
+
+  if (!folder || !FOLDER_RE.test(folder)) {
+    errors.push(
+      "フォルダ名は半角英数・ハイフン・アンダースコアのみで入力してください",
+    );
+  } else if (folder === "menu") {
+    errors.push("フォルダ名 'menu' は使えません");
+  } else if (existingFolders.includes(folder)) {
+    warnings.push(`フォルダ '${folder}' は既に存在します。CSVが上書きされます`);
+  }
+
+  if (
+    requiredCycleLength &&
+    trioCycleLength &&
+    trioCycleLength !== requiredCycleLength
+  ) {
+    errors.push(
+      `コマ数（${trioCycleLength}）が世代のコマ数（${requiredCycleLength}）と一致しません。` +
+        `回転を維持したまま表だけ差し替えるには、同じコマ数（CSVの行数）が必要です`,
+    );
+  }
+
+  return { ok: errors.length === 0, errors, warnings };
+}
+
 export function useScheduleImport() {
   return {
     parseCsvRows,
