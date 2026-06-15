@@ -48,9 +48,15 @@ describe("parseCsvRows()", () => {
     expect(parseCsvRows("早番,,16:00").errors).toHaveLength(1);
   });
 
+  it("24h超え表記（25:00 など日跨ぎ）を許可する", () => {
+    expect(parseCsvRows("夜勤,16:00,25:00").errors).toEqual([]);
+    expect(parseCsvRows("深夜,22:00,47:59").errors).toEqual([]);
+  });
+
   it("不正な時刻フォーマットをエラーにする", () => {
     expect(parseCsvRows("早番,8:00,16:00").errors).toHaveLength(1);
-    expect(parseCsvRows("早番,25:00,26:00").errors).toHaveLength(1);
+    expect(parseCsvRows("早番,48:00,49:00").errors).toHaveLength(1);
+    expect(parseCsvRows("早番,99:00,16:00").errors).toHaveLength(1);
   });
 });
 

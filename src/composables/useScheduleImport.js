@@ -13,9 +13,11 @@
 
 import { createDate, today } from "@/utils/date";
 
-// 24h HH:MM, 00:00–23:59. Overnight shifts (e.g. 16:00→00:00) are allowed:
-// we validate format only, never that end > start.
-const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+// HH:MM. We allow the "over-24h" notation used on real shift tables for
+// cross-midnight shifts (e.g. 夜勤 ending 25:00 = 1:00 翌日), so hours run
+// 00–47. We validate format only, never that end > start. parseTime() in
+// utils/date.js lets dayjs roll hours ≥24 into the next day for comparisons.
+const TIME_RE = /^([0-3]\d|4[0-7]):[0-5]\d$/;
 
 const FOLDER_RE = /^[A-Za-z0-9_-]+$/;
 

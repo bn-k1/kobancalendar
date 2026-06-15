@@ -22,62 +22,89 @@
           >
         </p>
 
-        <label v-if="!repo || showRepoOverride" class="admin-field">
-          <span>リポジトリ (owner/repo)</span>
-          <input
-            v-model="repoInput"
-            type="text"
-            placeholder="bn-k1/kobancalendar"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <small
-            >URL
-            から自動特定できない環境（ローカル開発・独自ドメイン）でのみ入力します。</small
-          >
-        </label>
-        <button
-          v-else
-          type="button"
-          class="admin-link-btn"
-          @click="showRepoOverride = true"
-        >
-          リポジトリを手動指定する
-        </button>
+        <!-- Compact state: a token is already saved and the repo resolves, so
+             there is nothing to do. Re-entering credentials is opt-in. -->
+        <template v-if="connected && !editing">
+          <p class="admin-status is-ok">
+            ✓ トークンは保存済みです。GitHub に接続できます。
+          </p>
+          <div class="admin-actions">
+            <button
+              type="button"
+              class="admin-secondary"
+              @click="editing = true"
+            >
+              トークンを変更・再テスト
+            </button>
+            <button
+              type="button"
+              class="admin-secondary"
+              :disabled="testing"
+              @click="clearStored"
+            >
+              保存済みトークンを削除
+            </button>
+          </div>
+        </template>
 
-        <label class="admin-field">
-          <span>Personal Access Token (fine-grained)</span>
-          <input
-            v-model="tokenInput"
-            type="password"
-            placeholder="github_pat_..."
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <small
-            >Contents の Read and write 権限を持つトークン。この端末の
-            localStorage にのみ保存され、共有・送信されません。</small
+        <template v-else>
+          <label v-if="!repo || showRepoOverride" class="admin-field">
+            <span>リポジトリ (owner/repo)</span>
+            <input
+              v-model="repoInput"
+              type="text"
+              placeholder="bn-k1/kobancalendar"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <small
+              >URL
+              から自動特定できない環境（ローカル開発・独自ドメイン）でのみ入力します。</small
+            >
+          </label>
+          <button
+            v-else
+            type="button"
+            class="admin-link-btn"
+            @click="showRepoOverride = true"
           >
-        </label>
+            リポジトリを手動指定する
+          </button>
 
-        <div class="admin-actions">
-          <button
-            type="button"
-            class="admin-primary"
-            :disabled="testing || !tokenInput"
-            @click="testConnection"
-          >
-            {{ testing ? "確認中…" : "保存して接続テスト" }}
-          </button>
-          <button
-            type="button"
-            class="admin-secondary"
-            :disabled="testing"
-            @click="clearStored"
-          >
-            保存済みトークンを削除
-          </button>
-        </div>
+          <label class="admin-field">
+            <span>Personal Access Token (fine-grained)</span>
+            <input
+              v-model="tokenInput"
+              type="password"
+              placeholder="github_pat_..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <small
+              >Contents の Read and write 権限を持つトークン。この端末の
+              localStorage にのみ保存され、共有・送信されません。</small
+            >
+          </label>
+
+          <div class="admin-actions">
+            <button
+              type="button"
+              class="admin-primary"
+              :disabled="testing || !tokenInput"
+              @click="testConnection"
+            >
+              {{ testing ? "確認中…" : "保存して接続テスト" }}
+            </button>
+            <button
+              type="button"
+              class="admin-secondary"
+              :disabled="testing"
+              @click="clearStored"
+            >
+              保存済みトークンを削除
+            </button>
+          </div>
+        </template>
 
         <p v-if="status.type" :class="['admin-status', `is-${status.type}`]">
           {{ status.message }}
@@ -133,6 +160,9 @@ const connected = ref(false);
 const tokenInput = ref("");
 const repoInput = ref("");
 const showRepoOverride = ref(false);
+// When already connected on mount, the credential form is collapsed. Flipping
+// this re-opens it to change the token or re-run the test.
+const editing = ref(false);
 const testing = ref(false);
 const status = ref({ type: "", message: "" });
 const result = ref(null);
@@ -175,6 +205,7 @@ async function testConnection() {
     saveToken(tokenInput.value);
     result.value = info;
     connected.value = info.canPush;
+    if (info.canPush) editing.value = false;
     status.value = info.canPush
       ? { type: "ok", message: "接続成功。トークンを保存しました。" }
       : {
@@ -197,6 +228,7 @@ function clearStored() {
   tokenInput.value = "";
   result.value = null;
   connected.value = false;
+  editing.value = false;
   status.value = { type: "ok", message: "保存済みトークンを削除しました。" };
 }
 </script>
