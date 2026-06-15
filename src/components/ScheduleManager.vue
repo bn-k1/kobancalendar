@@ -155,10 +155,12 @@
 import { ref, computed, onMounted } from "vue";
 import ScheduleEditor from "@/components/ScheduleEditor.vue";
 import { useGitHubApi } from "@/composables/useGitHubApi";
+import { useConfigEditor } from "@/composables/useConfigEditor";
 import { serializeCsv } from "@/composables/useScheduleImport";
 import { createDate, today } from "@/utils/date";
 
 const { resolveRepo, getFile, listDir, commitFiles } = useGitHubApi();
+const { commitConfig } = useConfigEditor();
 
 const config = ref(null);
 const dataDirs = ref([]);
@@ -239,14 +241,9 @@ const commitUrl = computed(() => {
   return `https://github.com/${repo.owner}/${repo.repo}/commit/${opStatus.value.sha}`;
 });
 
-const clone = (o) => JSON.parse(JSON.stringify(o));
 const csvFile = (folder, kind, rowsArr) => ({
   path: `data/${folder}/${kind}.csv`,
   content: serializeCsv(rowsArr),
-});
-const configFile = (cfg) => ({
-  path: "config/config.json",
-  content: JSON.stringify(cfg, null, 2) + "\n",
 });
 
 async function load() {
@@ -279,16 +276,22 @@ async function onAddSubmit({ fromStr, folder, trio }) {
   busy.value = true;
   opStatus.value = { type: "", message: "", sha: "" };
   try {
-    const cfg = clone(config.value || { schedules: [] });
-    cfg.schedules = [...(cfg.schedules || []), { from: fromStr, data: folder }];
-    const sha = await commitFiles({
-      message: `data: ${folder} 世代を追加 (from ${fromStr})`,
-      files: [
-        csvFile(folder, "weekday", trio.weekday),
-        csvFile(folder, "saturday", trio.saturday),
-        csvFile(folder, "holiday", trio.holiday),
-        configFile(cfg),
-      ],
+    const sha = await commitConfig({
+      build: (cfg) => {
+        cfg.schedules = [
+          ...(cfg.schedules || []),
+          { from: fromStr, data: folder },
+        ];
+        return {
+          config: cfg,
+          message: `data: ${folder} 世代を追加 (from ${fromStr})`,
+          extraFiles: [
+            csvFile(folder, "weekday", trio.weekday),
+            csvFile(folder, "saturday", trio.saturday),
+            csvFile(folder, "holiday", trio.holiday),
+          ],
+        };
+      },
     });
     showAdd.value = false;
     addKey.value += 1;
@@ -364,19 +367,27 @@ async function deleteGeneration(row) {
   busy.value = true;
   opStatus.value = { type: "", message: "", sha: "" };
   try {
-    const cfg = clone(config.value);
-    cfg.schedules = cfg.schedules.filter((_, i) => i !== row.index);
-    const files = [configFile(cfg)];
-    // If this epoch owned its folder and nothing else references it, delete it.
-    if (row.data && !referencedFolders(cfg.schedules).has(row.data)) {
-      const entries = await listDir(`data/${row.data}`);
-      for (const e of entries.filter((x) => x.type === "file")) {
-        files.push({ path: e.path, delete: true });
-      }
-    }
-    const sha = await commitFiles({
-      message: `data: ${row.from} → ${row.effectiveData} 世代を削除`,
-      files,
+    const sha = await commitConfig({
+      build: async (cfg) => {
+        // Identify by `from` (unique), not index — the fresh config may differ
+        // from what's displayed if another section committed in the meantime.
+        cfg.schedules = (cfg.schedules || []).filter(
+          (e) => e.from !== row.from,
+        );
+        const extraFiles = [];
+        // If this epoch owned its folder and nothing else references it, delete it.
+        if (row.data && !referencedFolders(cfg.schedules).has(row.data)) {
+          const entries = await listDir(`data/${row.data}`);
+          for (const e of entries.filter((x) => x.type === "file")) {
+            extraFiles.push({ path: e.path, delete: true });
+          }
+        }
+        return {
+          config: cfg,
+          message: `data: ${row.from} → ${row.effectiveData} 世代を削除`,
+          extraFiles,
+        };
+      },
     });
     await afterCommit(sha, `世代 ${row.from} を削除しました`);
   } catch (err) {
