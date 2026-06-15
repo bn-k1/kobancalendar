@@ -103,6 +103,127 @@ describe("buildEpochs() — data 継承（項目1）", () => {
   });
 });
 
+describe("buildEpochs() — epoch 内データ切替（schedule_update 相当）", () => {
+  it("data 配列を segments に正規化する（先頭は世代 from に固定）", () => {
+    const epochs = buildEpochs(
+      {
+        schedules: [
+          {
+            from: "2026-01-01",
+            data: [{ data: "default" }, { from: "2026-03-01", data: "rev" }],
+          },
+        ],
+      },
+      makeBundle(["default", "rev"]),
+    );
+    expect(epochs).toHaveLength(1);
+    // 代表 dataKey は先頭セグメント
+    expect(epochs[0].dataKey).toBe("default");
+    expect(epochs[0].segments).toHaveLength(2);
+    expect(epochs[0].segments[0].dataKey).toBe("default");
+    expect(epochs[0].segments[0].from.format("YYYY-MM-DD")).toBe("2026-01-01");
+    expect(epochs[0].segments[1].dataKey).toBe("rev");
+    expect(epochs[0].segments[1].from.format("YYYY-MM-DD")).toBe("2026-03-01");
+  });
+
+  it("文字列 data も単一 segment に正規化される", () => {
+    const epochs = buildEpochs(
+      { schedules: [{ from: "2026-01-01", data: "default" }] },
+      makeBundle(),
+    );
+    expect(epochs[0].segments).toEqual([
+      expect.objectContaining({ dataKey: "default" }),
+    ]);
+  });
+
+  it("セグメントのサイクル長が一致しないとエラー", () => {
+    const bundle = {
+      default: {
+        holiday: [],
+        saturday: [],
+        weekday: [],
+        rotationCycleLength: 5,
+      },
+      rev: { holiday: [], saturday: [], weekday: [], rotationCycleLength: 7 },
+    };
+    expect(() =>
+      buildEpochs(
+        {
+          schedules: [
+            {
+              from: "2026-01-01",
+              data: [{ data: "default" }, { from: "2026-03-01", data: "rev" }],
+            },
+          ],
+        },
+        bundle,
+      ),
+    ).toThrow(/サイクル長が一致/);
+  });
+
+  it("セグメント from が昇順でないとエラー", () => {
+    expect(() =>
+      buildEpochs(
+        {
+          schedules: [
+            {
+              from: "2026-01-01",
+              data: [
+                { data: "default" },
+                { from: "2026-03-01", data: "rev" },
+                { from: "2026-02-01", data: "default" },
+              ],
+            },
+          ],
+        },
+        makeBundle(["default", "rev"]),
+      ),
+    ).toThrow(/昇順/);
+  });
+
+  it("セグメント from が次世代の from 以降ならエラー", () => {
+    expect(() =>
+      buildEpochs(
+        {
+          schedules: [
+            {
+              from: "2026-01-01",
+              data: [{ data: "default" }, { from: "2026-06-01", data: "rev" }],
+            },
+            { from: "2026-05-01", data: "rev" },
+          ],
+        },
+        makeBundle(["default", "rev"]),
+      ),
+    ).toThrow(/次世代の from/);
+  });
+
+  it("空の data 配列はエラー", () => {
+    expect(() =>
+      buildEpochs(
+        { schedules: [{ from: "2026-01-01", data: [] }] },
+        makeBundle(),
+      ),
+    ).toThrow(/data 配列が空/);
+  });
+
+  it("配列の data 省略はエラー", () => {
+    expect(() =>
+      buildEpochs(
+        {
+          schedules: [
+            {
+              from: "2026-01-01",
+              data: [{ data: "default" }, { from: "2026-03-01" }],
+            },
+          ],
+        },
+        makeBundle(),
+      ),
+    ).toThrow(/data（CSV フォルダ名）が必要/);
+  });
+});
+
 describe("buildEpochs() — from の sanity check（項目3）", () => {
   it("from が降順ならエラー", () => {
     expect(() =>

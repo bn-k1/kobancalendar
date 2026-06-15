@@ -6,13 +6,17 @@ import { ref, computed } from "vue";
  * Schedule store — raw state only.
  *
  * The schedule is modeled as an append-only list of *epochs*. Each epoch has a
- * start date (`from`) and points to a folder of shift-table data (`dataKey`).
- * An epoch's display window runs from its `from` up to (but not including) the
- * next epoch's `from`. There is no separate "default/next" duality and no
- * "schedule update" mode — every transition is just another epoch.
+ * start date (`from`) and points to shift-table data via `dataKey` (and a
+ * `segments` array for the in-epoch data-swap case). An epoch's display window
+ * runs from its `from` up to (but not including) the next epoch's `from`. There
+ * is no separate "default/next" duality; every generation transition is just
+ * another epoch. A *within*-epoch table swap (the old "schedule update": same
+ * rotation anchor, the table changes on a date) is expressed as multiple
+ * `segments` on a single epoch — see buildEpochs in useAppInitializer.js.
  */
 export const useScheduleStore = defineStore("schedule", () => {
-  // [{ from: dayjs, dataKey: string }], sorted ascending by `from`
+  // [{ from: dayjs, dataKey: string, segments?: [{ from, dataKey }] }],
+  // sorted ascending by `from`
   const epochs = ref([]);
   // { [dataKey]: { holiday, saturday, weekday, rotationCycleLength } }
   const scheduleData = ref({});

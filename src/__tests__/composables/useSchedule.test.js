@@ -244,6 +244,56 @@ describe("getScheduleForDate()", () => {
   });
 });
 
+// ---------- epoch 内データ切替（schedule_update 相当）----------
+
+describe("getScheduleForDate() — epoch 内データ切替", () => {
+  const segmentEpoch = () => ({
+    scheduleData: {
+      default: makeScheduleData(5),
+      next: makeScheduleData(5, "次"),
+    },
+    epochs: [
+      {
+        from: dayjs("2025-11-16"),
+        dataKey: "default",
+        segments: [
+          { from: dayjs("2025-11-16"), dataKey: "default" },
+          { from: dayjs("2026-01-01"), dataKey: "next" },
+        ],
+      },
+    ],
+    activeEpochIndex: 0,
+  });
+
+  it("切替日より前は先頭セグメント（default）のデータ", () => {
+    setupStores(segmentEpoch());
+    const { getScheduleForDate } = useSchedule();
+    // 2025-12-31（水曜・平日）
+    const result = getScheduleForDate(dayjs("2025-12-31"), 1);
+    expect(result?.subject).toMatch(/^平日/);
+  });
+
+  it("切替日以降は後続セグメント（next）のデータ", () => {
+    setupStores(segmentEpoch());
+    const { getScheduleForDate } = useSchedule();
+    // 2026-01-02（金曜・平日）
+    const result = getScheduleForDate(dayjs("2026-01-02"), 1);
+    expect(result?.subject).toMatch(/^次平日/);
+  });
+
+  it("アンカーは epoch.from 据え置き — 切替を跨いでも回転位相が連続する", () => {
+    setupStores(segmentEpoch());
+    const { getScheduleForDate } = useSchedule();
+    // 切替日(2026-01-01)の前後で shiftIndex は途切れず +1 で繋がる
+    const before = getScheduleForDate(dayjs("2025-12-31"), 1);
+    const onSwap = getScheduleForDate(dayjs("2026-01-01"), 1);
+    expect(onSwap.shiftIndex).toBe((before.shiftIndex + 1) % CYCLE);
+    // データ表だけが入れ替わっている（位相は default 単独運用と同一）
+    expect(before.subject).toMatch(/^平日/);
+    expect(onSwap.subject).toMatch(/^次/);
+  });
+});
+
 // ---------- calculateScheduleRange ----------
 
 describe("calculateScheduleRange()", () => {

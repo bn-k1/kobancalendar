@@ -91,12 +91,20 @@ function readConfig() {
 /**
  * Normalize config.schedules into resolved epochs.
  *
- * `data` may be omitted on any epoch except the first — in that case it is
- * inherited from the preceding epoch (a "position shift only" migration written
- * as just `{ from }`). The first epoch must specify `data`.
+ * `data` may be:
+ *  - a string — a single folder for the whole epoch;
+ *  - omitted (except on the first epoch) — inherited from the preceding epoch's
+ *    last folder (a "position shift only" migration written as just `{ from }`);
+ *  - an array of `{ data, from? }` — the `schedule_update`-equivalent in-epoch
+ *    table swap, where several folders are used at different dates within the
+ *    same epoch. Every folder named is converted.
+ *
+ * The first epoch must specify `data`.
  *
  * @param {Object} config - parsed config.json
- * @returns {Array<{from: string, data: string}>} resolved epochs in config order
+ * @returns {Array<{from: string, data: string, dataKeys: string[]}>} resolved
+ *   epochs in config order. `data` is the representative (first) folder;
+ *   `dataKeys` lists every folder the epoch references.
  */
 function resolveEpochs(config) {
   if (!Array.isArray(config.schedules) || config.schedules.length === 0) {
@@ -113,32 +121,53 @@ function resolveEpochs(config) {
         `config.schedules[${i}] must be an object. Got: ${JSON.stringify(epoch)}`,
       );
     }
-    let data = epoch.data;
-    if (typeof data !== "string" || !data) {
+
+    let dataKeys;
+    if (Array.isArray(epoch.data)) {
+      if (epoch.data.length === 0) {
+        throw new Error(`config.schedules[${i}].data array must not be empty.`);
+      }
+      dataKeys = epoch.data.map((seg, si) => {
+        const name = seg && seg.data;
+        if (typeof name !== "string" || !name) {
+          throw new Error(
+            `config.schedules[${i}].data[${si}] must specify a non-empty "data" ` +
+              `folder name. Got: ${JSON.stringify(seg)}`,
+          );
+        }
+        return name;
+      });
+    } else if (typeof epoch.data === "string" && epoch.data) {
+      dataKeys = [epoch.data];
+    } else {
       if (i === 0) {
         throw new Error(
           `config.schedules[0] must specify a non-empty "data" folder name ` +
             `(the first epoch cannot inherit). Got: ${JSON.stringify(epoch)}`,
         );
       }
-      // 直前の解決済み世代から data を継承
-      data = resolved[i - 1].data;
+      // 直前の解決済み世代の最後のフォルダから継承
+      const prev = resolved[i - 1].dataKeys;
+      dataKeys = [prev[prev.length - 1]];
     }
-    resolved.push({ from: epoch.from, data });
+
+    resolved.push({ from: epoch.from, data: dataKeys[0], dataKeys });
   }
   return resolved;
 }
 
 /**
  * Read the schedule folder names referenced by config.schedules.
- * @param {Array<{from: string, data: string}>} epochs - resolved epochs
+ * @param {Array<{from: string, data: string, dataKeys: string[]}>} epochs
  * @returns {string[]} Distinct, deterministically ordered folder names
  */
 function readReferencedFolders(epochs) {
   const folders = [];
   for (const epoch of epochs) {
-    if (!folders.includes(epoch.data)) {
-      folders.push(epoch.data);
+    for (const name of epoch.dataKeys) {
+      if (!folders.includes(name)) {
+        folders.push(name);
+      }
     }
   }
   return folders;

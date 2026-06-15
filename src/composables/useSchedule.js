@@ -23,10 +23,12 @@ const EMPTY_SCHEDULE_DATA = {
 /**
  * Schedule management composable.
  *
- * The schedule is an append-only list of *epochs* (`{ from, dataKey }`). The
- * epoch the user is viewing is the "active" epoch; it determines the calculation
- * anchor, the visible date window `[from, nextEpoch.from)` and which folder of
- * shift-table data is used. The "current" epoch is the latest epoch whose `from`
+ * The schedule is an append-only list of *epochs* (`{ from, dataKey, segments }`).
+ * The epoch the user is viewing is the "active" epoch; it determines the
+ * calculation anchor, the visible date window `[from, nextEpoch.from)` and which
+ * folder of shift-table data is used. An epoch may carry multiple `segments`
+ * (`schedule_update` equivalent): the rotation anchor (`from`) stays fixed while
+ * the looked-up data table swaps on a date inside the window. The "current" epoch is the latest epoch whose `from`
  * is on or before today — it is the default selection, and `defaultBaseDate` /
  * `nextBaseDate` below expose it (and its successor) under the names the views
  * historically used.
@@ -43,6 +45,28 @@ export function useSchedule() {
   function dataForEpoch(epoch) {
     if (!epoch) return EMPTY_SCHEDULE_DATA;
     return storeScheduleData.value[epoch.dataKey] || EMPTY_SCHEDULE_DATA;
+  }
+
+  /**
+   * Schedule data for an epoch *at a specific date*. When an epoch declares
+   * multiple in-epoch data segments (the `schedule_update` case — one rotation
+   * anchor, the table swaps on a date), the segment in effect on `target` wins.
+   * Single-segment epochs — and hand-built `{ from, dataKey }` epochs without a
+   * `segments` array — fall back to the representative data.
+   */
+  function dataForEpochAtDate(epoch, target) {
+    if (!epoch) return EMPTY_SCHEDULE_DATA;
+    const segments = epoch.segments;
+    if (!Array.isArray(segments) || segments.length <= 1) {
+      return dataForEpoch(epoch);
+    }
+    const dateStr = formatAsISODate(target);
+    let chosen = segments[0];
+    for (const seg of segments) {
+      if (dateStr >= formatAsISODate(seg.from)) chosen = seg;
+      else break;
+    }
+    return storeScheduleData.value[chosen.dataKey] || EMPTY_SCHEDULE_DATA;
   }
 
   const activeEpoch = computed(
@@ -131,7 +155,7 @@ export function useSchedule() {
       return undefined;
     }
 
-    const scheduleData = dataForEpoch(epoch);
+    const scheduleData = dataForEpochAtDate(epoch, target);
     const isHolidayFlag = isHoliday(target);
     const isSaturday = target.day() === 6;
 
