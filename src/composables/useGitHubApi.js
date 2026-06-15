@@ -145,10 +145,29 @@ export function useGitHubApi() {
     return info.default_branch;
   }
 
+  // List a directory's entries. Returns [{ name, path, type }] ("file"|"dir"),
+  // or [] if the path does not exist. Used to find orphan data/ folders.
+  async function listDir(path, { token } = {}) {
+    const repo = resolveRepo();
+    if (!repo) throw new Error("リポジトリを特定できません");
+    try {
+      const data = await request(
+        `/repos/${repo.owner}/${repo.repo}/contents/${encodePath(path)}`,
+        { token },
+      );
+      if (!Array.isArray(data)) return [];
+      return data.map((e) => ({ name: e.name, path: e.path, type: e.type }));
+    } catch (err) {
+      if (err.status === 404) return [];
+      throw err;
+    }
+  }
+
   // Atomically commit multiple files in a single commit via the Git Data API.
-  // files: [{ path, content }] (content is UTF-8 text). Returns new commit sha.
-  // Used by the importer so the CSV trio + config.json land together — a partial
-  // commit (CSVs without the config epoch, or vice versa) would deploy broken.
+  // files: [{ path, content }] to add/update, or { path, delete: true } to
+  // remove. Returns the new commit sha. Used so a logical change (CSV trio +
+  // config.json epoch, or a deleted generation + its folder) lands as ONE
+  // commit — a partial commit would deploy a broken schedule.
   async function commitFiles({ message, files, branch, token } = {}) {
     const repo = resolveRepo();
     if (!repo) throw new Error("リポジトリを特定できません");
@@ -174,12 +193,18 @@ export function useGitHubApi() {
       method: "POST",
       body: {
         base_tree: latestCommit.tree.sha,
-        tree: files.map((f) => ({
-          path: f.path,
-          mode: "100644",
-          type: "blob",
-          content: f.content,
-        })),
+        // sha:null deletes the path from the new tree; otherwise inline content
+        // adds or updates it.
+        tree: files.map((f) =>
+          f.delete
+            ? { path: f.path, mode: "100644", type: "blob", sha: null }
+            : {
+                path: f.path,
+                mode: "100644",
+                type: "blob",
+                content: f.content,
+              },
+        ),
       },
       token,
     });
@@ -208,6 +233,7 @@ export function useGitHubApi() {
     getFile,
     putFile,
     getDefaultBranch,
+    listDir,
     commitFiles,
   };
 }

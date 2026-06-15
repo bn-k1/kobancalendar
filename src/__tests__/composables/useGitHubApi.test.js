@@ -236,4 +236,83 @@ describe("commitFiles()", () => {
     const { commitFiles } = useGitHubApi();
     await expect(commitFiles({ files: [] })).rejects.toThrow(/ファイル/);
   });
+
+  it("delete:true のエントリは tree で sha:null になる", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ object: { sha: "c0" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ tree: { sha: "t0" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve({ sha: "t1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve({ sha: "c1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({}),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { commitFiles } = useGitHubApi();
+    await commitFiles({
+      message: "delete",
+      branch: "main",
+      files: [
+        { path: "data/old/weekday.csv", delete: true },
+        { path: "config/config.json", content: "{}\n" },
+      ],
+    });
+
+    const treeBody = JSON.parse(fetchMock.mock.calls[2][1].body);
+    expect(treeBody.tree[0]).toEqual({
+      path: "data/old/weekday.csv",
+      mode: "100644",
+      type: "blob",
+      sha: null,
+    });
+    expect(treeBody.tree[1]).toMatchObject({
+      path: "config/config.json",
+      content: "{}\n",
+    });
+  });
+});
+
+// ---------- listDir ----------
+
+describe("listDir()", () => {
+  it("ディレクトリ配下を {name,path,type} で返す", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetchOnce(200, [
+        { name: "default", path: "data/default", type: "dir" },
+        { name: "menu", path: "data/menu", type: "dir" },
+      ]),
+    );
+    const { listDir } = useGitHubApi();
+    const entries = await listDir("data");
+    expect(entries).toEqual([
+      { name: "default", path: "data/default", type: "dir" },
+      { name: "menu", path: "data/menu", type: "dir" },
+    ]);
+  });
+
+  it("404 のときは空配列", async () => {
+    vi.stubGlobal("fetch", mockFetchOnce(404, { message: "Not Found" }));
+    const { listDir } = useGitHubApi();
+    expect(await listDir("data/nope")).toEqual([]);
+  });
 });

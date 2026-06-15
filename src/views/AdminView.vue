@@ -102,7 +102,7 @@
         </ul>
       </section>
 
-      <ScheduleImporter v-if="connected" />
+      <ScheduleManager v-if="connected" />
     </div>
   </UnifiedPageLayout>
 </template>
@@ -110,7 +110,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
-import ScheduleImporter from "@/components/ScheduleImporter.vue";
+import ScheduleManager from "@/components/ScheduleManager.vue";
 import { useAdminToken } from "@/composables/useAdminToken";
 import { useGitHubApi } from "@/composables/useGitHubApi";
 
