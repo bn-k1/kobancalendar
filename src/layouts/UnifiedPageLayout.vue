@@ -87,11 +87,7 @@
     <footer>
       <p>
         KobanCalendar -
-        <a
-          href="https://github.com/bn-k1/kobancalendar"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a :href="repoUrl" target="_blank" rel="noopener noreferrer">
           GitHub
         </a>
       </p>
@@ -108,6 +104,26 @@ import DarkModeToggle from "@/components/DarkModeToggle.vue";
 import HelpButton from "@/components/HelpButton.vue";
 import menuData from "@data/menu/menu.json";
 import config from "@config/config.json";
+
+// Footer "GitHub" link points at the *running* repo so forks self-correct with
+// zero config. Derived from the GitHub Pages host (owner.github.io) + base path
+// (repo); falls back to the upstream project on custom domains / local dev.
+// Kept inline (not via useGitHubApi.resolveRepo) so the public link never
+// inherits the admin's localStorage repo override.
+const repoUrl = computed(() => {
+  const upstream = "https://github.com/bn-k1/kobancalendar";
+  try {
+    const host = window.location.hostname;
+    if (!host.endsWith(".github.io")) return upstream;
+    const owner = host.slice(0, -".github.io".length);
+    const repo =
+      import.meta.env.BASE_URL.split("/").filter(Boolean)[0] ||
+      `${owner}.github.io`;
+    return `https://github.com/${owner}/${repo}`;
+  } catch {
+    return upstream;
+  }
+});
 
 const props = defineProps({
   title: {

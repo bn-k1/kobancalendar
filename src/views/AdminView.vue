@@ -129,6 +129,7 @@
         </ul>
       </section>
 
+      <PromptHelper v-if="connected" />
       <ScheduleManager v-if="connected" />
       <HolidaysManager v-if="connected" />
     </div>
@@ -138,6 +139,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
+import PromptHelper from "@/components/PromptHelper.vue";
 import ScheduleManager from "@/components/ScheduleManager.vue";
 import HolidaysManager from "@/components/HolidaysManager.vue";
 import { useAdminToken } from "@/composables/useAdminToken";

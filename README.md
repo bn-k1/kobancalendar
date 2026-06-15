@@ -27,6 +27,22 @@ npm install
 
 ---
 
+## 他営業所での導入（fork → ゼロコンフィグ）
+
+別の営業所が自分のカレンダーを立ち上げるのに、コードの書き換えは不要です。GitHub 上の操作だけで完結します。
+
+1. **このリポジトリを fork**（または "Use this template"）して自分のアカウント／組織にコピーする。
+2. fork した repo の **Settings → Pages → Source** を「**GitHub Actions**」にする（初回のみ手動。これだけは GitHub の管理画面操作）。push すると CI が自動でビルド・配信する。base path（`/<repo>/`）や QR、フッターの GitHub リンクは実行中の URL から自動導出されるので、URL の直書きは要らない。
+3. 配信された `https://<owner>.github.io/<repo>/#/admin` を開き、fine-grained PAT（対象 repo の **Contents: Read and write**）を貼って「保存して接続テスト」。接続できれば管理 UI が出る。
+
+あとは管理画面だけで運用できる：
+
+- **交番表 → CSV 変換プロンプト**：掲示物（Excel・PDF・写真）を ChatGPT / Claude / Gemini に渡し、admin の「プロンプトをコピー」で得たプロンプトと一緒に投げると、`weekday` / `saturday` / `holiday` の3つの CSV が返る（API・課金は不要）。
+- **交番表の管理**：その3 CSV を「世代」として追加・編集・削除する。サンプルの `data/default` は AI 生成のダミーなので、最初の世代を自分のデータで追加すれば置き換わる。
+- **独自休日**：会社の独自休（盆暮れ等）を MM-DD で編集する。
+
+---
+
 ## データ構成
 
 ### `config/config.json`
