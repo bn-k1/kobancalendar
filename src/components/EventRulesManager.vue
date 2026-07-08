@@ -30,7 +30,6 @@
           <thead>
             <tr>
               <th class="evt-col-handle"></th>
-              <th>表示名</th>
               <th>キーワード</th>
               <th>色</th>
               <th
@@ -45,7 +44,7 @@
           <tbody>
             <tr
               v-for="(rule, i) in working.rules"
-              :key="`rule-${i}`"
+              :key="rule.uid"
               class="evt-row"
               :class="{ 'is-dragging': dragIndex === i }"
               draggable="true"
@@ -78,16 +77,6 @@
                 </span>
               </td>
               <td>
-                <input
-                  v-model="rule.label"
-                  type="text"
-                  class="evt-label-input"
-                  :class="{ 'is-invalid': !rule.label.trim() }"
-                  :disabled="busy"
-                  placeholder="公休"
-                />
-              </td>
-              <td>
                 <div
                   class="evt-chips"
                   :class="{ 'is-invalid': rule.keywords.length === 0 }"
@@ -105,7 +94,7 @@
                     </button>
                   </span>
                   <input
-                    v-model="keywordDrafts[rule.id]"
+                    v-model="keywordDrafts[rule.uid]"
                     type="text"
                     class="evt-chip-input"
                     :disabled="busy"
@@ -144,7 +133,7 @@
               </td>
             </tr>
             <tr v-if="working.rules.length === 0">
-              <td colspan="6" class="evt-muted">（ルールがありません）</td>
+              <td colspan="5" class="evt-muted">（ルールがありません）</td>
             </tr>
           </tbody>
         </table>
@@ -248,9 +237,20 @@ const loadError = ref("");
 const busy = ref(false);
 const original = ref(null);
 const working = ref(null);
-// Per-rule "add a keyword" input text, keyed by rule.id (not part of the
+// Per-rule "add a keyword" input text, keyed by rule.uid (not part of the
 // persisted schema). A plain reactive object so dynamic keys stay reactive.
 const keywordDrafts = reactive({});
+
+// Rules no longer carry any persisted identifier — a rule is its keywords.
+// `uid` is a client-only handle for keywordDrafts keys and template :key,
+// assigned once per rule per load() and never written back to disk (see
+// toPersisted). A simple incrementing counter is enough: it only needs to be
+// unique within the current in-memory session.
+let nextRuleUid = 0;
+function allocRuleUid() {
+  nextRuleUid += 1;
+  return nextRuleUid;
+}
 const dragIndex = ref(null);
 const previewSubject = ref("");
 const opStatus = ref({ type: "", message: "", sha: "" });
@@ -276,13 +276,13 @@ function isLegacyShape(data) {
 }
 
 // Clone + fill in defaults so working/original always have the same shape,
-// regardless of what is actually present in the file on disk.
+// regardless of what is actually present in the file on disk. Only ever
+// called on raw disk data (once per load()), so every rule gets a fresh uid.
 function normalize(data) {
   const rules = Array.isArray(data?.rules) ? data.rules : [];
   return {
     rules: rules.map((r) => ({
-      id: r.id,
-      label: r.label ?? "",
+      uid: allocRuleUid(),
       keywords: Array.isArray(r.keywords) ? [...r.keywords] : [],
       color: r.color ?? DEFAULT_COLOR,
       freeAllDay: !!r.freeAllDay,
@@ -292,10 +292,32 @@ function normalize(data) {
   };
 }
 
+// Clone an already-normalized config *without* reallocating uids. Used for
+// the working draft and reset() — both must keep the same uids as `original`
+// or the JSON.stringify-based `dirty` check below would report a spurious
+// diff from uid churn alone.
+function cloneRulesConfig(config) {
+  return {
+    rules: config.rules.map((r) => ({ ...r, keywords: [...r.keywords] })),
+    fallback: { ...config.fallback },
+    edited: { ...config.edited },
+  };
+}
+
+// Strip the client-only uid before writing to disk — the persisted schema
+// carries no identifier at all; a rule is identified by its keywords.
+function toPersisted(config) {
+  return {
+    rules: config.rules.map(({ uid, ...rest }) => rest),
+    fallback: { ...config.fallback },
+    edited: { ...config.edited },
+  };
+}
+
 function resetKeywordDrafts() {
   Object.keys(keywordDrafts).forEach((k) => delete keywordDrafts[k]);
   working.value.rules.forEach((r) => {
-    keywordDrafts[r.id] = "";
+    keywordDrafts[r.uid] = "";
   });
 }
 
@@ -306,30 +328,29 @@ const dirty = computed(
 // Order only conveys priority once there is something to out-rank.
 const hasPriority = computed(() => (working.value?.rules.length ?? 0) > 1);
 
-function ruleLabelFor(rule) {
-  return (rule.label && rule.label.trim()) || rule.id || "(無題)";
+// A rule's human-facing identity: rules carry no name, so use the first
+// keyword — the most recognizable thing about the rule — in corner
+// brackets. A freshly-added row with no keywords yet falls back to its
+// position instead.
+function ruleIdentityFor(rule, index) {
+  if (rule.keywords && rule.keywords.length > 0) {
+    return `「${rule.keywords[0]}」`;
+  }
+  return `${index + 1}行目`;
 }
 
 // Validation: block save with inline messages rather than silently rejecting.
 const errors = computed(() => {
   const list = [];
-  const seen = new Set();
-  for (const rule of working.value.rules) {
-    const name = ruleLabelFor(rule);
-    if (!rule.label || !rule.label.trim()) {
-      list.push(`${rule.id || "(id未設定)"}: 表示名を入力してください`);
-    }
+  working.value.rules.forEach((rule, i) => {
+    const name = ruleIdentityFor(rule, i);
     if (!rule.keywords || rule.keywords.length === 0) {
-      list.push(`${name}: キーワードが空のルールは保存できません`);
+      list.push(`${name}: キーワードを入力してください`);
     }
     if (!COLOR_RE.test(rule.color || "")) {
       list.push(`${name}: 色は #RRGGBB 形式で指定してください`);
     }
-    if (seen.has(rule.id)) {
-      list.push(`${name}: ID が重複しています`);
-    }
-    seen.add(rule.id);
-  }
+  });
   if (!COLOR_RE.test(working.value.fallback?.color || "")) {
     list.push("既定色は #RRGGBB 形式で指定してください");
   }
@@ -354,7 +375,10 @@ const previewColor = computed(
   () =>
     previewMatch.value?.color || working.value.fallback?.color || DEFAULT_COLOR,
 );
-const previewLabel = computed(() => previewMatch.value?.label || "既定");
+const previewLabel = computed(() => {
+  const keyword = previewMatch.value?.keywords?.[0];
+  return keyword ? `「${keyword}」` : "既定";
+});
 
 async function load() {
   loading.value = true;
@@ -367,8 +391,9 @@ async function load() {
         "config/event.json が旧形式のままです。最新のコードを main へ反映してから開いてください。";
       return;
     }
-    original.value = normalize(data);
-    working.value = normalize(data);
+    const normalized = normalize(data);
+    original.value = normalized;
+    working.value = cloneRulesConfig(normalized);
     resetKeywordDrafts();
   } catch (err) {
     loadError.value = `読み込みに失敗しました: ${err.message}`;
@@ -420,8 +445,8 @@ function moveDown(i) {
 // --- keyword chip editing ---
 
 function commitKeyword(rule) {
-  const kw = (keywordDrafts[rule.id] || "").trim();
-  keywordDrafts[rule.id] = "";
+  const kw = (keywordDrafts[rule.uid] || "").trim();
+  keywordDrafts[rule.uid] = "";
   if (!kw) return;
   if (rule.keywords.includes(kw)) return;
   rule.keywords.push(kw);
@@ -433,40 +458,32 @@ function removeKeyword(rule, kw) {
 
 // --- add / remove rules ---
 
-function nextRuleId() {
-  const ids = new Set(working.value.rules.map((r) => r.id));
-  let n = 1;
-  while (ids.has(`rule${n}`)) n += 1;
-  return `rule${n}`;
-}
-
 function addRule() {
-  const id = nextRuleId();
+  const uid = allocRuleUid();
   working.value.rules.push({
-    id,
-    label: "",
+    uid,
     keywords: [],
     color: DEFAULT_COLOR,
     freeAllDay: false,
   });
-  keywordDrafts[id] = "";
+  keywordDrafts[uid] = "";
 }
 
 function removeRule(i) {
   const rule = working.value.rules[i];
   if (
     !window.confirm(
-      `ルール「${ruleLabelFor(rule)}」を削除します。よろしいですか？`,
+      `ルール${ruleIdentityFor(rule, i)}を削除します。よろしいですか？`,
     )
   ) {
     return;
   }
   working.value.rules.splice(i, 1);
-  delete keywordDrafts[rule.id];
+  delete keywordDrafts[rule.uid];
 }
 
 function reset() {
-  working.value = normalize(original.value);
+  working.value = cloneRulesConfig(original.value);
   resetKeywordDrafts();
 }
 
@@ -482,7 +499,7 @@ async function save() {
     // the same way HolidaysManager (and every other admin section) handles
     // it, since none of them special-case a stale sha.
     const fresh = await getFile(EVENT_PATH);
-    const content = JSON.stringify(working.value, null, 2) + "\n";
+    const content = JSON.stringify(toPersisted(working.value), null, 2) + "\n";
     const sha = await putFile({
       path: EVENT_PATH,
       content,
@@ -587,15 +604,6 @@ async function save() {
 
 .evt-danger {
   color: #dc2626;
-}
-
-.evt-label-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.4rem;
-  font: inherit;
-  border: 1px solid var(--border-color, #ccc);
-  border-radius: 4px;
 }
 
 .evt-chips {

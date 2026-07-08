@@ -12,7 +12,7 @@ import {
   parseTime,
   formatAsISODate,
 } from "@/utils/date";
-import { matchRule, shouldShowTime, isFreeAllDay } from "@/utils/eventRules";
+import { resolveColor, shouldShowTime, isFreeAllDay } from "@/utils/eventRules";
 
 /**
  * Calendar functionality composable
@@ -41,33 +41,6 @@ export function useCalendar() {
 
   function setEventConfig(config) {
     calendarStore.setEventConfig(config);
-  }
-
-  /**
-   * Determine event type and styling based on subject
-   * @param {string} subject - Event subject
-   * @param {boolean} isEdited - Whether this is an edited schedule
-   * @returns {Object} Event type and configuration
-   */
-  function getEventType(subject, isEdited = false) {
-    const eventConfig = storeEventConfig.value;
-
-    if (isEdited) {
-      return {
-        type: "edited",
-        config: { color: eventConfig?.edited?.color },
-      };
-    }
-
-    const rule = matchRule(subject, eventConfig);
-    if (rule) {
-      return { type: rule.id, config: { color: rule.color } };
-    }
-
-    return {
-      type: "default",
-      config: { color: eventConfig?.fallback?.color },
-    };
   }
 
   /**
@@ -129,7 +102,7 @@ export function useCalendar() {
         const scheduleInfo = getScheduleForDate(currentDate, startPosition);
         const shiftIndex = scheduleInfo?.shiftIndex ?? 0;
 
-        const { config } = getEventType(editedSchedule.subject, true);
+        const eventConfig = storeEventConfig.value;
         const title = buildEventTitle(
           editedSchedule.subject,
           editedSchedule.startTime,
@@ -139,7 +112,7 @@ export function useCalendar() {
         generatedEvents.push({
           title,
           start: dateStr,
-          color: config.color,
+          color: eventConfig?.edited?.color,
           extendedProps: {
             startTime: editedSchedule.startTime,
             endTime: editedSchedule.endTime,
@@ -170,11 +143,11 @@ export function useCalendar() {
           shiftIndex,
         } = scheduleInfo;
 
-        const { config } = getEventType(subject, false);
+        const eventConfig = storeEventConfig.value;
         generatedEvents.push({
           title: buildEventTitle(subject, startTime, endTime),
           start: dateStr,
-          color: config.color,
+          color: resolveColor(subject, eventConfig),
           extendedProps: {
             startTime,
             endTime,
@@ -205,7 +178,6 @@ export function useCalendar() {
     setCalendarEvents,
     setEventConfig,
 
-    getEventType,
     canAttendMeetup,
     generateCalendarEvents,
   };

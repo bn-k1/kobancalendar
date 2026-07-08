@@ -13,14 +13,12 @@ import { useEditedSchedules } from "@/stores/editedSchedules";
 const EVENT_CONFIG = {
   rules: [
     {
-      id: "restDay",
-      label: "公休",
       keywords: ["公休", "法休"],
       color: "red",
       freeAllDay: true,
     },
-    { id: "special", label: "特番", keywords: ["黄"], color: "orange" },
-    { id: "empty", label: "空き番", keywords: ["空"], color: "deepskyblue" },
+    { keywords: ["黄"], color: "orange" },
+    { keywords: ["空"], color: "deepskyblue" },
   ],
   fallback: { color: "deepskyblue" },
   edited: { color: "magenta" },
@@ -65,62 +63,6 @@ beforeEach(() => {
   setActivePinia(createPinia());
   localStorage.removeItem("kobancalendar_edited_schedules");
   localStorage.removeItem("kobancalendar_edited_schedules_hidden");
-});
-
-// ---------- getEventType ----------
-
-describe("getEventType()", () => {
-  beforeEach(() => {
-    setupAll();
-  });
-
-  it("isEdited=true → type が edited になる", () => {
-    const { getEventType } = useCalendar();
-    const result = getEventType("何でも", true);
-    expect(result.type).toBe("edited");
-  });
-
-  it("isEdited=true → edited.color を返す", () => {
-    const { getEventType } = useCalendar();
-    const result = getEventType("早番", true);
-    expect(result.config.color).toBe("magenta");
-  });
-
-  it("公休 → restDay", () => {
-    const { getEventType } = useCalendar();
-    expect(getEventType("公休").type).toBe("restDay");
-    expect(getEventType("公休").config.color).toBe("red");
-  });
-
-  it("法休 → restDay", () => {
-    const { getEventType } = useCalendar();
-    expect(getEventType("法休").type).toBe("restDay");
-  });
-
-  it("空 → empty", () => {
-    const { getEventType } = useCalendar();
-    expect(getEventType("空").type).toBe("empty");
-    expect(getEventType("空").config.color).toBe("deepskyblue");
-  });
-
-  it("黄 → special", () => {
-    const { getEventType } = useCalendar();
-    expect(getEventType("黄番").type).toBe("special");
-    expect(getEventType("黄番").config.color).toBe("orange");
-  });
-
-  it("マッチしない subject → default", () => {
-    const { getEventType } = useCalendar();
-    expect(getEventType("早番").type).toBe("default");
-    expect(getEventType("早番").config.color).toBe("deepskyblue");
-  });
-
-  it("eventConfig が未設定 → default", () => {
-    const calendarStore = useCalendarStore();
-    calendarStore.setEventConfig(undefined);
-    const { getEventType } = useCalendar();
-    expect(getEventType("早番").type).toBe("default");
-  });
 });
 
 // ---------- canAttendMeetup ----------
@@ -209,6 +151,90 @@ describe("generateCalendarEvents()", () => {
       dayjs("2025-11-19"),
     );
     events.forEach((e) => expect(e.color).toBeTruthy());
+  });
+
+  it("公休 の色は restDay rule の color", () => {
+    const scheduleStore = useScheduleStore();
+    const data = {
+      holiday: [{ s: "公休" }],
+      saturday: [{ s: "公休" }],
+      weekday: [{ s: "公休" }],
+      rotationCycleLength: 1,
+    };
+    scheduleStore.setScheduleData({ default: data });
+
+    const { generateCalendarEvents } = useCalendar();
+    const events = generateCalendarEvents(
+      dayjs("2025-11-17"),
+      dayjs("2025-11-18"),
+    );
+    expect(events[0].color).toBe("red");
+  });
+
+  it("空 の色は空き番 rule の color", () => {
+    const scheduleStore = useScheduleStore();
+    const data = {
+      holiday: [{ s: "空" }],
+      saturday: [{ s: "空" }],
+      weekday: [{ s: "空" }],
+      rotationCycleLength: 1,
+    };
+    scheduleStore.setScheduleData({ default: data });
+
+    const { generateCalendarEvents } = useCalendar();
+    const events = generateCalendarEvents(
+      dayjs("2025-11-17"),
+      dayjs("2025-11-18"),
+    );
+    expect(events[0].color).toBe("deepskyblue");
+  });
+
+  it("黄番 の色は特番 rule の color", () => {
+    const scheduleStore = useScheduleStore();
+    const data = {
+      holiday: [{ s: "黄番" }],
+      saturday: [{ s: "黄番" }],
+      weekday: [{ s: "黄番" }],
+      rotationCycleLength: 1,
+    };
+    scheduleStore.setScheduleData({ default: data });
+
+    const { generateCalendarEvents } = useCalendar();
+    const events = generateCalendarEvents(
+      dayjs("2025-11-17"),
+      dayjs("2025-11-18"),
+    );
+    expect(events[0].color).toBe("orange");
+  });
+
+  it("どの rule にもマッチしない subject は fallback.color になる", () => {
+    const scheduleStore = useScheduleStore();
+    const data = {
+      holiday: [{ s: "早番" }],
+      saturday: [{ s: "早番" }],
+      weekday: [{ s: "早番" }],
+      rotationCycleLength: 1,
+    };
+    scheduleStore.setScheduleData({ default: data });
+
+    const { generateCalendarEvents } = useCalendar();
+    const events = generateCalendarEvents(
+      dayjs("2025-11-17"),
+      dayjs("2025-11-18"),
+    );
+    expect(events[0].color).toBe("deepskyblue");
+  });
+
+  it("eventConfig が未設定でもエラーにならない", () => {
+    const calendarStore = useCalendarStore();
+    calendarStore.setEventConfig(undefined);
+
+    const { generateCalendarEvents } = useCalendar();
+    const events = generateCalendarEvents(
+      dayjs("2025-11-17"),
+      dayjs("2025-11-18"),
+    );
+    expect(events[0].color).toBeUndefined();
   });
 
   it("各イベントの extendedProps.isShift が true", () => {

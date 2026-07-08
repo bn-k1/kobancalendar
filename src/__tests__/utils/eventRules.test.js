@@ -12,14 +12,12 @@ import {
 const EVENT_CONFIG = {
   rules: [
     {
-      id: "restDay",
-      label: "公休",
       keywords: ["公休", "法休"],
       color: "#e53935",
       freeAllDay: true,
     },
-    { id: "special", label: "特番", keywords: ["黄"], color: "#fb8c00" },
-    { id: "empty", label: "空き番", keywords: ["空"], color: "#00bfff" },
+    { keywords: ["黄"], color: "#fb8c00" },
+    { keywords: ["空"], color: "#00bfff" },
   ],
   fallback: { color: "#00bfff" },
   edited: { color: "#e040fb" },
@@ -27,19 +25,19 @@ const EVENT_CONFIG = {
 
 describe("matchRule()", () => {
   it("keywords が subject の部分文字列なら一致する", () => {
-    expect(matchRule("公休", EVENT_CONFIG)?.id).toBe("restDay");
-    expect(matchRule("法休（振替）", EVENT_CONFIG)?.id).toBe("restDay");
+    expect(matchRule("公休", EVENT_CONFIG)?.color).toBe("#e53935");
+    expect(matchRule("法休（振替）", EVENT_CONFIG)?.color).toBe("#e53935");
   });
 
   it("先頭から順に最初に一致した rule が勝つ（順序依存）", () => {
     const config = {
       rules: [
-        { id: "first", keywords: ["番"], color: "a" },
-        { id: "second", keywords: ["黄番"], color: "b" },
+        { keywords: ["番"], color: "a" },
+        { keywords: ["黄番"], color: "b" },
       ],
     };
-    // "黄番" は両方の keywords に部分一致するが、先に定義された first が勝つ
-    expect(matchRule("黄番", config)?.id).toBe("first");
+    // "黄番" は両方の keywords に部分一致するが、先に定義された rule が勝つ
+    expect(matchRule("黄番", config)?.color).toBe("a");
   });
 
   it("どの rule にも一致しない場合は null", () => {
@@ -81,12 +79,10 @@ describe("shouldShowTime()", () => {
 });
 
 describe("isFreeAllDay()", () => {
-  it("restDay 以外の rule でも freeAllDay: true なら true になる", () => {
+  it("公休 以外の keywords の rule でも freeAllDay: true なら true になる", () => {
     const config = {
       rules: [
         {
-          id: "dayOff",
-          label: "非番",
           keywords: ["非番"],
           color: "#000",
           freeAllDay: true,

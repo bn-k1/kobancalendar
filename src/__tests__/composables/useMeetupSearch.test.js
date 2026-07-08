@@ -35,8 +35,6 @@ function setupAll(baseDate = dayjs("2025-11-17")) {
   const eventConfig = {
     rules: [
       {
-        id: "restDay",
-        label: "公休",
         keywords: ["公休", "法休"],
         color: "red",
         freeAllDay: true,

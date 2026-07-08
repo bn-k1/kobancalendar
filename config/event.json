@@ -1,19 +1,8 @@
 {
   "rules": [
-    {
-      "id": "restDay",
-      "label": "公休",
-      "keywords": ["公休", "法休"],
-      "color": "#e53935",
-      "freeAllDay": true
-    },
-    {
-      "id": "special",
-      "label": "特番",
-      "keywords": ["黄"],
-      "color": "#fb8c00"
-    },
-    { "id": "empty", "label": "空き番", "keywords": ["空"], "color": "#00bfff" }
+    { "keywords": ["公休", "法休"], "color": "#e53935", "freeAllDay": true },
+    { "keywords": ["黄"], "color": "#fb8c00" },
+    { "keywords": ["空"], "color": "#00bfff" }
   ],
   "fallback": { "color": "#00bfff" },
   "edited": { "color": "#e040fb" }
