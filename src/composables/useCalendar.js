@@ -1,10 +1,9 @@
 // src/composables/useCalendar.js
 import { computed } from "vue";
-import { storeToRefs } from "pinia";
 import { useCalendarStore } from "@/stores/calendar";
 import { useSchedule } from "@/composables/useSchedule";
 import { useHolidays } from "@/composables/useHolidays";
-import { useEditedSchedules } from "@/stores/editedSchedules";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import {
   createDate,
   addDays,
@@ -23,9 +22,7 @@ export function useCalendar() {
 
   const { getScheduleForDate } = useSchedule();
   const { getHolidayName } = useHolidays();
-  const editedSchedulesStore = useEditedSchedules();
-  const { getEditedSchedule } = editedSchedulesStore;
-  const { isEditsHidden } = storeToRefs(editedSchedulesStore);
+  const { getEditedSchedule, isEditsHidden } = useEditedSchedules();
 
   const storeCalendarEvents = computed(() => calendarStore.calendarEvents);
   const storeStartPosition = computed(() => calendarStore.startPosition);

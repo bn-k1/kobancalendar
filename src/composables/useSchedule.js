@@ -75,6 +75,35 @@ export function useSchedule() {
 
   const activeScheduleData = computed(() => dataForEpoch(activeEpoch.value));
 
+  /**
+   * Schedule data for the active epoch, resolved to the segment in effect
+   * *today* (via `dataForEpochAtDate`). Unlike `activeScheduleData` (which
+   * always reports the epoch's representative — i.e. first — segment),
+   * this reflects an in-epoch data swap once its `from` date has passed.
+   *
+   * Use this for consumers that read the subject/time TABLES (search,
+   * autocomplete) rather than epoch-level metadata that segments are
+   * validated to share (e.g. `rotationCycleLength`), where the
+   * representative segment is equally correct and cheaper.
+   */
+  const activeScheduleDataForToday = computed(() =>
+    dataForEpochAtDate(activeEpoch.value, today()),
+  );
+
+  /**
+   * Schedule data for the active epoch, resolved to the segment in effect on
+   * an arbitrary `date` (via `dataForEpochAtDate`). Use this when a consumer
+   * is reading/editing a *specific* date rather than "today"
+   * (`activeScheduleDataForToday`) or the epoch's representative — first —
+   * segment (`activeScheduleData`). `date` may be a dayjs object, ISO
+   * string, or anything `createDate` accepts.
+   * @param {dayjs|string|Date} date
+   * @returns {Object}
+   */
+  function scheduleDataForDate(date) {
+    return dataForEpochAtDate(activeEpoch.value, createDate(date));
+  }
+
   /** The active epoch's anchor date. */
   const activeBaseDate = computed(() => activeEpoch.value?.from);
 
@@ -255,6 +284,8 @@ export function useSchedule() {
     // Reactive state
     epochs: storeEpochs,
     activeScheduleData,
+    activeScheduleDataForToday,
+    scheduleDataForDate,
     activeBaseDate,
     defaultBaseDate,
     nextBaseDate,

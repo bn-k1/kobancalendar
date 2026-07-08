@@ -185,6 +185,7 @@
           :window-end="addingSegment.windowEnd"
           :existing-segment-froms="addingSegment.existingSegmentFroms"
           :existing-folders="existingFolders"
+          :referenced-folders="referencedFolderList"
           :required-cycle-length="addingSegment.requiredCycleLength"
           @submit="onAddSegmentSubmit"
           @cancel="addingSegment = null"
@@ -218,6 +219,7 @@
             :busy="busy"
             :existing-froms="existingFroms"
             :existing-folders="existingFolders"
+            :referenced-folders="referencedFolderList"
             :can-inherit="epochs.length > 0"
             @submit="onAddSubmit"
             @cancel="showAdd = false"
@@ -263,7 +265,8 @@ import ScheduleEditor from "@/components/ScheduleEditor.vue";
 import { useGitHubApi } from "@/composables/useGitHubApi";
 import { useConfigEditor } from "@/composables/useConfigEditor";
 import { serializeCsv } from "@/composables/useScheduleImport";
-import { createDate, today } from "@/utils/date";
+import { today } from "@/utils/date";
+import { currentEpochIndex } from "@/utils/epochResolution";
 
 const { resolveRepo, getFile, listDir, commitFiles } = useGitHubApi();
 const { commitConfig } = useConfigEditor();
@@ -342,10 +345,12 @@ const generations = computed(() => {
       swapSegments: segments.filter((s) => s.segIndex >= 1),
     };
   });
-  let currentIndex = -1;
-  items.forEach((it, i) => {
-    if (createDate(it.from).isSameOrBefore(today0, "day")) currentIndex = i;
-  });
+  // Mirrors useSchedule.js's currentEpochIndex() exactly (src/utils/epochResolution.js):
+  // falls back to index 0 — never -1 — when every epoch's `from` is in the
+  // future, because the runtime still serves that first epoch in that case.
+  // Getting this wrong would label the live generation "future" and let the
+  // operator delete it (see canDelete below).
+  const currentIndex = items.length ? currentEpochIndex(items, today0) : -1;
   return items.map((it, i) => {
     let label, badge;
     if (i === currentIndex) {
@@ -369,8 +374,15 @@ const generations = computed(() => {
 });
 
 const existingFroms = computed(() => epochs.value.map((e) => e.from));
+// Folders referenced by SOME generation right now (subset of existingFolders
+// below) — a NEW folder colliding with one of these would silently overwrite
+// another still-live generation's CSVs, so ScheduleEditor treats it as a hard
+// error rather than the "existing but unreferenced" overwrite warning.
+const referencedFolderList = computed(() => [
+  ...referencedFolders(epochs.value),
+]);
 const existingFolders = computed(() => [
-  ...new Set([...dataDirs.value, ...referencedFolders(epochs.value)]),
+  ...new Set([...dataDirs.value, ...referencedFolderList.value]),
 ]);
 
 const orphanFolders = computed(() => {

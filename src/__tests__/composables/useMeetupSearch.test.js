@@ -7,7 +7,7 @@ import { useMeetupSearch } from "@/composables/useMeetupSearch";
 import { useCalendarStore } from "@/stores/calendar";
 import { useScheduleStore } from "@/stores/schedule";
 import { useHolidayStore } from "@/stores/holiday";
-import { useEditedSchedules } from "@/stores/editedSchedules";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 
 // 全員が参加可能なデータ（公休 = 休日）
 const CYCLE = 3;
@@ -160,12 +160,22 @@ describe("findMeetupDates()", () => {
     expect(result.partialMatches).toHaveLength(0);
   });
 
-  it("searchResults ref が更新される", () => {
+  it("searchResults ref は findMeetupDates の戻り値と同じ内容で更新される", () => {
+    // 単に .toBeDefined() を確認するだけでは、他の findMeetupDates() のテスト
+    // 群（戻り値そのものを検証済み）と重複するだけなので、ここでは
+    // 戻り値では検証していない「reactive ref への反映」という固有の挙動を
+    // 実データで検証する。
     setupAll(dayjs("2025-11-17"));
     const { findMeetupDates, searchResults } = useMeetupSearch();
-    findMeetupDates([1], "17:00", dayjs("2025-11-17"), dayjs("2025-11-18"));
-    expect(searchResults.value.allMatches).toBeDefined();
-    expect(searchResults.value.partialMatches).toBeDefined();
+    const result = findMeetupDates(
+      [1],
+      "17:00",
+      dayjs("2025-11-17"),
+      dayjs("2025-11-18"),
+    );
+    expect(searchResults.value).toEqual(result);
+    expect(searchResults.value.allMatches).toHaveLength(1);
+    expect(searchResults.value.partialMatches).toHaveLength(0);
   });
 });
 

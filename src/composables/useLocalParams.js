@@ -49,14 +49,6 @@ function writeStoredObject(storageKey, value) {
   }
 }
 
-function removeStoredObject(storageKey) {
-  try {
-    localStorage.removeItem(storageKey);
-  } catch {
-    // noop — storage may be unavailable
-  }
-}
-
 function toValidIntegerArray(values) {
   if (!Array.isArray(values)) return [];
 
@@ -154,8 +146,13 @@ export function useLocalParams() {
     return typeof stored === "number" ? stored : null;
   }
 
+  // A stale `active` pointer (baseDate no longer matches any known epoch)
+  // must only reset the pointer — the `positions` map for other, still-valid
+  // baseDates (e.g. a sibling generation's slot) must survive. Wiping the
+  // whole key here would silently forget everyone else's saved position too.
   function clearCalendarSelection() {
-    removeStoredObject(CALENDAR_STORAGE_KEY);
+    const { positions } = readCalendarStorage();
+    writeStoredObject(CALENDAR_STORAGE_KEY, { active: null, positions });
   }
 
   function saveMeetupParams(baseDate, participants, startTime, period) {
@@ -202,8 +199,11 @@ export function useLocalParams() {
     return active ? loadMeetupParamsFor(active) : null;
   }
 
+  // Same reasoning as clearCalendarSelection: only the pointer is stale, the
+  // per-baseDate `sets` map (e.g. the other version's search config) is not.
   function clearMeetupParams() {
-    removeStoredObject(MEETUP_STORAGE_KEY);
+    const { sets } = readMeetupStorage();
+    writeStoredObject(MEETUP_STORAGE_KEY, { active: null, sets });
   }
 
   return {

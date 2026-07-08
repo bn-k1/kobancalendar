@@ -7,8 +7,10 @@ import { useSchedule } from "@/composables/useSchedule";
  * shift-table data.
  */
 export function useSearch() {
-  // Schedule data for the epoch currently being viewed
-  const { activeScheduleData } = useSchedule();
+  // Schedule data for the epoch currently being viewed, resolved to the
+  // in-epoch data segment in effect today (not necessarily the epoch's
+  // first segment — see useSchedule.js's `activeScheduleDataForToday`).
+  const { activeScheduleDataForToday } = useSchedule();
 
   // Local state
   const searchQuery = ref("");
@@ -30,8 +32,10 @@ export function useSearch() {
     }
   }
 
-  // Schedule data for the active epoch
-  const currentScheduleData = computed(() => activeScheduleData.value || null);
+  // Schedule data for the active epoch, as of today
+  const currentScheduleData = computed(
+    () => activeScheduleDataForToday.value || null,
+  );
 
   // Get current day type data
   const currentDayTypeData = computed(() => {
@@ -131,7 +135,7 @@ export function useSearch() {
   }
 
   // Watch for schedule data changes and reset if needed
-  watch(activeScheduleData, () => {
+  watch(activeScheduleDataForToday, () => {
     refreshSearchIfNeeded();
   });
 

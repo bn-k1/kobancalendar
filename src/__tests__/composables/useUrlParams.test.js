@@ -192,6 +192,56 @@ describe("useUrlParams", () => {
       const { readCanonicalMeetup } = useUrlParams();
       expect(readCanonicalMeetup()).toBeNull();
     });
+
+    it("drops zero/negative participant positions even with no cycle length given", () => {
+      setLocation("/", "", "#/meetup?ps=0,-3,5&t=19:00&d=60");
+      const { readCanonicalMeetup } = useUrlParams();
+      expect(readCanonicalMeetup().participants).toEqual([5]);
+    });
+
+    it("drops participant positions above the given cycle length", () => {
+      setLocation("/", "", "#/meetup?ps=1,5,9999&t=19:00&d=60");
+      const { readCanonicalMeetup } = useUrlParams();
+      expect(readCanonicalMeetup(5).participants).toEqual([1, 5]);
+    });
+
+    it("validates ps= against whichever epoch's cycle length is passed in", () => {
+      // Same URL, two different target epochs (cycle length 5 vs 8) — the
+      // caller resolves the target epoch first and passes its cycle length;
+      // readCanonicalMeetup must not hard-code either value itself.
+      setLocation("/", "", "#/meetup?ps=3,6,7&t=19:00&d=60");
+      const { readCanonicalMeetup } = useUrlParams();
+      expect(readCanonicalMeetup(5).participants).toEqual([3]);
+      expect(readCanonicalMeetup(8).participants).toEqual([3, 6, 7]);
+    });
+
+    it("returns null when every participant falls outside the cycle length", () => {
+      setLocation("/", "", "#/meetup?ps=0,-1,99&t=19:00&d=60");
+      const { readCanonicalMeetup } = useUrlParams();
+      expect(readCanonicalMeetup(5)).toBeNull();
+    });
+
+    it("returns null for a negative period (would make endDate precede startDate)", () => {
+      setLocation("/", "", "#/meetup?ps=1,2&t=19:00&d=-30");
+      const { readCanonicalMeetup } = useUrlParams();
+      expect(readCanonicalMeetup()).toBeNull();
+    });
+
+    it("returns null for a zero period", () => {
+      setLocation("/", "", "#/meetup?ps=1,2&t=19:00&d=0");
+      const { readCanonicalMeetup } = useUrlParams();
+      expect(readCanonicalMeetup()).toBeNull();
+    });
+
+    it("still parses normally when no cycle length is passed (back-compat)", () => {
+      setLocation("/", "", "#/meetup?ps=1,7,12&t=19:00&d=120");
+      const { readCanonicalMeetup } = useUrlParams();
+      expect(readCanonicalMeetup()).toEqual({
+        participants: [1, 7, 12],
+        startTime: "19:00",
+        period: 120,
+      });
+    });
   });
 
   describe("writeMeetupUrl", () => {

@@ -7,7 +7,7 @@ import { useCalendar } from "@/composables/useCalendar";
 import { useCalendarStore } from "@/stores/calendar";
 import { useScheduleStore } from "@/stores/schedule";
 import { useHolidayStore } from "@/stores/holiday";
-import { useEditedSchedules } from "@/stores/editedSchedules";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 
 // config/event.json と同等のイベント設定（ordered rule-array 形式）
 const EVENT_CONFIG = {

@@ -86,19 +86,30 @@ export function useUrlParams() {
 
   // ----- canonical: Meetup -----
 
-  function readCanonicalMeetup() {
+  // maxPosition: 呼び出し側が解決した対象 epoch の rotationCycleLength。
+  // 手打ち URL の ps=0 / ps=-1 / ps=9999 のような値が calculateShiftIndex の
+  // 二重 modulo で無関係な人のコマへ化けるのを防ぐため、範囲外の値は個別に
+  // 落とす（Home の p= と同じ「無効値は無視、他は活かす」方針）。maxPosition
+  // 省略時も 1 未満は無条件で弾く（下限はどの epoch でも共通のため）。
+  function readCanonicalMeetup(maxPosition) {
     const { path, query } = getHashRoute();
     if (path !== MEETUP_PATH) return null;
     const rawPs = query.get("ps");
     const rawT = query.get("t");
     const rawD = query.get("d");
     if (!rawPs || !rawT || rawD == null) return null;
+    const hasUpperBound = typeof maxPosition === "number" && maxPosition > 0;
     const participants = rawPs
       .split(",")
       .map((s) => parseIntOrNull(s))
-      .filter((n) => n != null);
+      .filter((n) => n != null && n >= 1)
+      .filter((n) => !hasUpperBound || n <= maxPosition);
     const period = parseIntOrNull(rawD);
-    if (participants.length === 0 || period == null) return null;
+    // 期間は正の整数のみ（d=-30 のような値は endDate が startDate より前になり
+    // findMeetupDates が無言で空を返すだけなので、ここで弾いて URL 全体を無効化する）
+    if (participants.length === 0 || period == null || period <= 0) {
+      return null;
+    }
     return { participants, startTime: rawT, period };
   }
 

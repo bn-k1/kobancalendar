@@ -26,6 +26,18 @@ export default defineConfig({
         "src/router/**",
         "src/**/*.spec.{js,vue}",
       ],
+      // Ratchet floor, not an aspirational target: set a few points below the
+      // measured coverage at the time this was added (stmts 37.57 / branch
+      // 31.32 / funcs 38.16 / lines 38.17 on the then-current tree) so today's
+      // suite passes with headroom, while still failing the build if coverage
+      // silently regresses back toward 0%. Raise these as real coverage grows
+      // — don't lower them to make a failing build pass.
+      thresholds: {
+        statements: 34,
+        branches: 28,
+        functions: 35,
+        lines: 35,
+      },
     },
   },
 });

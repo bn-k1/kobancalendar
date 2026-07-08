@@ -57,15 +57,17 @@
 <script setup>
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
-import { useEditedSchedules } from "@/stores/editedSchedules";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import EyeToggleIcon from "@/components/Icons/EyeToggleIcon.vue";
 import { useCalendarStore } from "@/stores/calendar";
 import { EDITED_SCHEDULE_EMPTY_NOTICE } from "@/utils/constants";
 
-const editedSchedulesStore = useEditedSchedules();
-const { editedSchedulesList, isEditsHidden } =
-  storeToRefs(editedSchedulesStore);
-const { removeEditedSchedule, setEditsHidden } = editedSchedulesStore;
+const {
+  editedSchedulesList,
+  isEditsHidden,
+  removeEditedSchedule,
+  setEditsHidden,
+} = useEditedSchedules();
 const emit = defineEmits(["editedChanged"]);
 const isExpanded = ref(false);
 const showList = computed(() => isExpanded.value && !isEditsHidden.value);

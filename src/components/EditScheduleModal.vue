@@ -160,7 +160,7 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "save"]);
 
-const { activeScheduleData } = useSchedule();
+const { scheduleDataForDate } = useSchedule();
 
 const selectedSubject = ref("");
 const selectedStartTime = ref("");
@@ -204,18 +204,24 @@ const modalTitle = computed(() => {
 });
 
 const subjectOptions = computed(() => {
-  if (!props.date || !activeScheduleData.value) return [];
+  if (!props.date) return [];
+
+  // Resolve to the data table in effect on the edited date itself — not
+  // "today" and not the epoch's first segment — so a date past an in-epoch
+  // segment swap offers the subjects actually shown on that date.
+  const scheduleData = scheduleDataForDate(props.date);
+  if (!scheduleData) return [];
 
   let dayTypeData;
   switch (props.dayType) {
     case "saturday":
-      dayTypeData = activeScheduleData.value.saturday || [];
+      dayTypeData = scheduleData.saturday || [];
       break;
     case "holiday":
-      dayTypeData = activeScheduleData.value.holiday || [];
+      dayTypeData = scheduleData.holiday || [];
       break;
     default:
-      dayTypeData = activeScheduleData.value.weekday || [];
+      dayTypeData = scheduleData.weekday || [];
   }
 
   const subjectMap = new Map();

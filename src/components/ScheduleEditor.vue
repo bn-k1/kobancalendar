@@ -151,6 +151,10 @@ const props = defineProps({
   busy: { type: Boolean, default: false },
   existingFroms: { type: Array, default: () => [] },
   existingFolders: { type: Array, default: () => [] },
+  // Folders currently referenced by SOME generation/segment (subset of
+  // existingFolders). A collision here is a hard error in add/add-segment
+  // (both always create a brand-new folder) — see useScheduleImport.js.
+  referencedFolders: { type: Array, default: () => [] },
   // add mode only: whether an inheriting generation (no data/CSVs, reuses the
   // previous one) may be offered. False when there is no previous generation.
   canInherit: { type: Boolean, default: false },
@@ -213,6 +217,7 @@ const epochResult = computed(() => {
       windowEnd: props.windowEnd,
       existingSegmentFroms: props.existingSegmentFroms,
       existingFolders: props.existingFolders,
+      referencedFolders: props.referencedFolders,
       requiredCycleLength: props.requiredCycleLength,
       trioCycleLength: trioResult.value.cycleLength,
     });
@@ -222,6 +227,7 @@ const epochResult = computed(() => {
     folder: folder.value,
     existingFroms: props.existingFroms,
     existingFolders: props.existingFolders,
+    referencedFolders: props.referencedFolders,
     inherit: isInheriting.value,
   });
 });

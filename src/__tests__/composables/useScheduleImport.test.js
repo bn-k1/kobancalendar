@@ -187,6 +187,20 @@ describe("validateEpochMeta()", () => {
     expect(r.warnings.some((w) => /上書き/.test(w))).toBe(true);
   });
 
+  it("他の世代が参照中のフォルダ名はエラー（警告ではない）にする", () => {
+    const r = validateEpochMeta({
+      fromStr: "2026-08-01",
+      folder: "default",
+      existingFroms,
+      existingFolders: ["default"],
+      referencedFolders: ["default"],
+    });
+    expect(r.ok).toBe(false);
+    expect(r.errors.some((e) => /使用中/.test(e))).toBe(true);
+    // Not also duplicated as a warning once it's already an error.
+    expect(r.warnings.some((w) => /上書き/.test(w))).toBe(false);
+  });
+
   it("過去の有効日は警告", () => {
     const r = validateEpochMeta({
       fromStr: "2000-01-01",
@@ -228,6 +242,19 @@ describe("validateEpochMeta()", () => {
       inherit: true,
     });
     expect(r.warnings.some((w) => /上書き/.test(w))).toBe(false);
+  });
+
+  it("inherit: 他の世代が参照中のフォルダ名と一致していてもエラーを出さない（フォルダ未使用のため）", () => {
+    const r = validateEpochMeta({
+      fromStr: "2026-08-01",
+      folder: "default",
+      existingFroms,
+      existingFolders: ["default"],
+      referencedFolders: ["default"],
+      inherit: true,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.errors).toEqual([]);
   });
 
   it("inherit: 重複する有効日は依然エラー", () => {

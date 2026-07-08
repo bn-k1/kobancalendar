@@ -104,7 +104,7 @@ const EditedSchedulesList = defineAsyncComponent(
 );
 
 import { useCalendar } from "@/composables/useCalendar";
-import { useEditedSchedules } from "@/stores/editedSchedules";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { useSchedule } from "@/composables/useSchedule";
 import { useAppInitializer } from "@/composables/useAppInitializer";
 import { useUrlParams } from "@/composables/useUrlParams";
@@ -154,12 +154,29 @@ const {
 } = useCalendar();
 
 const {
+  epochs,
   defaultBaseDate,
   activeBaseDate,
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
 } = useSchedule();
+
+// rotationCycleLength for a specific epoch (identified by its anchor date),
+// as opposed to `rotationCycleLength` above which always reflects the
+// *active* epoch. `?p=` must be validated against the epoch it is about to
+// be applied to (which may be the next epoch, not whichever epoch happens
+// to be active right now) — nothing constrains rotationCycleLength to be
+// equal across epochs, only across segments within a single epoch. Mirrors
+// the `scheduleData[epoch.dataKey]?.rotationCycleLength` lookup buildEpochs
+// uses (useAppInitializer.js); no such per-epoch accessor is exposed by
+// useSchedule itself, so this reads the same raw bundle the view already
+// imports.
+function rotationCycleLengthForBaseDate(baseDateObj) {
+  if (!baseDateObj) return 0;
+  const epoch = epochs.value.find((e) => isSameDay(e.from, baseDateObj));
+  return (epoch && scheduleData[epoch.dataKey]?.rotationCycleLength) || 0;
+}
 
 const nextBaseDateStr = computed(() => {
   if (!nextBaseDate.value?.isValid?.()) return null;
@@ -309,10 +326,9 @@ async function initialize() {
     const validBaseDates = [defaultBaseDate.value, nextBaseDate.value].filter(
       Boolean,
     );
-    const cycleLength = result.activeScheduleData.rotationCycleLength;
 
-    let applied = applyFromCanonical(validBaseDates, cycleLength);
-    if (!applied) applied = applyFromStorage(validBaseDates, cycleLength);
+    let applied = applyFromCanonical(validBaseDates);
+    if (!applied) applied = applyFromStorage(validBaseDates);
     if (!applied) applied = applyDefaultBaseDate();
 
     syncCalendarUrl();
@@ -324,11 +340,7 @@ async function initialize() {
   }
 }
 
-function applyFromCanonical(
-  validBaseDates,
-  cycleLength,
-  { navigate = false } = {},
-) {
+function applyFromCanonical(validBaseDates, { navigate = false } = {}) {
   const { position, version } = readCanonicalCalendar();
   if (position == null && version == null) return false;
 
@@ -343,6 +355,9 @@ function applyFromCanonical(
   if (!targetBaseDate) return false;
 
   const isoBaseDate = formatAsISODate(targetBaseDate);
+  // p= はこれから適用する対象 epoch（targetBaseDate）のサイクル長で検証する
+  // — 呼び出し時点でまだ active な（別の）epoch のサイクル長ではない。
+  const cycleLength = rotationCycleLengthForBaseDate(targetBaseDate);
   const validUrlNum =
     position != null ? validStartNumberOrNull(position, cycleLength) : null;
   const fallbackNum = loadCalendarPositionFor(isoBaseDate);
@@ -363,7 +378,7 @@ function applyFromCanonical(
   return true;
 }
 
-function applyFromStorage(validBaseDates, cycleLength) {
+function applyFromStorage(validBaseDates) {
   const stored = loadCalendarSelection();
   if (!stored) return false;
 
@@ -373,6 +388,9 @@ function applyFromStorage(validBaseDates, cycleLength) {
     return false;
   }
 
+  // 保存されていた startNumber は「その baseDate（= 対象 epoch）」のサイクル長
+  // で検証する。
+  const cycleLength = rotationCycleLengthForBaseDate(dateObj);
   const num = validStartNumberOrNull(stored.startNumber, cycleLength);
   updateActiveBaseDate(dateObj);
   selectedBaseDate.value = formatAsISODate(dateObj);
@@ -397,9 +415,7 @@ watch(computedStartPosition, (newValue) => {
 // URL writer は能動的な操作のみ pushState で履歴を積むので、ここで対の reader を用意する。
 function handlePopState() {
   if (!isCalendarRoute()) return;
-  const applied = applyFromCanonical([], rotationCycleLength.value, {
-    navigate: true,
-  });
+  const applied = applyFromCanonical([], { navigate: true });
   if (!applied) {
     // p も v も無いエントリ（コマ位置未選択の既定状態）へ戻った場合。
     if (applyDefaultBaseDate() && defaultBaseDate.value) {

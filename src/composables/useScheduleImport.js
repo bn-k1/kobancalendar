@@ -160,7 +160,15 @@ export function suggestFolderName(fromStr) {
 //   fromStr        — "YYYY-MM-DD" the new generation takes effect
 //   folder         — target data folder name
 //   existingFroms  — array of existing epoch `from` strings (any order)
-//   existingFolders— array of existing data folder names
+//   existingFolders— array of existing data folder names (on disk, referenced
+//                    or not — a collision here only warns, since an unused
+//                    folder is dead data and overwriting it is harmless)
+//   referencedFolders — array of folder names currently referenced by SOME
+//                    generation (in schedules[], base or in-epoch segment). A
+//                    new generation always creates a brand-new folder, so a
+//                    collision here means silently overwriting another still-
+//                    live generation's CSVs — that is a hard error, not a
+//                    warning.
 //   inherit        — true when this generation reuses the previous one's data
 //                    (position-shift only, `data` omitted). Skips all folder
 //                    validation — there is no folder to name or upload.
@@ -170,6 +178,7 @@ export function validateEpochMeta({
   folder,
   existingFroms = [],
   existingFolders = [],
+  referencedFolders = [],
   inherit = false,
 } = {}) {
   const errors = [];
@@ -213,6 +222,10 @@ export function validateEpochMeta({
       );
     } else if (folder === "menu") {
       errors.push("フォルダ名 'menu' は使えません");
+    } else if (referencedFolders.includes(folder)) {
+      errors.push(
+        `フォルダ '${folder}' は他の世代で使用中です。別のフォルダ名にしてください`,
+      );
     } else if (existingFolders.includes(folder)) {
       warnings.push(
         `フォルダ '${folder}' は既に存在します。CSVが上書きされます`,
@@ -232,7 +245,13 @@ export function validateEpochMeta({
 //   windowStart         — the generation's own `from` (segment must be after it)
 //   windowEnd           — the next generation's `from`, or null/"" if last
 //   existingSegmentFroms— froms already used in this generation (incl. base)
-//   existingFolders     — array of existing data folder names
+//   existingFolders     — array of existing data folder names (on disk,
+//                         referenced or not — collision here only warns)
+//   referencedFolders   — folder names currently referenced by SOME
+//                         generation/segment. A swap segment always creates a
+//                         brand-new folder, so a collision here means
+//                         silently overwriting another still-live
+//                         generation's CSVs — a hard error, not a warning.
 //   requiredCycleLength — the generation's コマ数 (CSV row count) to match
 //   trioCycleLength     — the new CSV trio's コマ数
 // Returns { ok, errors: string[], warnings: string[] }.
@@ -243,6 +262,7 @@ export function validateSegmentMeta({
   windowEnd,
   existingSegmentFroms = [],
   existingFolders = [],
+  referencedFolders = [],
   requiredCycleLength = 0,
   trioCycleLength = 0,
 } = {}) {
@@ -282,6 +302,10 @@ export function validateSegmentMeta({
     );
   } else if (folder === "menu") {
     errors.push("フォルダ名 'menu' は使えません");
+  } else if (referencedFolders.includes(folder)) {
+    errors.push(
+      `フォルダ '${folder}' は他の世代で使用中です。別のフォルダ名にしてください`,
+    );
   } else if (existingFolders.includes(folder)) {
     warnings.push(`フォルダ '${folder}' は既に存在します。CSVが上書きされます`);
   }

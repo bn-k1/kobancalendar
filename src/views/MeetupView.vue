@@ -182,12 +182,28 @@ const { searchResults, findMeetupDates } = useMeetupSearch();
 
 // Schedule composable
 const {
+  epochs,
   defaultBaseDate,
   activeBaseDate,
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
 } = useSchedule();
+
+// rotationCycleLength for a specific epoch (identified by its anchor date),
+// as opposed to `rotationCycleLength` above which always reflects the
+// *active* epoch. Needed to bounds-check a canonical URL's `ps=` positions
+// against the epoch the URL is actually about to resolve to — not whichever
+// epoch happens to be active before that resolution runs. Mirrors the
+// `scheduleData[epoch.dataKey]?.rotationCycleLength` lookup buildEpochs uses
+// (useAppInitializer.js); no such per-epoch accessor is exposed by
+// useSchedule itself, so this reads the same raw bundle the view already
+// imports.
+function rotationCycleLengthForBaseDate(baseDateObj) {
+  if (!baseDateObj) return 0;
+  const epoch = epochs.value.find((e) => isSameDay(e.from, baseDateObj));
+  return (epoch && scheduleData[epoch.dataKey]?.rotationCycleLength) || 0;
+}
 
 const nextBaseDateStr = computed(() => {
   if (!nextBaseDate.value?.isValid?.()) return null;
@@ -364,14 +380,18 @@ async function initialize() {
 }
 
 function applyFromCanonical(validBaseDates) {
-  const url = readCanonicalMeetup();
-  if (!url) return false;
-
-  // baseDate は config の現行 active を採用（URL には載せない設計）
-  const targetBaseDate = nextBaseDate.value || defaultBaseDate.value;
+  // baseDate は config の現行 active（= 今日以前で最後の世代）を採用する。
+  // Meetup の版切替は URL に載らない設計なので、共有 URL の受け手は常に
+  // 「いまの世代」で開く（次世代を先取りしない）。
+  const targetBaseDate = defaultBaseDate.value;
   if (!targetBaseDate) return false;
   const cls = classifyBaseDate(formatAsISODate(targetBaseDate), validBaseDates);
   if (cls.kind !== "active") return false;
+
+  // ps= の範囲チェックは対象 epoch（= targetBaseDate）のサイクル長に対して行う。
+  const cycleLength = rotationCycleLengthForBaseDate(targetBaseDate);
+  const url = readCanonicalMeetup(cycleLength);
+  if (!url) return false;
 
   applySelectedBaseDate(cls.baseDate);
   participants.value = url.participants.map((position) => ({ position }));

@@ -22,9 +22,10 @@ import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useHolidays } from "@/composables/useHolidays";
-import { useEditedSchedules } from "@/stores/editedSchedules";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { CALENDAR_CONFIG, LONG_PRESS_DURATION } from "@/utils/constants";
 import { createDate, isSameDay, today, formatAsISODate } from "@/utils/date";
+import { escapeHtml } from "@/utils/escapeHtml";
 import EditScheduleModal from "@/components/EditScheduleModal.vue";
 import { useCalendarStore } from "@/stores/calendar";
 
@@ -45,10 +46,12 @@ const props = defineProps({
 const emit = defineEmits(["datesSet", "scheduleEdited"]);
 
 const { isHoliday, getHolidayName } = useHolidays();
-const editedSchedulesStore = useEditedSchedules();
-const { getEditedSchedule, saveEditedSchedule, removeEditedSchedule } =
-  editedSchedulesStore;
-const { isEditsHidden } = storeToRefs(editedSchedulesStore);
+const {
+  getEditedSchedule,
+  saveEditedSchedule,
+  removeEditedSchedule,
+  isEditsHidden,
+} = useEditedSchedules();
 
 const calendarStore = useCalendarStore();
 const { eventConfig } = storeToRefs(calendarStore);
@@ -242,12 +245,17 @@ const calendarOptions = computed(() => ({
 
     const editedIndicator = isEdited ? "✎ " : "";
 
+    const safeTitle = escapeHtml(title);
+    const safeStartTime = escapeHtml(startTime);
+    const safeEndTime = escapeHtml(endTime);
+    const safeKomaichi = escapeHtml(komaichi);
+
     return {
       html: `
-        <div class="event-title">${editedIndicator}${title}</div>
-        ${startTime ? `<div class="event-time">${startTime}</div>` : ""}
-        ${endTime ? `<div class="event-time">${endTime}</div>` : ""}
-        <div class="event-meta">${komaichi}</div>
+        <div class="event-title">${editedIndicator}${safeTitle}</div>
+        ${startTime ? `<div class="event-time">${safeStartTime}</div>` : ""}
+        ${endTime ? `<div class="event-time">${safeEndTime}</div>` : ""}
+        <div class="event-meta">${safeKomaichi}</div>
       `,
     };
   },

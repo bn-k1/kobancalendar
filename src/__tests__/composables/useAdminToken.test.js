@@ -1,7 +1,8 @@
 // src/__tests__/composables/useAdminToken.test.js
 // Characterization tests for the admin credential storage composable.
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { useAdminToken, normalizeRepo } from "@/composables/useAdminToken";
+import { makeStorageFail, restoreStorage } from "../setup";
 
 // ---------- token ----------
 
@@ -81,5 +82,53 @@ describe("normalizeRepo()", () => {
     expect(normalizeRepo("a/b/c")).toBeNull();
     expect(normalizeRepo("")).toBeNull();
     expect(normalizeRepo(null)).toBeNull();
+  });
+});
+
+// Every method here wraps its localStorage call in try/catch with no
+// re-throw (Safari private-mode / QuotaExceededError survival). These tests
+// exercise those catch branches directly and assert exactly what they
+// promise: no throw, and the documented safe fallback value.
+describe("useAdminToken() — storage failure fallback (Safari private mode)", () => {
+  afterEach(() => {
+    restoreStorage();
+  });
+
+  it("readToken: getItem が失敗しても例外を投げず空文字を返す", () => {
+    const { readToken } = useAdminToken();
+    makeStorageFail("getItem");
+    let result;
+    expect(() => {
+      result = readToken();
+    }).not.toThrow();
+    expect(result).toBe("");
+  });
+
+  it("saveToken: setItem が失敗しても例外を投げない", () => {
+    const { saveToken } = useAdminToken();
+    makeStorageFail("setItem");
+    expect(() => saveToken("token")).not.toThrow();
+  });
+
+  it("clearToken: removeItem が失敗しても例外を投げない", () => {
+    const { clearToken } = useAdminToken();
+    makeStorageFail("removeItem");
+    expect(() => clearToken()).not.toThrow();
+  });
+
+  it("readRepoOverride: getItem が失敗しても例外を投げず null を返す", () => {
+    const { readRepoOverride } = useAdminToken();
+    makeStorageFail("getItem");
+    let result;
+    expect(() => {
+      result = readRepoOverride();
+    }).not.toThrow();
+    expect(result).toBeNull();
+  });
+
+  it("saveRepoOverride: setItem が失敗しても例外を投げない", () => {
+    const { saveRepoOverride } = useAdminToken();
+    makeStorageFail("setItem");
+    expect(() => saveRepoOverride({ owner: "a", repo: "b" })).not.toThrow();
   });
 });

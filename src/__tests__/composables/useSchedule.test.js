@@ -294,6 +294,141 @@ describe("getScheduleForDate() — epoch 内データ切替", () => {
   });
 });
 
+// ---------- activeScheduleDataForToday ----------
+
+describe("activeScheduleDataForToday", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("単一セグメントの世代では activeScheduleData と同じ値を返す（no-op ケース）", () => {
+    setupStores();
+    const { activeScheduleData, activeScheduleDataForToday } = useSchedule();
+    expect(activeScheduleDataForToday.value).toBe(activeScheduleData.value);
+  });
+
+  it("epoch 内データ切替: 切替日より前の今日は先頭セグメント（default）を返す", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-12-31T00:00:00+09:00"));
+    setupStores({
+      scheduleData: {
+        default: makeScheduleData(5),
+        next: makeScheduleData(5, "次"),
+      },
+      epochs: [
+        {
+          from: dayjs("2025-11-16"),
+          dataKey: "default",
+          segments: [
+            { from: dayjs("2025-11-16"), dataKey: "default" },
+            { from: dayjs("2026-01-01"), dataKey: "next" },
+          ],
+        },
+      ],
+      activeEpochIndex: 0,
+    });
+    const { activeScheduleDataForToday } = useSchedule();
+    expect(activeScheduleDataForToday.value.weekday[0].s).toMatch(/^平日/);
+  });
+
+  it("epoch 内データ切替: 切替日以降の今日は後続セグメント（next）を返す — activeScheduleData は先頭セグメントのまま", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-02-01T00:00:00+09:00"));
+    setupStores({
+      scheduleData: {
+        default: makeScheduleData(5),
+        next: makeScheduleData(5, "次"),
+      },
+      epochs: [
+        {
+          from: dayjs("2025-11-16"),
+          dataKey: "default",
+          segments: [
+            { from: dayjs("2025-11-16"), dataKey: "default" },
+            { from: dayjs("2026-01-01"), dataKey: "next" },
+          ],
+        },
+      ],
+      activeEpochIndex: 0,
+    });
+    const { activeScheduleData, activeScheduleDataForToday } = useSchedule();
+    // activeScheduleData is unaffected by the fix — it still reports segment0
+    expect(activeScheduleData.value.weekday[0].s).toMatch(/^平日/);
+    // activeScheduleDataForToday resolves to the segment in effect today
+    expect(activeScheduleDataForToday.value.weekday[0].s).toMatch(/^次平日/);
+  });
+});
+
+// ---------- scheduleDataForDate ----------
+
+describe("scheduleDataForDate()", () => {
+  it("単一セグメントの世代では、どの日付を渡しても activeScheduleData と同じ値を返す（no-op ケース）", () => {
+    setupStores();
+    const { activeScheduleData, scheduleDataForDate } = useSchedule();
+    expect(scheduleDataForDate(dayjs("2025-11-17"))).toBe(
+      activeScheduleData.value,
+    );
+    expect(scheduleDataForDate(dayjs("2026-06-01"))).toBe(
+      activeScheduleData.value,
+    );
+    expect(scheduleDataForDate("2099-01-01")).toBe(activeScheduleData.value);
+  });
+
+  it("epoch 内データ切替: 切替日より前の日付は先頭セグメント（default）を返す", () => {
+    setupStores({
+      scheduleData: {
+        default: makeScheduleData(5),
+        next: makeScheduleData(5, "次"),
+      },
+      epochs: [
+        {
+          from: dayjs("2025-11-16"),
+          dataKey: "default",
+          segments: [
+            { from: dayjs("2025-11-16"), dataKey: "default" },
+            { from: dayjs("2026-01-01"), dataKey: "next" },
+          ],
+        },
+      ],
+      activeEpochIndex: 0,
+    });
+    const { scheduleDataForDate } = useSchedule();
+    expect(scheduleDataForDate(dayjs("2025-12-31")).weekday[0].s).toMatch(
+      /^平日/,
+    );
+  });
+
+  it("epoch 内データ切替: 切替日以降の日付は後続セグメント（next）を返す", () => {
+    setupStores({
+      scheduleData: {
+        default: makeScheduleData(5),
+        next: makeScheduleData(5, "次"),
+      },
+      epochs: [
+        {
+          from: dayjs("2025-11-16"),
+          dataKey: "default",
+          segments: [
+            { from: dayjs("2025-11-16"), dataKey: "default" },
+            { from: dayjs("2026-01-01"), dataKey: "next" },
+          ],
+        },
+      ],
+      activeEpochIndex: 0,
+    });
+    const { scheduleDataForDate } = useSchedule();
+    expect(scheduleDataForDate(dayjs("2026-01-02")).weekday[0].s).toMatch(
+      /^次平日/,
+    );
+    // Same call, a date before the swap on the same (single) active epoch
+    // still resolves to segment0 — the resolution is keyed off the date
+    // argument, not "today" or a cached epoch-level value.
+    expect(scheduleDataForDate(dayjs("2025-12-31")).weekday[0].s).toMatch(
+      /^平日/,
+    );
+  });
+});
+
 // ---------- calculateScheduleRange ----------
 
 describe("calculateScheduleRange()", () => {
@@ -379,6 +514,25 @@ describe("世代の解決（today 依存）", () => {
     const { defaultBaseDate, nextBaseDate } = useSchedule();
     expect(defaultBaseDate.value.isSame(dayjs("2026-05-16"), "day")).toBe(true);
     expect(nextBaseDate.value).toBeUndefined();
+  });
+
+  it("全世代の from が未来でも defaultBaseDate は最初の世代にフォールバックする（-1 にならない）", () => {
+    // Regression guard: currentEpochIndex() must default to 0, not -1, when
+    // today predates every epoch's `from` — the runtime still serves the
+    // first epoch in that case, and ScheduleManager.vue's admin "current
+    // generation" labeling (src/utils/epochResolution.js) must agree with
+    // this or the operator could delete the epoch actually live in production.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2020-01-01T00:00:00+09:00"));
+    setupStores({
+      epochs: [
+        { from: dayjs("2025-11-16"), dataKey: "default" },
+        { from: dayjs("2026-05-16"), dataKey: "default" },
+      ],
+    });
+    const { defaultBaseDate, nextBaseDate } = useSchedule();
+    expect(defaultBaseDate.value.isSame(dayjs("2025-11-16"), "day")).toBe(true);
+    expect(nextBaseDate.value.isSame(dayjs("2026-05-16"), "day")).toBe(true);
   });
 
   it("updateActiveBaseDate は from が一致する世代を active にする", () => {
