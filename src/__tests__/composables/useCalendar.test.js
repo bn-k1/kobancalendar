@@ -9,15 +9,21 @@ import { useScheduleStore } from "@/stores/schedule";
 import { useHolidayStore } from "@/stores/holiday";
 import { useEditedSchedules } from "@/stores/editedSchedules";
 
-// config/event.json と同等のイベント設定
+// config/event.json と同等のイベント設定（ordered rule-array 形式）
 const EVENT_CONFIG = {
-  events: {
-    restDay: { keywords: ["公休", "法休"], color: "red", showTime: false },
-    empty: { keywords: ["空"], color: "deepskyblue", showTime: false },
-    special: { keywords: ["黄"], color: "orange", showTime: true },
-    edited: { keywords: [], color: "magenta", showTime: true },
-    default: { keywords: [], color: "deepskyblue", showTime: true },
-  },
+  rules: [
+    {
+      id: "restDay",
+      label: "公休",
+      keywords: ["公休", "法休"],
+      color: "red",
+      freeAllDay: true,
+    },
+    { id: "special", label: "特番", keywords: ["黄"], color: "orange" },
+    { id: "empty", label: "空き番", keywords: ["空"], color: "deepskyblue" },
+  ],
+  fallback: { color: "deepskyblue" },
+  edited: { color: "magenta" },
 };
 
 const CYCLE = 5;
@@ -74,18 +80,16 @@ describe("getEventType()", () => {
     expect(result.type).toBe("edited");
   });
 
-  it("isEdited=true → default と edited をマージした config を返す", () => {
+  it("isEdited=true → edited.color を返す", () => {
     const { getEventType } = useCalendar();
     const result = getEventType("早番", true);
-    expect(result.config.color).toBe("magenta"); // edited.color が優先
-    expect(result.config.showTime).toBe(true);
+    expect(result.config.color).toBe("magenta");
   });
 
   it("公休 → restDay", () => {
     const { getEventType } = useCalendar();
     expect(getEventType("公休").type).toBe("restDay");
     expect(getEventType("公休").config.color).toBe("red");
-    expect(getEventType("公休").config.showTime).toBe(false);
   });
 
   it("法休 → restDay", () => {
@@ -97,14 +101,12 @@ describe("getEventType()", () => {
     const { getEventType } = useCalendar();
     expect(getEventType("空").type).toBe("empty");
     expect(getEventType("空").config.color).toBe("deepskyblue");
-    expect(getEventType("空").config.showTime).toBe(false);
   });
 
   it("黄 → special", () => {
     const { getEventType } = useCalendar();
     expect(getEventType("黄番").type).toBe("special");
     expect(getEventType("黄番").config.color).toBe("orange");
-    expect(getEventType("黄番").config.showTime).toBe(true);
   });
 
   it("マッチしない subject → default", () => {
@@ -251,7 +253,7 @@ describe("generateCalendarEvents()", () => {
     expect(notEdited).toBeDefined();
   });
 
-  it("showTime=false の科目（公休）はタイトルに時刻を含まない", () => {
+  it("時刻情報が無い科目（公休）はタイトルに時刻を含まない", () => {
     // pos=1, 基準日=2025-11-16（日曜）, 休日データの index 0 = '休日0'
     // 「公休」相当のデータを直接 scheduleStore に設定
     const scheduleStore = useScheduleStore();
@@ -272,7 +274,7 @@ describe("generateCalendarEvents()", () => {
     expect(events[0].title).toBe("公休");
   });
 
-  it("showTime=true の科目は title に時刻を含む", () => {
+  it("開始・終了時刻がある科目は title に時刻を含む", () => {
     const scheduleStore = useScheduleStore();
     const data = {
       holiday: [{ s: "早番", sT: "08:00", eT: "16:00" }],

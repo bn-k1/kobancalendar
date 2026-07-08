@@ -12,6 +12,7 @@ import {
   parseTime,
   formatAsISODate,
 } from "@/utils/date";
+import { matchRule, shouldShowTime, isFreeAllDay } from "@/utils/eventRules";
 
 /**
  * Calendar functionality composable
@@ -49,43 +50,23 @@ export function useCalendar() {
    * @returns {Object} Event type and configuration
    */
   function getEventType(subject, isEdited = false) {
-    if (isEdited) {
-      const eventConfig = storeEventConfig.value;
-      const defaultConfig = eventConfig?.events?.default || {};
-      const editedConfig = eventConfig?.events?.edited || {};
-
-      return {
-        type: "edited",
-        config: {
-          ...defaultConfig,
-          ...editedConfig,
-        },
-      };
-    }
-
     const eventConfig = storeEventConfig.value;
 
-    if (!eventConfig || !eventConfig.events) {
+    if (isEdited) {
       return {
-        type: "default",
-        config: eventConfig?.events?.default || {},
+        type: "edited",
+        config: { color: eventConfig?.edited?.color },
       };
     }
 
-    for (const [type, config] of Object.entries(eventConfig.events)) {
-      if (
-        type !== "default" &&
-        type !== "edited" &&
-        config.keywords &&
-        config.keywords.some((keyword) => subject?.includes(keyword))
-      ) {
-        return { type, config };
-      }
+    const rule = matchRule(subject, eventConfig);
+    if (rule) {
+      return { type: rule.id, config: { color: rule.color } };
     }
 
     return {
       type: "default",
-      config: eventConfig.events.default,
+      config: { color: eventConfig?.fallback?.color },
     };
   }
 
@@ -98,13 +79,8 @@ export function useCalendar() {
     const { subject, endTime } = schedule;
     const eventConfig = storeEventConfig.value;
 
-    if (eventConfig && eventConfig.events) {
-      const restDayConfig = eventConfig.events.restDay;
-      if (restDayConfig && restDayConfig.keywords) {
-        if (restDayConfig.keywords.some((keyword) => subject === keyword)) {
-          return true;
-        }
-      }
+    if (isFreeAllDay(subject, eventConfig)) {
+      return true;
     }
 
     if (!endTime) {
@@ -118,15 +94,14 @@ export function useCalendar() {
   }
 
   /**
-   * Build the event title string based on event config and schedule data
+   * Build the event title string, appending the time range when present.
    * @param {string} subject
    * @param {string} startTime
    * @param {string} endTime
-   * @param {Object} eventTypeConfig - config entry from eventConfig.events
    * @returns {string}
    */
-  function buildEventTitle(subject, startTime, endTime, eventTypeConfig) {
-    if (eventTypeConfig.showTime && (startTime || endTime)) {
+  function buildEventTitle(subject, startTime, endTime) {
+    if (shouldShowTime(startTime, endTime)) {
       return `${subject}\n${startTime} - \n${endTime}`;
     }
     return subject;
@@ -159,7 +134,6 @@ export function useCalendar() {
           editedSchedule.subject,
           editedSchedule.startTime,
           editedSchedule.endTime,
-          config,
         );
 
         generatedEvents.push({
@@ -198,7 +172,7 @@ export function useCalendar() {
 
         const { config } = getEventType(subject, false);
         generatedEvents.push({
-          title: buildEventTitle(subject, startTime, endTime, config),
+          title: buildEventTitle(subject, startTime, endTime),
           start: dateStr,
           color: config.color,
           extendedProps: {

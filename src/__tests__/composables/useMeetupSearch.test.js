@@ -33,11 +33,17 @@ function setupAll(baseDate = dayjs("2025-11-17")) {
   const editedSchedulesStore = useEditedSchedules();
 
   const eventConfig = {
-    events: {
-      restDay: { keywords: ["公休", "法休"], color: "red", showTime: false },
-      edited: { keywords: [], color: "magenta", showTime: true },
-      default: { keywords: [], color: "deepskyblue", showTime: true },
-    },
+    rules: [
+      {
+        id: "restDay",
+        label: "公休",
+        keywords: ["公休", "法休"],
+        color: "red",
+        freeAllDay: true,
+      },
+    ],
+    fallback: { color: "deepskyblue" },
+    edited: { color: "magenta" },
   };
   calendarStore.setEventConfig(eventConfig);
   calendarStore.setStartPosition(1);

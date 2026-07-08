@@ -67,12 +67,7 @@ let pressedEventInfo = null;
 const pointerDownHandlerMap = new WeakMap();
 
 const editedEventConfig = computed(() => {
-  const events = eventConfig.value?.events;
-  if (!events) return {};
-  return {
-    ...events.default,
-    ...events.edited,
-  };
+  return { color: eventConfig.value?.edited?.color };
 });
 
 const mergedEvents = computed(() => {

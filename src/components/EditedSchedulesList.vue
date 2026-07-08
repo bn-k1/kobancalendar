@@ -77,7 +77,7 @@ const calendarStore = useCalendarStore();
 const { eventConfig } = storeToRefs(calendarStore);
 
 const editedColorStyle = computed(() => {
-  const color = eventConfig.value?.events?.edited?.color;
+  const color = eventConfig.value?.edited?.color;
   return color ? { "--edited-color": color } : undefined;
 });
 
