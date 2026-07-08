@@ -120,8 +120,9 @@ npm install
 
 `schedules` の検証は2箇所に分かれています。挙動が異なるので区別してください。
 
-- **アプリ起動時**（`buildEpochs`, `src/composables/useAppInitializer.js` — ブラウザ側のクライアント実行時）に、`from` の昇順・重複、セグメントの `from` の妥当性、セグメント間のサイクル長一致を検証します。違反は例外（throw）です。**`npm run build` や `npm test` はこの検証を実行しません** — `config.json` の不備があっても CI のビルド・テストは通ってしまうため、変更後は `npm run dev` 等で実際に開いて確認してください。
-- 同じく起動時、コマ位置シフト移行（`data` 継承）なのに世代間の日数差がサイクル長の倍数でない場合や、`from` が今日から10年を超えて離れている場合はブラウザの開発者コンソールに警告が出ます（typo を疑ってください）。
+- **アプリ起動時**（`buildEpochs`, `src/composables/useAppInitializer.js` — ブラウザ側のクライアント実行時）に、`from` の昇順・重複、セグメントの `from` の妥当性、セグメント間のサイクル長一致を検証します。違反は例外（throw）です。
+- **`npm test`** はこの `buildEpochs` を、実際の `config/config.json` と `build-prep` が生成した `data/scheduleData.json` に対して実行します（`src/__tests__/configIntegrity.test.js`）。`buildEpochs` 自体はブラウザ側でしか動かないコードなので、この統合テストが無いと `config.json` の不備（`from` の逆順・重複など）があっても CI のビルド・テストは素通りしてしまいます。`npm test` は `pretest` フックで自動的に `build-prep` を実行するため、素の clone で `npm test` を単体実行しても成立します（`npm run test:watch` / `npm run test:coverage` も同様）。
+- 同じく起動時、コマ位置シフト移行（`data` 継承）なのに世代間の日数差がサイクル長の倍数でない場合や、`from` が今日から10年を超えて離れている場合はブラウザの開発者コンソールに警告が出ます（typo を疑ってください）。これらは `console.warn` のみで例外を投げないため、`npm test` の `configIntegrity.test.js` は「その値で `buildEpochs` を通る」ことしか確認しておらず、warn の有無まではアサートしていません。実際の `config.json` に対するこの手の typo 検知は今もブラウザ実行時のみです。
 - 一方、CSV→JSON変換スクリプト（`scripts/convertCsv.js`。ビルドパイプライン節を参照）は別の検証を行います。`schedules` が参照するフォルダの CSV 3点がすべて揃い、行数が一致するかどうか（欠損・空・不一致はここでビルドエラーになります）。加えて、current epoch より2世代以上前の世代と、どの `schedules[].data` からも参照されない `data/` 配下のフォルダを「整理候補」としてビルドログに警告します（自動削除はしません）。
 - 古い世代は剪定して構いません。表示UIは「いまの世代」と隣接世代しか出さず、過去世代は実行時には current epoch を特定するためだけに参照されます。
 
