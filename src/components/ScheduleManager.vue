@@ -14,6 +14,12 @@
   generation that supersedes it, then prune the old one. Deleting a generation
   whose successor inherits its data (a position-shift transition) is also
   blocked, since that would break the inheritance chain at build time.
+
+  Adding a generation offers an "inherit" checkbox (ScheduleEditor mode="add",
+  `can-inherit`) for the pure position-shift case: the operator supplies only
+  `from`, no folder/CSVs, and onAddSubmit appends `{ from }` with no `data` key
+  so the build picks up the previous generation's folder. Only offered when at
+  least one generation already exists — the first one can never inherit.
 -->
 <template>
   <section class="mgr">
@@ -212,6 +218,7 @@
             :busy="busy"
             :existing-froms="existingFroms"
             :existing-folders="existingFolders"
+            :can-inherit="epochs.length > 0"
             @submit="onAddSubmit"
             @cancel="showAdd = false"
           />
@@ -408,30 +415,44 @@ async function afterCommit(sha, message) {
   await load();
 }
 
-async function onAddSubmit({ fromStr, folder, trio }) {
+async function onAddSubmit({ fromStr, folder, trio, inherit }) {
   busy.value = true;
   opStatus.value = { type: "", message: "", sha: "" };
   try {
     const sha = await commitConfig({
       build: (cfg) => {
+        const list = cfg.schedules || [];
+        // The first epoch can never inherit (no predecessor to inherit from);
+        // ScheduleEditor already hides the checkbox for that case, this is a
+        // backstop against a stale/racing config read.
+        const doInherit = !!inherit && list.length > 0;
         cfg.schedules = [
-          ...(cfg.schedules || []),
-          { from: fromStr, data: folder },
+          ...list,
+          doInherit ? { from: fromStr } : { from: fromStr, data: folder },
         ];
         return {
           config: cfg,
-          message: `data: ${folder} 世代を追加 (from ${fromStr})`,
-          extraFiles: [
-            csvFile(folder, "weekday", trio.weekday),
-            csvFile(folder, "saturday", trio.saturday),
-            csvFile(folder, "holiday", trio.holiday),
-          ],
+          message: doInherit
+            ? `data: 世代を追加 (from ${fromStr}, 前世代のデータを継承)`
+            : `data: ${folder} 世代を追加 (from ${fromStr})`,
+          extraFiles: doInherit
+            ? []
+            : [
+                csvFile(folder, "weekday", trio.weekday),
+                csvFile(folder, "saturday", trio.saturday),
+                csvFile(folder, "holiday", trio.holiday),
+              ],
         };
       },
     });
     showAdd.value = false;
     addKey.value += 1;
-    await afterCommit(sha, `世代 ${fromStr} → ${folder} を追加しました`);
+    await afterCommit(
+      sha,
+      inherit
+        ? `世代 ${fromStr} を追加しました（前世代のデータを継承）`
+        : `世代 ${fromStr} → ${folder} を追加しました`,
+    );
   } catch (err) {
     fail(err);
   } finally {

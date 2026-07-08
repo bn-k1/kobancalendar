@@ -161,12 +161,16 @@ export function suggestFolderName(fromStr) {
 //   folder         — target data folder name
 //   existingFroms  — array of existing epoch `from` strings (any order)
 //   existingFolders— array of existing data folder names
+//   inherit        — true when this generation reuses the previous one's data
+//                    (position-shift only, `data` omitted). Skips all folder
+//                    validation — there is no folder to name or upload.
 // Returns { ok, errors: string[], warnings: string[] }.
 export function validateEpochMeta({
   fromStr,
   folder,
   existingFroms = [],
   existingFolders = [],
+  inherit = false,
 } = {}) {
   const errors = [];
   const warnings = [];
@@ -202,14 +206,18 @@ export function validateEpochMeta({
     }
   }
 
-  if (!folder || !FOLDER_RE.test(folder)) {
-    errors.push(
-      "フォルダ名は半角英数・ハイフン・アンダースコアのみで入力してください",
-    );
-  } else if (folder === "menu") {
-    errors.push("フォルダ名 'menu' は使えません");
-  } else if (existingFolders.includes(folder)) {
-    warnings.push(`フォルダ '${folder}' は既に存在します。CSVが上書きされます`);
+  if (!inherit) {
+    if (!folder || !FOLDER_RE.test(folder)) {
+      errors.push(
+        "フォルダ名は半角英数・ハイフン・アンダースコアのみで入力してください",
+      );
+    } else if (folder === "menu") {
+      errors.push("フォルダ名 'menu' は使えません");
+    } else if (existingFolders.includes(folder)) {
+      warnings.push(
+        `フォルダ '${folder}' は既に存在します。CSVが上書きされます`,
+      );
+    }
   }
 
   return { ok: errors.length === 0, errors, warnings };

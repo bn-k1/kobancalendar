@@ -195,6 +195,59 @@ describe("validateEpochMeta()", () => {
     });
     expect(r.warnings.some((w) => /過去/.test(w))).toBe(true);
   });
+
+  // ---------- inherit: true (position-shift generation, no folder/CSVs) ----------
+
+  it("inherit: folder 未指定でも from が妥当なら ok", () => {
+    const r = validateEpochMeta({
+      fromStr: "2026-08-01",
+      existingFroms,
+      inherit: true,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.errors).toEqual([]);
+  });
+
+  it("inherit: 不正なフォルダ名を渡してもフォルダ関連エラーを出さない", () => {
+    const r = validateEpochMeta({
+      fromStr: "2026-08-01",
+      folder: "rev 2026/01",
+      existingFroms,
+      inherit: true,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.errors.some((e) => /フォルダ名/.test(e))).toBe(false);
+  });
+
+  it("inherit: 既存フォルダ名と一致していても上書き警告を出さない", () => {
+    const r = validateEpochMeta({
+      fromStr: "2026-08-01",
+      folder: "default",
+      existingFroms,
+      existingFolders: ["default"],
+      inherit: true,
+    });
+    expect(r.warnings.some((w) => /上書き/.test(w))).toBe(false);
+  });
+
+  it("inherit: 重複する有効日は依然エラー", () => {
+    const r = validateEpochMeta({
+      fromStr: "2026-05-16",
+      existingFroms,
+      inherit: true,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.errors.some((e) => /重複/.test(e))).toBe(true);
+  });
+
+  it("inherit: 最後の世代より前の有効日は依然エラー", () => {
+    const r = validateEpochMeta({
+      fromStr: "2026-01-01",
+      existingFroms,
+      inherit: true,
+    });
+    expect(r.errors.some((e) => /後にして/.test(e))).toBe(true);
+  });
 });
 
 // ---------- validateSegmentMeta ----------

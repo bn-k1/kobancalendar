@@ -6,13 +6,28 @@
   component serves both "add a generation" and "edit an existing one".
 
   mode="add"         — from/folder editable; full epoch-metadata validation.
+                       When `canInherit` is true, an operator may instead check
+                       "reuse the previous generation's data" — a pure
+                       position-shift migration — which hides the folder/CSV
+                       inputs and submits `{ fromStr, inherit: true }` with no
+                       folder/trio, matching the `data`-omitted epoch shape.
   mode="edit"        — from/folder locked (content-only fix); CSVs validate only.
   mode="add-segment" — in-epoch table swap (same generation/anchor): from/folder
                        editable, validated against the generation window + コマ数.
 -->
 <template>
   <div class="editor">
-    <div class="ed-slots">
+    <div v-if="mode === 'add' && canInherit" class="ed-inherit">
+      <label class="ed-inherit-label">
+        <input v-model="inherit" type="checkbox" />
+        前の世代と同じ交番表を使う（コマ位置だけ変わる場合）
+      </label>
+      <small class="ed-inherit-hint">
+        チェックすると、直前の世代の交番表（CSV）をそのまま引き継ぎます。新しく決めるのは有効日だけで、平日・土曜・日祝の入力は不要になります。
+      </small>
+    </div>
+
+    <div v-if="!isInheriting" class="ed-slots">
       <div v-for="slot in SLOTS" :key="slot.key" class="ed-slot">
         <label>{{ slot.label }}</label>
         <div
@@ -45,7 +60,7 @@
         >
         <small v-else>この日からこの交番表が「いまの世代」になります</small>
       </label>
-      <label class="ed-field">
+      <label v-if="!isInheriting" class="ed-field">
         <span>フォルダ名</span>
         <input
           v-model="folder"
@@ -136,6 +151,9 @@ const props = defineProps({
   busy: { type: Boolean, default: false },
   existingFroms: { type: Array, default: () => [] },
   existingFolders: { type: Array, default: () => [] },
+  // add mode only: whether an inheriting generation (no data/CSVs, reuses the
+  // previous one) may be offered. False when there is no previous generation.
+  canInherit: { type: Boolean, default: false },
   initialFrom: { type: String, default: "" },
   initialFolder: { type: String, default: "" },
   initialTexts: {
@@ -160,12 +178,31 @@ const fromStr = ref(props.initialFrom);
 const folder = ref(props.initialFolder);
 const folderTouched = ref(props.mode === "edit");
 const dragOver = ref("");
+const inherit = ref(false);
 
 const submitLabel = computed(() =>
   props.mode === "edit" ? "修正を配信する" : "この内容で配信する",
 );
 
-const trioResult = computed(() => validateTrio(texts));
+// Only meaningful in mode="add": an inheriting generation carries no CSVs, so
+// the trio/folder inputs and their validation are skipped entirely.
+const isInheriting = computed(
+  () => props.mode === "add" && props.canInherit && inherit.value,
+);
+
+const emptyTrio = { weekday: [], saturday: [], holiday: [] };
+const trioResult = computed(() => {
+  if (isInheriting.value) {
+    return {
+      ok: true,
+      errors: [],
+      warnings: [],
+      cycleLength: 0,
+      trio: emptyTrio,
+    };
+  }
+  return validateTrio(texts);
+});
 const epochResult = computed(() => {
   if (props.mode === "edit") return { ok: true, errors: [], warnings: [] };
   if (props.mode === "add-segment") {
@@ -185,6 +222,7 @@ const epochResult = computed(() => {
     folder: folder.value,
     existingFroms: props.existingFroms,
     existingFolders: props.existingFolders,
+    inherit: isInheriting.value,
   });
 });
 
@@ -194,7 +232,8 @@ const hasInput = computed(
     !!texts.saturday ||
     !!texts.holiday ||
     !!fromStr.value ||
-    !!folder.value,
+    !!folder.value ||
+    isInheriting.value,
 );
 // Edit mode is always prefilled, so surface validation immediately; add mode
 // stays quiet until the admin starts entering data.
@@ -246,6 +285,10 @@ async function onDrop(key, event) {
 
 function submit() {
   if (!canSubmit.value) return;
+  if (isInheriting.value) {
+    emit("submit", { fromStr: fromStr.value, inherit: true });
+    return;
+  }
   emit("submit", {
     fromStr: fromStr.value,
     folder: folder.value,
@@ -255,6 +298,26 @@ function submit() {
 </script>
 
 <style scoped>
+.ed-inherit {
+  margin: 0.5rem 0 1rem;
+}
+
+.ed-inherit-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ed-inherit-hint {
+  display: block;
+  margin-top: 0.25rem;
+  margin-left: 1.75rem;
+  opacity: 0.75;
+  font-size: 0.8em;
+}
+
 .ed-slots {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
