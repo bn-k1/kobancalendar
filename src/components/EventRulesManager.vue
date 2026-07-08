@@ -17,13 +17,12 @@
   <section class="evt">
     <h2>表示ルール</h2>
     <p class="evt-muted">
-      上のルールが優先されます。予定名にキーワードが含まれていれば、そのルールの色になります。
+      予定名にキーワードが含まれていれば、そのルールの色になります。
+      <template v-if="hasPriority">上のルールが優先されます。</template>
     </p>
 
     <p v-if="loading" class="evt-muted">読み込み中…</p>
-    <p v-else-if="loadError" class="evt-error">
-      読み込みに失敗しました: {{ loadError }}
-    </p>
+    <p v-else-if="loadError" class="evt-error">{{ loadError }}</p>
 
     <template v-else>
       <div class="evt-table-wrap">
@@ -264,6 +263,18 @@ function defaultEventConfig() {
   };
 }
 
+// A file that predates the ordered-rules schema keyed its rules by name under
+// `events`. Normalizing it would silently yield an empty rule list, and saving
+// on top of that would drop every rule the operator still has. Detect it and
+// refuse to edit instead.
+function isLegacyShape(data) {
+  return (
+    !Array.isArray(data?.rules) &&
+    !!data?.events &&
+    typeof data.events === "object"
+  );
+}
+
 // Clone + fill in defaults so working/original always have the same shape,
 // regardless of what is actually present in the file on disk.
 function normalize(data) {
@@ -291,6 +302,9 @@ function resetKeywordDrafts() {
 const dirty = computed(
   () => JSON.stringify(working.value) !== JSON.stringify(original.value),
 );
+
+// Order only conveys priority once there is something to out-rank.
+const hasPriority = computed(() => (working.value?.rules.length ?? 0) > 1);
 
 function ruleLabelFor(rule) {
   return (rule.label && rule.label.trim()) || rule.id || "(無題)";
@@ -348,11 +362,16 @@ async function load() {
   try {
     const file = await getFile(EVENT_PATH);
     const data = file ? JSON.parse(file.content) : defaultEventConfig();
+    if (isLegacyShape(data)) {
+      loadError.value =
+        "config/event.json が旧形式のままです。最新のコードを main へ反映してから開いてください。";
+      return;
+    }
     original.value = normalize(data);
     working.value = normalize(data);
     resetKeywordDrafts();
   } catch (err) {
-    loadError.value = err.message;
+    loadError.value = `読み込みに失敗しました: ${err.message}`;
   } finally {
     loading.value = false;
   }
