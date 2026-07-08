@@ -131,6 +131,7 @@
 
       <ScheduleManager v-if="connected" />
       <HolidaysManager v-if="connected" />
+      <EventRulesManager v-if="connected" />
       <MenuManager v-if="connected" />
     </div>
   </UnifiedPageLayout>
@@ -141,6 +142,7 @@ import { ref, computed, onMounted } from "vue";
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import ScheduleManager from "@/components/ScheduleManager.vue";
 import HolidaysManager from "@/components/HolidaysManager.vue";
+import EventRulesManager from "@/components/EventRulesManager.vue";
 import MenuManager from "@/components/MenuManager.vue";
 import { useAdminToken } from "@/composables/useAdminToken";
 import { useGitHubApi } from "@/composables/useGitHubApi";
