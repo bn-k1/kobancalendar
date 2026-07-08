@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>管理ガイド — KobanCalendar</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --primary: #3c6e71;
+      --text: #212529;
+      --text-muted: #6c757d;
+      --border: #dee2e6;
+      --accent: #fff3cd;
+      --accent-border: #ffc107;
+      --radius: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a2e;
+        --surface: #16213e;
+        --primary: #4a9d9f;
+        --text: #e9ecef;
+        --text-muted: #adb5bd;
+        --border: #2d3748;
+        --accent: #3d2e00;
+        --accent-border: #d4a017;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP",
+        "Yu Gothic", sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      padding: 24px 16px 64px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 20px 0 8px;
+    }
+
+    h3:first-child { margin-top: 0; }
+
+    p { margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+
+    .step:last-child { margin-bottom: 0; }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+
+    .note {
+      background: var(--accent);
+      border-left: 4px solid var(--accent-border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    ul li { margin-bottom: 6px; }
+
+    .features {
+      display: grid;
+      gap: 10px;
+    }
+
+    .feature-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .feature-label {
+      flex-shrink: 0;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>KobanCalendar 管理ガイド</h1>
+      <p>交番表・独自の休日・表示ルール・食堂メニューを、管理画面（#/admin）だけで更新するための手引きです。</p>
+    </header>
+
+    <section>
+      <h2>接続する（初回のみ）</h2>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p><strong>管理画面を開く</strong></p>
+          <p>ふだん見ているサイトのアドレスの末尾に <code>#/admin</code> を付けて開きます。「GitHub 接続」という画面が表示されます。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p><strong>トークンを貼り付ける</strong></p>
+          <p>渡された Personal Access Token（fine-grained、対象リポジトリの Contents を Read and write）を「Personal Access Token (fine-grained)」欄に入力し、「保存して接続テスト」を押します。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <p><strong>接続を確認する</strong></p>
+          <p>「✓ トークンは保存済みです。GitHub に接続できます。」と表示されれば完了です。この下に交番表・独自の休日・表示ルール・食堂メニューの管理パネルが並びます。</p>
+        </div>
+      </div>
+
+      <div class="note">トークンはこの端末のブラウザにだけ保存され、どこにも送信・共有されません。別のパソコンやスマホからも管理したいときは、その端末でも同じトークンを貼り付け直してください（端末ごとに1回）。</div>
+    </section>
+
+    <section>
+      <h2>保存すると配信される</h2>
+      <p>それぞれの管理パネルには保存ボタンがあります（「保存して配信する」など、パネルごとに名前は少し違います）。押すと内容が GitHub に保存され、数分後には自動でサイトに反映されます。</p>
+      <div class="note">保存ボタンを押したあと、ほかに何かする必要はありません。ファイルをアップロードしたり、コマンドを実行したりする作業は一切ありません。サイトへの反映は完全に自動です。この仕組みはどのパネルでも共通なので、以下の各項目では繰り返しません。</div>
+    </section>
+
+    <section>
+      <h2>交番表が変わったら</h2>
+      <p>職場の掲示板に新しい交番表が貼られたとき、まず掲示物を見て、次の3パターンのどれに当てはまるかを判断してください。「交番表の管理」パネルで操作します。</p>
+
+      <h3>1. コマの並びは同じで、自分たちの位置だけ一斉にズレた</h3>
+      <p>勤務の内容（早番・遅番・夜勤などの並び）は変わらないが、基準日が変わって全員のコマ位置が一斉にズレる場合（異動・組み替えなど）です。</p>
+      <p>「＋ 新しい世代を追加」を押し、「有効日 (from)」に新しい基準日を入力します。「フォルダ名」には、いま使われている交番表と同じ名前（一覧の「データ」欄に出ている名前）をそのまま入力し、平日・土曜・日祝の3つのCSVも今と同じ内容にします（前と同じファイルをもう一度ドラッグ＆ドロップするか、貼り付けます）。「フォルダは既に存在します」という注意が出ますが、中身が同じなら問題ありません。</p>
+
+      <h3>2. 交番表そのものが新しくなった（勤務内容・時刻が変わった）</h3>
+      <p>勤務の順番や時刻そのものが変わる場合です。</p>
+      <p>同じく「＋ 新しい世代を追加」から、新しい「有効日 (from)」と新しい「フォルダ名」を入力し、平日・土曜・日祝の3つのCSVを新しい内容で取り込みます（ドラッグ＆ドロップ、または貼り付け）。プレビュー表で掲示物と見比べてから「この内容で配信する」を押します。</p>
+
+      <h3>3. コマの回転も自分の位置も変わらないが、ある日から勤務内容の表だけ差し替わる</h3>
+      <p>世代（有効日）は増やさず、「現行」または「未来（新版）」の世代の行にある「＋ 途中で表を差し替え」を使います。回転の起点（有効日）が動かないので、利用者のコマ位置は途切れず、「新版/旧版」の切り替えも増えません。</p>
+      <p>差し替え日と新しいフォルダ名、3つのCSVを入力します。差し替える表は<strong>行数（コマの数）が元の交番表と同じ</strong>でなければなりません。合わないと「コマ数が世代のコマ数と一致しません」と出て保存ボタンが押せません。</p>
+
+      <h3>世代の状態</h3>
+      <p>一覧の「状態」欄には次のバッジが出ます。</p>
+      <div class="features">
+        <div class="feature-item">
+          <span class="feature-label">現行</span>
+          <span>いま使われている世代です。削除できません。</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-label">過去</span>
+          <span>前の世代です。基本的に削除して構いません。</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-label">未来（新版）</span>
+          <span>まだ有効日が来ていない世代です。利用者側の基準日選択に「新版」として表示され、切り替えて事前に確認できます。</span>
+        </div>
+      </div>
+      <p>「削除」ボタンが押せないときは、現行世代であるか、次の世代がこの世代のデータを引き継いでいる（一覧に「（継承）」と表示されている）ためです。表示どおり「現行世代や継承元は削除できません」。</p>
+      <p>途中の表差し替え（「表差し替え」バッジの行）は、追加した世代自身とは別に「編集」「削除」できます。</p>
+
+      <h3>未使用のデータフォルダ</h3>
+      <p>どの世代からも参照されなくなったデータフォルダは、「未使用のデータフォルダ」として一覧の下に出ます。自動で消えることはありません。整理してよいという合図なので、不要なら「削除」を押して構いません。</p>
+    </section>
+
+    <section>
+      <h2>独自の休日</h2>
+      <p>祝日ライブラリに無い職場独自の休み（盆暮れなど）を追加します。年は無視され、月日だけが登録され、毎年くり返し適用されます。</p>
+      <p>日付を選んで「追加」を押すとチップが増えます。削除したい休日はチップの「×」を押します。「保存して配信する」を押すまでは確定しません。</p>
+    </section>
+
+    <section>
+      <h2>表示ルール</h2>
+      <p>予定名に含まれるキーワードで、カレンダー上の色が決まります。<strong>上のルールから順に判定し、最初に当たったものが勝ちます。</strong>だから並び順がそのまま優先順位で、行の「⠿」をドラッグするか、↑↓ボタンで入れ替えられます。</p>
+      <p>ルールに名前はありません。キーワードそのものがそのルールの目印です。</p>
+      <p>「全日空き」にチェックを入れると、そのキーワードに当てはまる予定の日は「飲みに行くンダー」で終日空いていると扱われます（公休・法休など）。</p>
+      <p>時刻を表示するかどうかの設定はありません。CSVに時刻があれば表示され、なければ表示されません。</p>
+      <p>「プレビュー」欄に予定名（例: <code>黄121</code>）を入力すると、どのルールに当たって何色になるかがその場で分かります。</p>
+      <div class="note">保存前に不備があると（キーワード未入力・色の形式不正など）、「保存して配信する」の上に理由が一覧で出ます。</div>
+    </section>
+
+    <section>
+      <h2>食堂メニューの管理</h2>
+      <p>A定食・B定食を月ごとに編集します（1行が1日分で、月の1日から順に並びます）。txt ファイルをドロップするか、内容を直接貼り付けます。</p>
+      <p>プレビュー表で掲示物と見比べて、日付のズレがないか確認してください。空行はその日のメニュー無し、休みの日は「定休日」とそのまま入力します。</p>
+      <p>新しい月を登録するには「＋ 新しい月」から年月を選んで「追加」します。編集中（未保存の変更がある間）は月の切り替え・追加ができません。</p>
+      <p>ファイルが無い月は、利用者側には何も表示されません。</p>
+    </section>
+
+    <section>
+      <h2>困ったとき</h2>
+      <ul>
+        <li>保存ボタンが押せない → 未入力や不正な値があると、その理由が一覧で出ます。</li>
+        <li>保存したのにサイトが変わらない → 配信のビルドに数分かかります。ブラウザの再読み込み（キャッシュ）も試してください。</li>
+        <li>「読み込みに失敗しました」 → トークンの権限（Contents: Read and write）と有効期限を確認してください。</li>
+        <li>表示ルールで「旧形式のままです」と出る → コードが古いままです。開発者に連絡してください。</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

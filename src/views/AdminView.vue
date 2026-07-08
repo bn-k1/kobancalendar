@@ -1,15 +1,24 @@
 <!-- src/views/AdminView.vue -->
 <!--
-  Admin foundation (Phase 1): connect a fine-grained GitHub PAT and confirm the
-  app can authenticate + push to the resolved repo. Reachable only by typing
-  #/admin — there is intentionally no link from the user-facing UI.
+  Admin console: connect a fine-grained GitHub PAT, then edit the schedule,
+  holidays, display rules and cafeteria menu — each panel commits to the repo
+  and CI redeploys. Reachable only by typing #/admin — there is intentionally
+  no link from the user-facing UI.
 
-  Phases 2/3 will add drag-and-drop import and config forms on top of the
-  GitHub API client wired up here.
+  The operator's walkthrough lives in public/admin.html (linked from the top of
+  this page); README.md is the developer's doc.
 -->
 <template>
   <UnifiedPageLayout title="管理画面🔧">
     <div class="admin-page">
+      <p class="admin-guide">
+        操作に迷ったら
+        <a :href="guideUrl" target="_blank" rel="noopener noreferrer"
+          >管理ガイド</a
+        >
+        を開いてください。
+      </p>
+
       <section class="admin-card">
         <h2>GitHub 接続</h2>
 
@@ -157,6 +166,10 @@ const {
 } = useAdminToken();
 const { resolveRepo, verifyToken } = useGitHubApi();
 
+// Operator-facing guide, served alongside the SPA (same shape as HelpButton's
+// link to manual.html).
+const guideUrl = `${import.meta.env.BASE_URL}admin.html`;
+
 // Show the importer once a token is stored and a repo is resolvable. Becomes
 // true after a successful connection test, or on mount if both already exist.
 const connected = ref(false);
@@ -242,6 +255,12 @@ function clearStored() {
   max-width: 640px;
   margin: 0 auto;
   padding: 1rem;
+}
+
+.admin-guide {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, #6c757d);
 }
 
 .admin-card {
