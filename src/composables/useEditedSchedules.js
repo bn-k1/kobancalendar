@@ -76,7 +76,7 @@ export function useEditedSchedules() {
           store.setEditedSchedules(normalized);
           return;
         }
-      } catch (parseError) {
+      } catch {
         store.setEditedSchedules(parseLegacyCsv(stored));
         return;
       }

@@ -53,7 +53,7 @@ const props = defineProps({
   },
   modelValue: {
     type: [String, Number, Date, Object],
-    required: false,
+    default: null,
   },
   options: {
     type: Array,
@@ -69,6 +69,7 @@ const props = defineProps({
   },
   formatter: {
     type: Function,
+    default: null,
   },
 });
 

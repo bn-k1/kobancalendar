@@ -373,7 +373,7 @@ async function initialize() {
     applySelectedBaseDate(defaultBaseDate.value);
     syncMeetupUrl();
     return true;
-  } catch (error) {
+  } catch {
     alert(ERROR_MESSAGES.INIT_FAILED);
     return false;
   }

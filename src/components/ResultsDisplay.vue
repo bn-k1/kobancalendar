@@ -132,10 +132,9 @@ import {
 import DetailsModal from "@/components/DetailsModal.vue";
 
 // Props
-const props = defineProps({
+defineProps({
   results: {
     type: Object,
-    required: true,
     default: () => ({ allMatches: [], partialMatches: [] }),
   },
 });

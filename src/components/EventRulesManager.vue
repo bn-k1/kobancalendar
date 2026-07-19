@@ -308,7 +308,7 @@ function cloneRulesConfig(config) {
 // carries no identifier at all; a rule is identified by its keywords.
 function toPersisted(config) {
   return {
-    rules: config.rules.map(({ uid, ...rest }) => rest),
+    rules: config.rules.map(({ uid: _uid, ...rest }) => rest),
     fallback: { ...config.fallback },
     edited: { ...config.edited },
   };

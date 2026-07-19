@@ -32,10 +32,11 @@ import { useCalendarStore } from "@/stores/calendar";
 const props = defineProps({
   initialDate: {
     type: [Date, Object],
+    default: null,
   },
   startPosition: {
     type: Number,
-    required: false,
+    default: null,
   },
   events: {
     type: Array,

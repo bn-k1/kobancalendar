@@ -107,7 +107,6 @@ import QrButton from "@/components/QrButton.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
 import HelpButton from "@/components/HelpButton.vue";
 import menuData from "@data/menu/menu.json";
-import config from "@config/config.json";
 
 // Footer "GitHub" link is intentionally STATIC to the upstream project, not the
 // running fork: forks/template instances are independent repos and the footer is
