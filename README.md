@@ -33,7 +33,7 @@ npm install
 
 1. **このリポジトリを fork**（または "Use this template"）して自分のアカウント／組織にコピーする。
 2. fork した repo の **Settings → Pages → Source** を「**GitHub Actions**」にする（初回のみ手動。これだけは GitHub の管理画面操作）。push すると CI が自動でビルド・配信する。
-3. 配信された `https://<owner>.github.io/<repo>/#/admin` を開き、fine-grained PAT（対象 repo の **Contents: Read and write**）を貼って「保存して接続テスト」。接続できれば管理 UI が出る。
+3. 配信された `https://<owner>.github.io/<repo>/#/admin` を開き、classic PAT（scope は **`public_repo` のみ**）を貼って「保存して接続テスト」。接続できれば管理 UI が出る。トークン発行の詳しい手順は `public/admin.html` の導入ガイド参照。
 
 ここまでが一度きりのセットアップです。以降、交番表・独自休日・表示ルール・食堂メニューの日々の更新はコマンドやコードに触れず管理画面（`#/admin`）だけで完結します。運用担当者向けの手順は `public/admin.html`、利用者（現場職員）向けの使い方は `public/manual.html` を参照してください。
 
