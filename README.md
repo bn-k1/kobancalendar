@@ -33,9 +33,23 @@ npm install
 
 1. **このリポジトリを fork**（または "Use this template"）して自分のアカウント／組織にコピーする。
 2. fork した repo の **Settings → Pages → Source** を「**GitHub Actions**」にする（初回のみ手動。これだけは GitHub の管理画面操作）。push すると CI が自動でビルド・配信する。
-3. 配信された `https://<owner>.github.io/<repo>/#/admin` を開き、classic PAT（scope は **`public_repo` のみ**）を貼って「保存して接続テスト」。接続できれば管理 UI が出る。トークン発行の詳しい手順は `public/admin.html` の導入ガイド参照。
+3. 配信された `https://<owner>.github.io/<repo>/#/admin` を開き、classic PAT（scope は **`public_repo` のみ**）を貼って「保存して接続テスト」。接続できれば管理 UI が出る。トークン発行の詳しい手順は管理ガイド（下記）参照。
 
-ここまでが一度きりのセットアップです。以降、交番表・独自休日・表示ルール・食堂メニューの日々の更新はコマンドやコードに触れず管理画面（`#/admin`）だけで完結します。運用担当者向けの手順は `public/admin.html`、利用者（現場職員）向けの使い方は `public/manual.html` を参照してください。
+ここまでが一度きりのセットアップです。以降、交番表・独自休日・表示ルール・食堂メニューの日々の更新はコマンドやコードに触れず管理画面（`#/admin`）だけで完結します。
+
+### 入口（URL）
+
+`<owner>` と `<repo>` は自分の fork のものに読み替えてください（例: owner が `yourname`、repo が `kobancalendar` なら `https://yourname.github.io/kobancalendar/…`）。**本家（`bn-k1`）ではなく、必ず自分の URL を開いてください。** 本家の管理画面を開いても本家リポジトリには書き込めません（各 fork は独立しています）。
+
+| 入口 | URL | 対象 |
+| --- | --- | --- |
+| 管理画面 | `https://<owner>.github.io/<repo>/#/admin` | 運用担当者（PAT で接続して編集） |
+| 管理ガイド | `https://<owner>.github.io/<repo>/admin.html` | 運用担当者（導入・運用の手順書） |
+| 利用者マニュアル | `https://<owner>.github.io/<repo>/manual.html` | 利用者（現場職員） |
+
+> 管理画面は通常のカレンダーからはリンクされていません（利用者に見せないため）。運用担当者は上記 `#/admin` の URL を直接ブックマークしてください。管理ガイド（`admin.html`）は管理画面の中からも開けます。
+>
+> ソースを直接読む場合の実体は `public/admin.html` / `public/manual.html` です（配信時にサイト直下の `admin.html` / `manual.html` として置かれます）。
 
 ---
 
