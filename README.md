@@ -3,7 +3,7 @@
 周期的な交番表（シフト表）をWebカレンダーとして公開する、Vue 3製のSPAです。管理者がデータを設定・ビルドし、静的ホスティングで配信する想定です。
 
 **デモ:** https://bn-k1.github.io/kobancalendar/
-**管理ガイド:** https://bn-k1.github.io/kobancalendar/admin.html ／ **利用者マニュアル:** https://bn-k1.github.io/kobancalendar/manual.html（いずれも本家配信版。内容は fork 先でも同一です）
+**管理ガイド:** https://bn-k1.github.io/kobancalendar/admin.html ／ **利用者マニュアル:** https://bn-k1.github.io/kobancalendar/manual.html（本家配信版・fork 先も同一内容）
 
 ---
 
@@ -30,18 +30,18 @@ npm install
 
 ## 自分の職場に導入する（テンプレート → ゼロコンフィグ）
 
-コードの書き換えは不要です。以下は**サイトを最初に配信するまでの手順**だけを載せます（管理ガイドは配信後の運用だけを扱うため、この bootstrap は README にしか置いていません）。**トークンの発行と、交番表・独自休日・表示ルール・食堂メニューの日々の更新は、配信後に開く管理ガイド（`admin.html`）が唯一の手順書**です。ここでは重複させません。
+コードの書き換えは不要です。ここに載せるのは**サイトを最初に配信するまでの手順**だけです。トークンの発行や、交番表・独自休日・表示ルール・食堂メニューの日々の更新といった配信後の運用は、すべて**管理ガイド**（`admin.html`）に従ってください。
 
-1. **"Use this template" → "Create a new repository"** で自分のアカウント／組織にコピーする（Public で作成）。fork でも動きますが、fork は GitHub Actions が既定で無効なため、テンプレートからの作成を推奨します。
-2. コピーした repo の **Settings → Pages → Source** を「**GitHub Actions**」にする（初回のみ手動。これだけは GitHub の管理画面操作）。
-3. **Actions タブ → "Deploy to GitHub Pages" → "Run workflow"** で最初の配信を手動で走らせる（Source を設定した後は自動起動しないため、初回だけ手でキックする）。緑のチェックになれば配信完了。以降は管理画面の保存＝ push で CI が自動でビルド・配信します。
+1. **"Use this template" → "Create a new repository"** で自分のアカウント／組織に Public リポジトリとしてコピーする。fork でも動きますが、fork は GitHub Actions が既定で無効になるため、テンプレートからの作成を推奨します。
+2. コピーした repo の **Settings → Pages → Source** を「**GitHub Actions**」にする。GitHub の設定画面を触るのはこの1回だけです。
+3. 初回だけは自動起動しないため、**Actions タブ → "Deploy to GitHub Pages" → "Run workflow"** で最初の配信を手動で走らせる。緑のチェックになれば配信完了。以降は管理画面での保存のたびに CI が自動でビルド・配信します。
 4. 配信された `https://<owner>.github.io/<repo>/admin.html` を開き、**管理ガイド**の手順に従ってトークン（classic PAT）を発行し、`#/admin` に接続する。
 
-以降の運用はコマンドやコードに触れず管理画面（`#/admin`）だけで完結します。詳細はすべて管理ガイド（下記）にあります。
+以降の運用はコマンドやコードに触れず、管理画面（`#/admin`）だけで完結します。詳細はすべて管理ガイドにあります。
 
 ### 入口（URL）
 
-`<owner>` と `<repo>` は自分のコピー（テンプレート／fork）のものに読み替えてください（例: owner が `yourname`、repo が `kobancalendar` なら `https://yourname.github.io/kobancalendar/…`）。**本家（`bn-k1`）ではなく、必ず自分の URL を開いてください。** 本家の管理画面を開いても本家リポジトリには書き込めません（各コピーは独立しています）。
+`<owner>` と `<repo>` は自分のコピーのものに読み替えてください。owner が `yourname` なら `https://yourname.github.io/kobancalendar/…` です。各コピーは独立しているため、**本家（`bn-k1`）ではなく必ず自分の URL を開いてください**。本家の管理画面を開いても自分のリポジトリには書き込めません。
 
 | 入口 | URL | 対象 |
 | --- | --- | --- |
@@ -49,9 +49,9 @@ npm install
 | 管理ガイド | `https://<owner>.github.io/<repo>/admin.html` | 運用担当者（導入・運用の手順書） |
 | 利用者マニュアル | `https://<owner>.github.io/<repo>/manual.html` | 利用者（現場職員） |
 
-> 管理画面は通常のカレンダーからはリンクされていません（利用者に見せないため）。運用担当者は上記 `#/admin` の URL を直接ブックマークしてください。管理ガイド（`admin.html`）は管理画面の中からも開けます。
+> 利用者に見せないため、管理画面は通常のカレンダーからはリンクされていません。運用担当者は上記 `#/admin` の URL を直接ブックマークしてください。管理ガイドは管理画面の中からも開けます。
 >
-> ソースを直接読む場合の実体は `public/admin.html` / `public/manual.html` です（配信時にサイト直下の `admin.html` / `manual.html` として置かれます）。
+> 両ドキュメントの実体はリポジトリの `public/admin.html` / `public/manual.html` で、配信時にサイト直下へ置かれます。
 
 ---
 
@@ -85,10 +85,10 @@ npm install
 
 | キー   | 説明                                                                                                                                                                                                                                            |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `from` | その世代が有効になる日（`YYYY-MM-DD`）。配列は `from` 昇順・重複不可（違反は例外。検証タイミングは下記「検証・警告」）                                                                                                                          |
+| `from` | その世代が有効になる日（`YYYY-MM-DD`）。配列は `from` 昇順・重複不可。検証の詳細は下記「検証・警告」を参照                                                                                                                          |
 | `data` | その世代の交番表CSVが入るフォルダ名（`data/<data>/`）。**省略すると直前の世代の `data` を継承します**（交番表は同じでコマ位置表だけが動く移行）。先頭世代の `data` は省略不可。**配列で書くと「同一世代の途中で交番表だけ差し替える」**ことができます（下記） |
 
-> `data` の省略（継承）を書けるのは `config.json` を直接編集したときだけです。管理画面の「新しい世代を追加」は常に `data` を明示して書き込みます（CSV3点の添付が必須なため）。コマ位置表だけを動かす移行を管理画面から行う運用者は、既存と同じフォルダ名・同じCSVを指定することになります。
+> `data` の省略（継承）を書けるのは `config.json` を直接編集したときだけです。管理画面の「新しい世代を追加」は CSV3点の添付が必須のため、常に `data` を明示して書き込みます。コマ位置表だけを動かす移行を管理画面から行う場合は、既存と同じフォルダ名・同じCSVを指定します。
 
 - ある世代の表示窓は `[from, 次の世代の from)`。最後の世代は `[from, ∞)`。
 - シフト計算の基準日（回転の起点）は、いま表示している世代自身の `from` です（`(コマ位置-1 + 基準日からの日数差) % サイクル長` で当日のコマを決めます）。世代を切り替えても、回転の起点はその世代の `from` に固定されます。
@@ -131,8 +131,8 @@ npm install
 }
 ```
 
-- 先頭セグメントの `from` は世代の `from` に固定されます（書いても無視）。2番目以降は自前の `from` を昇順で指定します。
-- 全セグメントは**同じサイクル長**（CSVの行数）でなければなりません（コマ位置表を途切れさせないため。違反は例外）。差し替えるのはあくまで交番表の中身で、コマ位置表（回転の長さ・各員のコマ位置）は変えない用途です。
+- 先頭セグメントの `from` は世代の `from` に固定され、書いても無視されます。2番目以降は自前の `from` を昇順で指定します。
+- 全セグメントは**同じサイクル長**（CSVの行数）でなければなりません。コマ位置表を途切れさせないための制約で、違反は例外になります。差し替えるのはあくまで交番表の中身で、回転の長さや各員のコマ位置は変えません。
 - セグメントの `from` は、その世代の表示窓（次の世代の `from` まで）の中に収めてください。
 - この差し替えはカレンダー表示だけでなく「飲みに行くンダー」の予定調整にも反映されます。
 - コマ位置表そのものを動かしたい（各員のコマ位置を一斉にずらす）場合は、配列ではなく**別世代**（別の `from`）として追記してください。
@@ -141,10 +141,10 @@ npm install
 
 `schedules` の検証は2箇所に分かれています。挙動が異なるので区別してください。
 
-- **アプリ起動時**（`buildEpochs`, `src/composables/useAppInitializer.js` — ブラウザ側のクライアント実行時）に、`from` の昇順・重複、セグメントの `from` の妥当性、セグメント間のサイクル長一致を検証します。違反は例外（throw）です。
-- **`npm test`** はこの `buildEpochs` を、実際の `config/config.json` と `build-prep` が生成した `data/scheduleData.json` に対して実行します（`src/__tests__/configIntegrity.test.js`）。`buildEpochs` 自体はブラウザ側でしか動かないコードなので、この統合テストが無いと `config.json` の不備（`from` の逆順・重複など）があっても CI のビルド・テストは素通りしてしまいます。`npm test` は `pretest` フックで自動的に `build-prep` を実行するため、素の clone で `npm test` を単体実行しても成立します（`npm run test:watch` / `npm run test:coverage` も同様）。
-- 同じく起動時、コマ位置シフト移行（`data` 継承）なのに世代間の日数差がサイクル長の倍数でない場合や、`from` が今日から10年を超えて離れている場合はブラウザの開発者コンソールに警告が出ます（typo を疑ってください）。これらは `console.warn` のみで例外を投げないため、`npm test` の `configIntegrity.test.js` は「その値で `buildEpochs` を通る」ことしか確認しておらず、warn の有無まではアサートしていません。実際の `config.json` に対するこの手の typo 検知は今もブラウザ実行時のみです。
-- 一方、CSV→JSON変換スクリプト（`scripts/convertCsv.js`。ビルドパイプライン節を参照）は別の検証を行います。`schedules` が参照するフォルダの CSV 3点がすべて揃い、行数が一致するかどうか（欠損・空・不一致はここでビルドエラーになります）。加えて、current epoch より2世代以上前の世代と、どの `schedules[].data` からも参照されない `data/` 配下のフォルダを「整理候補」としてビルドログに警告します（自動削除はしません）。
+- **アプリ起動時**、`buildEpochs`（`src/composables/useAppInitializer.js`）が `from` の昇順・重複、セグメントの `from` の妥当性、セグメント間のサイクル長一致を検証します。違反は例外です。
+- **`npm test`**（`src/__tests__/configIntegrity.test.js`）はこの `buildEpochs` を、実際の `config/config.json` と `build-prep` が生成した `data/scheduleData.json` に対して実行します。`buildEpochs` はブラウザ側でしか動かないコードなので、この統合テストが `from` の逆順・重複といった `config.json` の不備を CI で検出する唯一の網です。`pretest` フックが `build-prep` を自動実行するため、素の clone でも `npm test` は単体で成立します。
+- 同じく起動時、`data` 継承の移行なのに世代間の日数差がサイクル長の倍数でない場合や、`from` が今日から10年を超えて離れている場合は、typo の疑いとしてブラウザの開発者コンソールに警告が出ます。この警告は例外を投げず `npm test` でも検出されないため、typo 検知が働くのはブラウザ実行時だけです。
+- 一方、ビルド時は CSV→JSON変換スクリプト（`scripts/convertCsv.js`）が、`schedules` の参照する各フォルダに CSV 3点が揃い行数が一致することを検証し、欠損・空・不一致はビルドエラーにします。加えて、current epoch より2世代以上前の世代と、どの `schedules[].data` からも参照されない `data/` 配下のフォルダを「整理候補」としてビルドログに警告します。削除は自動では行いません。
 - 古い世代は剪定して構いません。表示UIは「いまの世代」と隣接世代しか出さず、過去世代は実行時には current epoch を特定するためだけに参照されます。
 
 ### `data/<folder>/` — 交番表CSV
@@ -161,10 +161,10 @@ npm install
 夜勤,00:00,08:00
 ```
 
-- 行数 = サイクル長（同一フォルダの3ファイルでそろえてください）
+- 行数 = サイクル長。同一フォルダの3ファイルでそろえてください
 - 1行目が「コマ1」に対応
 - 休日などで時刻不要な行は `subject,,` とします
-- `schedules` が参照するフォルダは必ず完全な3ファイルを持つ必要があります（空フォルダはビルドエラー）
+- `schedules` が参照するフォルダは必ず完全な3ファイルを持つ必要があります。欠けているとビルドエラーになります
 
 ### `config/event.json` — 表示ルール
 
@@ -187,7 +187,7 @@ npm install
 - どのルールにも当たらなければ `fallback.color`。カレンダー上で編集した予定は `edited.color`。
 - 時刻を表示するかどうかは設定しません。CSV に時刻があれば出す、なければ出しません（`公休,,` は時刻なし、`黄121,05:06,11:36` は時刻あり）。
 
-ルールに名前はありません。「この橙は何のルールか」はキーワード（`黄`）そのもので識別します。ルールの追加・並べ替え・色の変更は管理画面（`public/admin.html`）から行う運用です。
+ルールに名前はありません。「この橙は何のルールか」はキーワード（`黄`）そのもので識別します。ルールの追加・並べ替え・色の変更は管理画面（`#/admin`）から行う運用です。
 
 ### `data/menu/` — 食堂メニュー（任意）
 
@@ -216,7 +216,7 @@ data/menu/*.txt ──────┘  (scripts/)           └─→  data/menu
 
 `convert-csv` は `config.json` の `schedules[].data` で参照されるフォルダだけを変換し、`data/scheduleData.json`（フォルダ名をキーにした統合バンドル）を出力します。
 
-これらの生成物（`data/scheduleData.json` / `data/menu/menu.json` / `docs/`）は **git にコミットしません**（`.gitignore` 済み）。GitHub Actions が push のたびにビルドして配信するため、手元で `build-prep` を走らせるのはローカル確認用です。QRコードはビルド不要で、アプリが実行時に自分のURLから生成します。
+これらの生成物（`data/scheduleData.json` / `data/menu/menu.json` / `docs/`）は `.gitignore` 済みで、**git にコミットしません**。GitHub Actions が push のたびにビルドして配信するため、手元で `build-prep` を走らせるのはローカル確認用です。QRコードはビルド不要で、アプリが実行時に自分のURLから生成します。
 
 ### コマンド一覧
 
@@ -235,7 +235,7 @@ npm run convert-menu   # data/menu/*.txt → JSON
 
 ### 自動ビルド・配信（GitHub Actions）
 
-`main` に push すると `.github/workflows/deploy.yml` が走り、`build-prep` → テスト → `build-gh-pages` を実行して GitHub Pages へ配信します。生成バンドルや `docs/` をコミットする必要はありません（CIが毎回作り直します）。
+`main` に push すると `.github/workflows/deploy.yml` が走り、`build-prep` → テスト → `build-gh-pages` を実行して GitHub Pages へ配信します。生成バンドルや `docs/` は CI が毎回作り直すので、コミットする必要はありません。
 
 初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を「**GitHub Actions**」に設定してください。
 
@@ -246,7 +246,7 @@ npm run convert-menu   # data/menu/*.txt → JSON
 | GitHub Pages      | `main` への push（GitHub Actions が自動ビルド・配信） | `docs/`（CIが生成） | リポジトリ名から自動（`/<repo>/`） |
 | 任意のWebサーバー | `npm run build`                                       | `dist/`             | `/`（ルート配信）                  |
 
-GitHub Pages の base path はリポジトリ名から自動導出されます（CIが `BASE_PATH` 環境変数で注入。例: リポジトリ名が `kobancalendar` なら `/kobancalendar/`）。リポジトリをフォークして別の職場で配信する場合、設定の書き換えは不要です。独自ドメイン等で base path を上書きしたいときだけ `config.json` に `url` を指定してください（`src/` 側は `import.meta.env.BASE_URL` を参照するため直書きは不要）。
+GitHub Pages の base path は、CI が `BASE_PATH` 環境変数として注入するリポジトリ名から自動導出されます（例: リポジトリ名が `kobancalendar` なら `/kobancalendar/`）。リポジトリをフォークして別の職場で配信する場合も、設定の書き換えは不要です。独自ドメイン等で base path を上書きしたいときだけ `config.json` に `url` を指定してください。
 
 ---
 
@@ -259,7 +259,7 @@ GitHub Pages の base path はリポジトリ名から自動導出されます�
 | Home             | `#/?p=N`（旧版表示時は `#/?v=old&p=N`） |
 | 飲みに行くンダー | `#/meetup?ps=1,7,12&t=19:00&d=120`      |
 
-基準日（baseDate）は URL に載せません（`config.schedules` が基準日の真実です）。
+基準日（baseDate）は URL に載せません。基準日の真実は `config.schedules` です。
 
 | localStorage キー                 | 形状                                                                    | 内容                                                    |
 | --------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -267,7 +267,7 @@ GitHub Pages の base path はリポジトリ名から自動導出されます�
 | `kobancalendar.savedMeetup.v1`    | `{ active, sets: { [baseDate]: { participants, startTime, period } } }` | 飲みに行くンダーの検索条件。世代ごとに別々の set を記憶 |
 
 - `active` は最後に開いていた baseDate（ISO 文字列）。`positions` / `sets` のうち「どの世代の値か」を指すポインタです。
-- 起動時は **URL ハッシュクエリ → localStorage → config 既定値** の順に解決し、確定後は URL と localStorage の両方へ同期します（履歴を汚さない `replaceState` ベース）。
+- 起動時は **URL ハッシュクエリ → localStorage → config 既定値** の順に解決し、確定後は URL と localStorage の両方へ同期します。同期は `replaceState` ベースで、ブラウザ履歴を汚しません。
 - 飲みに行くンダーは専用の保存データが無い場合、Home の localStorage から同じ baseDate のコマ位置を拾って初期参加者として利用します。
 
 ## 備考
