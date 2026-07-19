@@ -10,7 +10,6 @@
     "build-gh-pages": "npm run build-prep && vite build --mode gh-pages",
     "preview": "vite preview",
     "build-prep": "npm run convert-csv && npm run convert-menu",
-    "release": "npm run build-prep && npm run build && npm run build-gh-pages",
     "convert-csv": "node scripts/convertCsv.js",
     "convert-menu": "node scripts/convertMenu.js",
     "pretest": "npm run build-prep",

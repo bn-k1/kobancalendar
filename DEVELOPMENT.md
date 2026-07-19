@@ -194,7 +194,6 @@ npm test               # テスト実行。pretest で build-prep を自動実�
 npm run build-prep     # CSV/TXT → JSON 変換のみ
 npm run build          # build-prep + 本番ビルド → dist/
 npm run build-gh-pages # build-prep + GitHub Pages用ビルド → docs/（CIが使用）
-npm run release        # build-prep → build → build-gh-pages を一括実行
 npm run preview        # 直前のビルド結果をローカルでプレビュー
 
 # 個別実行
