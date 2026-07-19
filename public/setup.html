@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>導入ガイド — KobanCalendar</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --primary: #3c6e71;
+      --text: #212529;
+      --text-muted: #6c757d;
+      --border: #dee2e6;
+      --accent: #fff3cd;
+      --accent-border: #ffc107;
+      --radius: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a2e;
+        --surface: #16213e;
+        --primary: #4a9d9f;
+        --text: #e9ecef;
+        --text-muted: #adb5bd;
+        --border: #2d3748;
+        --accent: #3d2e00;
+        --accent-border: #d4a017;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP",
+        "Yu Gothic", sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      padding: 24px 16px 64px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+
+    details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::before {
+      content: "\25B6";
+      font-size: 0.75rem;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    details[open] > summary::before { transform: rotate(90deg); }
+
+    details[open] > summary {
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    p { margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--primary); font-weight: 600; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+
+    .step:last-child { margin-bottom: 0; }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+
+    .note {
+      background: var(--accent);
+      border-left: 4px solid var(--accent-border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    ul li { margin-bottom: 6px; }
+
+    .next {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 28px;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>KobanCalendar 導入ガイド</h1>
+      <p>自分の職場用のサイトをゼロから立ち上げる人が、最初に一度だけ行う作業（GitHub アカウント・配信・管理用トークンの発行）の手引きです。日々の更新は配信後に<a href="admin.html">管理ガイド</a>へ進んでください。</p>
+    </header>
+
+    <div class="note">この作業はサイトをゼロから立ち上げる人が最初に一度だけ行うものです。すでにサイトが動いていて、管理用のトークンだけを渡された人は、ここは読まず<a href="admin.html">管理ガイド</a>の「接続する（初回のみ）」へ進んでください。</div>
+
+    <details>
+      <summary>導入① GitHub アカウントを作る</summary>
+      <p><a href="https://github.com/">github.com</a> の「Sign up」から、無料アカウントを 1 つ作ります（画面の案内どおりに進めば数分です。プランは「Free（無料）」で十分）。すでにアカウントがある人はこの項目を飛ばして構いません。</p>
+      <div class="note">登録に使うメールアドレスとパスワードは、担当者交代時の引き継ぎ資産になるので安全な場所に控えておいてください。可能なら二段階認証（2FA）も設定しておくと安心です。</div>
+      <div class="note">できれば、このアカウントは<strong>このサイトの運用専用</strong>にして、ほかのプロジェクト（リポジトリ）を置かないことをおすすめします。あとで発行する管理用の鍵（導入③）が、万一漏れても、被害をこのサイト 1 つに閉じ込められます。</div>
+    </details>
+
+    <details>
+      <summary>導入② サイトを配信する（デプロイ）</summary>
+      <p>「デプロイ」とは、プログラムをインターネット上に公開してサイトとして見られる状態にすることです。一度この設定を済ませれば、あとは管理画面で保存するだけで自動的に更新されます。<strong>この作業は最初の一度だけ</strong>です。</p>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p><strong>テンプレートから自分のサイトを作る</strong></p>
+          <p>配信元のページ（<a href="https://github.com/bn-k1/kobancalendar">github.com/bn-k1/kobancalendar</a>）を開くと、上部に緑色の「Use this template」（このテンプレートを使う）ボタンがあります。これを押し、「Create a new repository」を選びます。プログラム一式が、自分専用のサイトの土台としてコピーされます。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p><strong>名前と公開範囲を決める</strong></p>
+          <ul>
+            <li><strong>Repository name（リポジトリ名）:</strong> 好きな名前を付けます（例: <code>kobancalendar</code>）。この名前はサイトのアドレスの一部になります。</li>
+            <li><strong>Owner（持ち主）:</strong> 自分のアカウントを選びます。</li>
+            <li><strong>公開範囲:</strong> 「Public」（公開）を選びます。無料アカウントでサイトを公開するには Public が必要です。</li>
+          </ul>
+          <p>「Create repository」を押すと、自分専用のコピーができあがります。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <p><strong>公開先（Pages）を設定する</strong></p>
+          <p>できたページの「Settings」（設定）タブ → 左メニューの「Pages」を開きます。「Source」（ソース）という項目を「GitHub Actions」に変更します。これがサイトの公開場所の指定です。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <p><strong>最初の配信を走らせる</strong></p>
+          <p>「Actions」タブを開き、左の一覧から「Deploy to GitHub Pages」を選びます。右側の「Run workflow」ボタンを押し、もう一度「Run workflow」を押すと配信が始まります。行が緑色のチェックになれば成功です（数分かかります）。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <p><strong>サイトのアドレスを確認する</strong></p>
+          <p>もう一度「Settings」→「Pages」を開くと、上部に「Your site is live at …」とサイトのアドレス（URL）が表示されます。これが利用者に配るサイトのアドレスです。開いてカレンダーが表示されれば、配信は完了です。</p>
+        </div>
+      </div>
+
+      <div class="note">テンプレートから作ったサイトは、元のプログラムとは切り離された独立したものです。元の側でプログラムが改良されても自動では反映されません（安定して動き続ける利点でもあります）。最新の機能を取り込みたいときは開発者に相談してください。うまく緑にならず赤い「×」が出たときは、その行を開くと止まった箇所が出るので、判断が難しければ画面を見せて開発者に相談してください。</div>
+    </details>
+
+    <details>
+      <summary>導入③ 管理用トークン（PAT）を発行する</summary>
+      <p>管理画面から交番表やメニューを編集するには、Personal Access Token（パーソナル・アクセス・トークン、略して PAT）という「管理者用の鍵」が 1 つ必要です。<strong>導入①で作った、このサイト運用のためのアカウント</strong>から発行します。<strong>管理する人ごとに 1 本ずつ</strong>発行してください（誰の操作か分かり、辞めた人の鍵だけを無効にできます）。</p>
+
+      <div class="note">この鍵は「このアカウントが持つ公開リポジトリを書き換える」権限を持ちます。だからこそ、導入①のアカウントは<strong>このサイト専用</strong>にして、ほかのリポジトリを置かないでください。そうすれば、万一鍵が漏れても被害はこのサイト 1 つに限られます。</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p><strong>設定を開く</strong></p>
+          <p>GitHub 右上の自分のアイコン →「Settings」（設定）を開きます。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p><strong>開発者設定を開く</strong></p>
+          <p>左メニューをいちばん下までスクロールし、「Developer settings」（開発者設定）を押します。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <p><strong>トークン作成を始める</strong></p>
+          <p>「Personal access tokens」→「Tokens (classic)」を開き、「Generate new token」→「Generate new token (classic)」を押します（<strong>Fine-grained ではなく classic の方</strong>です）。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <p><strong>各項目を入力する</strong></p>
+          <ul>
+            <li><strong>Note（名前）:</strong> 用途と担当者が分かる名前。例: <code>kobancalendar-admin-tanaka</code></li>
+            <li><strong>Expiration（有効期限）:</strong> 「No expiration」（無期限）を選びます。期限切れで管理画面が止まる心配がなくなります。※無期限の鍵は自動では失効しないので、担当交代のときは必ず後述の「Revoke」で無効にしてください。</li>
+            <li><strong>Select scopes（権限）:</strong> <strong><code>public_repo</code> だけ</strong>にチェックを入れます（「repo」グループの中の項目です）。<code>repo</code> 全体や <code>workflow</code> など、ほかには<strong>チェックを入れないでください</strong>。このサイトの更新に必要なのは <code>public_repo</code> だけです。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <p><strong>発行してコピーする</strong></p>
+          <p>下の「Generate token」を押します。<code>ghp_…</code> で始まる文字列が表示されるので、<strong>その場でコピー</strong>します（このトークンは二度と表示されません。閉じる前に必ず控えます）。</p>
+        </div>
+      </div>
+
+      <p><strong>登録のしかた:</strong> 発行したトークン文字列を、管理する本人に渡します。本人は<a href="admin.html">管理ガイド</a>の「接続する（初回のみ）」の手順で管理画面に貼り付けます。</p>
+
+      <div class="note">トークンは鍵そのものです。メールやチャットに貼りっぱなしにせず、渡したら控えは安全に保管してください。担当を外れた人がいれば、その人のトークンを GitHub の同じ画面から「Revoke」（失効）で無効にします。</div>
+    </details>
+
+    <div class="next">
+      <p>ここまで済んだらサイトは公開済みです。以降のトークン接続と日々の更新（交番表・独自の休日・表示ルール・食堂メニュー）は <strong><a href="admin.html">管理ガイド</a></strong> に進んでください。</p>
+    </div>
+  </div>
+</body>
+</html>
