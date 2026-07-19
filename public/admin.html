@@ -194,6 +194,7 @@
       <summary>導入① GitHub アカウントを作る</summary>
       <p><a href="https://github.com/">github.com</a> の「Sign up」から、無料アカウントを 1 つ作ります（画面の案内どおりに進めば数分です。プランは「Free（無料）」で十分）。すでにアカウントがある人はこの項目を飛ばして構いません。</p>
       <div class="note">登録に使うメールアドレスとパスワードは、担当者交代時の引き継ぎ資産になるので安全な場所に控えておいてください。可能なら二段階認証（2FA）も設定しておくと安心です。</div>
+      <div class="note">できれば、このアカウントは<strong>このサイトの運用専用</strong>にして、ほかのプロジェクト（リポジトリ）を置かないことをおすすめします。あとで発行する管理用の鍵（導入③）が、万一漏れても、被害をこのサイト 1 つに閉じ込められます。</div>
     </details>
 
     <details>
@@ -250,7 +251,9 @@
 
     <details>
       <summary>導入③ 管理用トークン（PAT）を発行する</summary>
-      <p>管理画面から交番表やメニューを編集するには、Personal Access Token（パーソナル・アクセス・トークン、略して PAT）という「管理者用の鍵」が 1 つ必要です。これを発行して、管理画面に登録します。<strong>管理する人ごとに 1 本ずつ</strong>発行してください（誰の操作か分かり、辞めた人の鍵だけを無効にできます）。</p>
+      <p>管理画面から交番表やメニューを編集するには、Personal Access Token（パーソナル・アクセス・トークン、略して PAT）という「管理者用の鍵」が 1 つ必要です。<strong>導入①で作った、このサイト運用のためのアカウント</strong>から発行します。<strong>管理する人ごとに 1 本ずつ</strong>発行してください（誰の操作か分かり、辞めた人の鍵だけを無効にできます）。</p>
+
+      <div class="note">この鍵は「このアカウントが持つ公開リポジトリを書き換える」権限を持ちます。だからこそ、導入①のアカウントは<strong>このサイト専用</strong>にして、ほかのリポジトリを置かないでください。そうすれば、万一鍵が漏れても被害はこのサイト 1 つに限られます。</div>
 
       <div class="step">
         <div class="step-num">1</div>
@@ -272,7 +275,7 @@
         <div class="step-num">3</div>
         <div class="step-body">
           <p><strong>トークン作成を始める</strong></p>
-          <p>「Personal access tokens」→「Fine-grained tokens」を開き、「Generate new token」（新しいトークンを作る）を押します。</p>
+          <p>「Personal access tokens」→「Tokens (classic)」を開き、「Generate new token」→「Generate new token (classic)」を押します（<strong>Fine-grained ではなく classic の方</strong>です）。</p>
         </div>
       </div>
 
@@ -281,11 +284,9 @@
         <div class="step-body">
           <p><strong>各項目を入力する</strong></p>
           <ul>
-            <li><strong>Token name（名前）:</strong> 用途が分かる名前。例: <code>kobancalendar-admin</code></li>
-            <li><strong>Expiration（有効期限）:</strong> 鍵が使える期間。長めに設定して構いませんが、<strong>期限が切れると管理画面が使えなくなる</strong>ので、切れる前に作り直す運用を決めておきます。</li>
-            <li><strong>Resource owner（対象の持ち主）:</strong> サイトを配信しているアカウント（自分のアカウント）を選びます。</li>
-            <li><strong>Repository access（対象範囲）:</strong> 「Only select repositories」を選び、このサイトのリポジトリを指定します。</li>
-            <li><strong>Permissions（権限）:</strong> 「Repository permissions」の一覧から「Contents」を探し、「Read and write」（読み書き）に設定します。<strong>必要なのはこれ 1 つだけ</strong>です。ほかは触らず「No access」のままにします。</li>
+            <li><strong>Note（名前）:</strong> 用途と担当者が分かる名前。例: <code>kobancalendar-admin-tanaka</code></li>
+            <li><strong>Expiration（有効期限）:</strong> 「No expiration」（無期限）を選びます。期限切れで管理画面が止まる心配がなくなります。※無期限の鍵は自動では失効しないので、担当交代のときは必ず後述の「Revoke」で無効にしてください。</li>
+            <li><strong>Select scopes（権限）:</strong> <strong><code>public_repo</code> だけ</strong>にチェックを入れます（「repo」グループの中の項目です）。<code>repo</code> 全体や <code>workflow</code> など、ほかには<strong>チェックを入れないでください</strong>。このサイトの更新に必要なのは <code>public_repo</code> だけです。</li>
           </ul>
         </div>
       </div>
@@ -294,7 +295,7 @@
         <div class="step-num">5</div>
         <div class="step-body">
           <p><strong>発行してコピーする</strong></p>
-          <p>下の「Generate token」を押します。<code>github_pat_…</code> で始まる文字列が表示されるので、<strong>その場でコピー</strong>します（このトークンは二度と表示されません。閉じる前に必ず控えます）。</p>
+          <p>下の「Generate token」を押します。<code>ghp_…</code> で始まる文字列が表示されるので、<strong>その場でコピー</strong>します（このトークンは二度と表示されません。閉じる前に必ず控えます）。</p>
         </div>
       </div>
 
@@ -318,7 +319,7 @@
         <div class="step-num">2</div>
         <div class="step-body">
           <p><strong>トークンを貼り付ける</strong></p>
-          <p>渡された Personal Access Token（fine-grained、対象リポジトリの Contents を Read and write）を「Personal Access Token (fine-grained)」欄に入力し、「保存して接続テスト」を押します。</p>
+          <p>渡された Personal Access Token（<code>ghp_…</code> で始まる文字列）を「Personal Access Token」欄に入力し、「保存して接続テスト」を押します。</p>
         </div>
       </div>
 
@@ -418,7 +419,7 @@
       <ul>
         <li>保存ボタンが押せない → 未入力や不正な値があると、その理由が一覧で出ます。</li>
         <li>保存したのにサイトが変わらない → 配信のビルドに数分かかります。ブラウザの再読み込み（キャッシュ）も試してください。</li>
-        <li>「読み込みに失敗しました」 → トークンの権限（Contents: Read and write）と有効期限を確認してください。</li>
+        <li>「読み込みに失敗しました」 → トークンに <code>public_repo</code> の権限が付いているか確認してください（無期限で発行していれば、期限切れの心配はありません）。</li>
         <li>表示ルールで「旧形式のままです」と出る → コードが古いままです。開発者に連絡してください。</li>
       </ul>
     </details>
