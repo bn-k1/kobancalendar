@@ -1,7 +1,8 @@
 // Admin GitHub credentials — stored in localStorage only, never in the URL.
 //
-// This is an admin-local credential cache: a fine-grained Personal Access Token
-// (PAT) and an optional repo override. It is *cache*, not canonical state — it is
+// This is an admin-local credential cache: a classic Personal Access Token
+// (PAT, public_repo scope) and an optional repo override. It is *cache*, not
+// canonical state — it is
 // never shared, never committed, and never reflected into the canonical URL hash.
 // (Contrast with useUrlParams, which owns the shareable/observable URL state.)
 //

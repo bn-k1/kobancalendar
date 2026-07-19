@@ -9,8 +9,8 @@ import { makeStorageFail, restoreStorage } from "../setup";
 describe("useAdminToken() — token", () => {
   it("保存したトークンを読み出せる", () => {
     const { saveToken, readToken } = useAdminToken();
-    saveToken("github_pat_abc");
-    expect(readToken()).toBe("github_pat_abc");
+    saveToken("ghp_abc");
+    expect(readToken()).toBe("ghp_abc");
   });
 
   it("初期状態では空文字を返す", () => {

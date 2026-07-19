@@ -4,7 +4,7 @@
 //   - Resolve the target repo (owner/name) — auto-derived from the GitHub Pages
 //     URL so forks are zero-config; falls back to the admin-local override for
 //     local dev / custom domains.
-//   - Authenticate with the admin's fine-grained PAT (from useAdminToken).
+//   - Authenticate with the admin's classic PAT, public_repo scope (from useAdminToken).
 //   - Read/write files via the Contents API (UTF-8-safe base64).
 //
 // This client is the plumbing for Phases 2/3 (drag-and-drop import, config forms).

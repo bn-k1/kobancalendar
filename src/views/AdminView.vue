@@ -1,6 +1,6 @@
 <!-- src/views/AdminView.vue -->
 <!--
-  Admin console: connect a fine-grained GitHub PAT, then edit the schedule,
+  Admin console: connect a classic GitHub PAT (public_repo scope), then edit the schedule,
   holidays, display rules and cafeteria menu — each panel commits to the repo
   and CI redeploys. Reachable only by typing #/admin — there is intentionally
   no link from the user-facing UI.
@@ -81,17 +81,17 @@
           </button>
 
           <label class="admin-field">
-            <span>Personal Access Token (fine-grained)</span>
+            <span>Personal Access Token</span>
             <input
               v-model="tokenInput"
               type="password"
-              placeholder="github_pat_..."
+              placeholder="ghp_..."
               autocomplete="off"
               spellcheck="false"
             />
             <small
-              >Contents の Read and write 権限を持つトークン。この端末の
-              localStorage にのみ保存され、共有・送信されません。</small
+              >public_repo 権限を持つ classic トークン。この端末の localStorage
+              にのみ保存され、共有・送信されません。</small
             >
           </label>
 
