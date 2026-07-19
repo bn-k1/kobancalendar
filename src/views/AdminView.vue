@@ -6,7 +6,7 @@
   no link from the user-facing UI.
 
   The operator's walkthrough lives in public/admin.html (linked from the top of
-  this page); README.md is the developer's doc.
+  this page); DEVELOPMENT.md is the developer's doc.
 -->
 <template>
   <UnifiedPageLayout title="管理画面🔧">
