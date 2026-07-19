@@ -1,6 +1,6 @@
 # KobanCalendar
 
-周期的な交番表（シフト表）をWebカレンダーとして表示し、参加者全員の空き日を探す「飲みに行くンダー」を備えた Vue 3 製の SPA です。GitHub Pages で静的配信され、配信後の日々の更新は Web の管理画面だけで完結します。
+周期的な交番表（シフト表）をWebカレンダーとして公開する、 Vue 3 製の SPA です。GitHub Pages で静的配信され、配信後の日々の更新は Web の管理画面だけで完結します。
 
 - **デモ:** https://bn-k1.github.io/kobancalendar/
 - **管理ガイド:** https://bn-k1.github.io/kobancalendar/admin.html
