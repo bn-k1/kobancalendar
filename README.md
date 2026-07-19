@@ -3,6 +3,7 @@
 周期的な交番表（シフト表）をWebカレンダーとして公開する、Vue 3製のSPAです。管理者がデータを設定・ビルドし、静的ホスティングで配信する想定です。
 
 **デモ:** https://bn-k1.github.io/kobancalendar/
+**管理ガイド:** https://bn-k1.github.io/kobancalendar/admin.html ／ **利用者マニュアル:** https://bn-k1.github.io/kobancalendar/manual.html（いずれも本家配信版。内容は fork 先でも同一です）
 
 ---
 
@@ -29,7 +30,7 @@ npm install
 
 ## 自分の職場に導入する（テンプレート → ゼロコンフィグ）
 
-コードの書き換えは不要です。以下は**サイトを最初に配信するまでの手順**だけを載せます（配信前は管理ガイドがまだ開けないため、この bootstrap は README にしか置けません）。**トークンの発行と、交番表・独自休日・表示ルール・食堂メニューの日々の更新は、配信後に開く管理ガイド（`admin.html`）が唯一の手順書**です。ここでは重複させません。
+コードの書き換えは不要です。以下は**サイトを最初に配信するまでの手順**だけを載せます（管理ガイドは配信後の運用だけを扱うため、この bootstrap は README にしか置いていません）。**トークンの発行と、交番表・独自休日・表示ルール・食堂メニューの日々の更新は、配信後に開く管理ガイド（`admin.html`）が唯一の手順書**です。ここでは重複させません。
 
 1. **"Use this template" → "Create a new repository"** で自分のアカウント／組織にコピーする（Public で作成）。fork でも動きますが、fork は GitHub Actions が既定で無効なため、テンプレートからの作成を推奨します。
 2. コピーした repo の **Settings → Pages → Source** を「**GitHub Actions**」にする（初回のみ手動。これだけは GitHub の管理画面操作）。
