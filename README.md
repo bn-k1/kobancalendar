@@ -18,16 +18,6 @@
 
 ---
 
-## セットアップ
-
-```bash
-git clone https://github.com/bn-k1/kobancalendar.git
-cd kobancalendar
-npm install
-```
-
----
-
 ## 自分の職場に導入する（テンプレート → ゼロコンフィグ）
 
 コードの書き換えは不要です。ここに載せるのは**サイトを最初に配信するまでの手順**だけです。トークンの発行や、交番表・独自休日・表示ルール・食堂メニューの日々の更新といった配信後の運用は、すべて**管理ガイド**（`admin.html`）に従ってください。
@@ -206,6 +196,16 @@ npm install
 ---
 
 ## ビルドパイプライン
+
+ここから先は開発者向けです。テンプレートから導入して管理画面だけで運用する場合、ターミナルでの作業は一切不要です。
+
+### セットアップ
+
+```bash
+git clone https://github.com/bn-k1/kobancalendar.git
+cd kobancalendar
+npm install
+```
 
 CSVやJSONをアプリが直接読むのではなく、ビルド前処理で中間JSONに変換してからViteでバンドルします。
 
