@@ -27,19 +27,20 @@ npm install
 
 ---
 
-## 自分の職場に導入する（fork → ゼロコンフィグ）
+## 自分の職場に導入する（テンプレート → ゼロコンフィグ）
 
 コードの書き換えは不要です。GitHub 上の操作だけで完結します。
 
-1. **このリポジトリを fork**（または "Use this template"）して自分のアカウント／組織にコピーする。
-2. fork した repo の **Settings → Pages → Source** を「**GitHub Actions**」にする（初回のみ手動。これだけは GitHub の管理画面操作）。push すると CI が自動でビルド・配信する。
-3. 配信された `https://<owner>.github.io/<repo>/#/admin` を開き、classic PAT（scope は **`public_repo` のみ**）を貼って「保存して接続テスト」。接続できれば管理 UI が出る。トークン発行の詳しい手順は管理ガイド（下記）参照。
+1. **"Use this template" → "Create a new repository"** で自分のアカウント／組織にコピーする（Public で作成）。fork でも動きますが、fork は GitHub Actions が既定で無効なため、テンプレートからの作成を推奨します。
+2. コピーした repo の **Settings → Pages → Source** を「**GitHub Actions**」にする（初回のみ手動。これだけは GitHub の管理画面操作）。
+3. **Actions タブ → "Deploy to GitHub Pages" → "Run workflow"** で最初の配信を手動で走らせる（Source を設定した後は自動起動しないため、初回だけ手でキックする）。緑のチェックになれば完了。以降は管理画面の保存＝ push で CI が自動でビルド・配信する。
+4. 配信された `https://<owner>.github.io/<repo>/#/admin` を開き、classic PAT（scope は **`public_repo` のみ**）を貼って「保存して接続テスト」。接続できれば管理 UI が出る。トークン発行の詳しい手順は管理ガイド（下記）参照。
 
 ここまでが一度きりのセットアップです。以降、交番表・独自休日・表示ルール・食堂メニューの日々の更新はコマンドやコードに触れず管理画面（`#/admin`）だけで完結します。
 
 ### 入口（URL）
 
-`<owner>` と `<repo>` は自分の fork のものに読み替えてください（例: owner が `yourname`、repo が `kobancalendar` なら `https://yourname.github.io/kobancalendar/…`）。**本家（`bn-k1`）ではなく、必ず自分の URL を開いてください。** 本家の管理画面を開いても本家リポジトリには書き込めません（各 fork は独立しています）。
+`<owner>` と `<repo>` は自分のコピー（テンプレート／fork）のものに読み替えてください（例: owner が `yourname`、repo が `kobancalendar` なら `https://yourname.github.io/kobancalendar/…`）。**本家（`bn-k1`）ではなく、必ず自分の URL を開いてください。** 本家の管理画面を開いても本家リポジトリには書き込めません（各コピーは独立しています）。
 
 | 入口 | URL | 対象 |
 | --- | --- | --- |
