@@ -183,72 +183,15 @@
   <div class="container">
     <header>
       <h1>KobanCalendar 管理ガイド</h1>
-      <p>交番表・独自の休日・表示ルール・食堂メニューを、管理画面（#/admin）だけで更新するための手引きです。</p>
+      <p>サイトの立ち上げ（GitHub アカウント・配信・トークン発行）から、交番表・独自の休日・表示ルール・食堂メニューの日々の更新まで、管理画面（#/admin）で運用するための手引きです。</p>
     </header>
 
     <div class="note">すでにサイトが動いていて、管理用のトークンだけを渡された人は、「導入」の3項目は飛ばして<strong>「接続する（初回のみ）」</strong>へ進んでください。「導入」は、サイトをゼロから立ち上げる人が最初に一度だけ行う作業です。</div>
 
     <details>
       <summary>導入① GitHub アカウントを作る</summary>
-      <p>サイトの配信と管理には、GitHub（ギットハブ）という無料サービスのアカウントが 1 つ必要です。すでにアカウントがある人は、この項目を飛ばして構いません。</p>
-
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-body">
-          <p><strong>登録ページを開く</strong></p>
-          <p>ブラウザで <code>github.com</code> を開き、右上の「Sign up」（サインアップ）を押します。</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body">
-          <p><strong>メールアドレスを入力する</strong></p>
-          <p>仕事で使い続けられるアドレスにしてください（退職時に消える個人アドレスは避けます）。</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-body">
-          <p><strong>パスワードを決める</strong></p>
-          <p>他サービスと使い回さない、推測されにくいものにします。</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-body">
-          <p><strong>ユーザー名を決める</strong></p>
-          <p>これがアカウントの名前になります（例: <code>koban-admin</code>）。半角英数字で、後から変えると手間なので慎重に決めます。</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">5</div>
-        <div class="step-body">
-          <p><strong>認証を解く</strong></p>
-          <p>画面の案内どおり、「私はロボットではありません」のようなパズルを解きます。</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">6</div>
-        <div class="step-body">
-          <p><strong>確認コードを入力する</strong></p>
-          <p>入力したメールアドレスに確認コードが届きます。メールを開いてコードを入力すれば登録完了です。</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">7</div>
-        <div class="step-body">
-          <p><strong>無料プランを選ぶ</strong></p>
-          <p>プランを聞かれたら「Free（無料）」を選びます。このサイトの運用に有料プランは要りません。</p>
-        </div>
-      </div>
-
-      <div class="note">アカウントのメールアドレスとパスワードは、必ず安全な場所に控えておいてください。担当者が変わるときの引き継ぎ資産になります。可能なら二段階認証（2FA）も設定しておくと、乗っ取り防止になり安心です。</div>
+      <p><code>github.com</code> の「Sign up」から、無料アカウントを 1 つ作ります（画面の案内どおりに進めば数分です。プランは「Free（無料）」で十分）。すでにアカウントがある人はこの項目を飛ばして構いません。</p>
+      <div class="note">登録に使うメールアドレスとパスワードは、担当者交代時の引き継ぎ資産になるので安全な場所に控えておいてください。可能なら二段階認証（2FA）も設定しておくと安心です。</div>
     </details>
 
     <details>
