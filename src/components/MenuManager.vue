@@ -187,7 +187,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useGitHubApi } from "@/composables/useGitHubApi";
 import {
   MENU_MONTH_RE,
@@ -238,6 +238,10 @@ const dirty = computed(() => {
     norm(working.value.b) !== norm(original.value.b)
   );
 });
+
+// AdminView tabs this panel away, so it flags unsaved edits on the tab itself.
+const emit = defineEmits(["update:dirty"]);
+watch(dirty, (value) => emit("update:dirty", value));
 
 const canAddMonth = computed(
   () =>

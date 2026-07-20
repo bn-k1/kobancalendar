@@ -222,7 +222,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useGitHubApi } from "@/composables/useGitHubApi";
 import { matchRule } from "@/utils/eventRules";
 
@@ -324,6 +324,10 @@ function resetKeywordDrafts() {
 const dirty = computed(
   () => JSON.stringify(working.value) !== JSON.stringify(original.value),
 );
+
+// AdminView tabs this panel away, so it flags unsaved edits on the tab itself.
+const emit = defineEmits(["update:dirty"]);
+watch(dirty, (value) => emit("update:dirty", value));
 
 // Order only conveys priority once there is something to out-rank.
 const hasPriority = computed(() => (working.value?.rules.length ?? 0) > 1);

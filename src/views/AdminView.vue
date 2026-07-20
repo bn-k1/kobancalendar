@@ -138,16 +138,53 @@
         </ul>
       </section>
 
-      <ScheduleManager v-if="connected" />
-      <HolidaysManager v-if="connected" />
-      <EventRulesManager v-if="connected" />
-      <MenuManager v-if="connected" />
+      <template v-if="connected">
+        <nav class="admin-tabs" role="tablist" aria-label="編集する項目">
+          <button
+            v-for="tab in TABS"
+            :key="tab.id"
+            type="button"
+            role="tab"
+            :aria-selected="activeTab === tab.id"
+            class="admin-tab"
+            :class="{ 'is-active': activeTab === tab.id }"
+            @click="activeTab = tab.id"
+          >
+            {{ tab.label }}
+            <span
+              v-if="dirtyTabs[tab.id]"
+              class="admin-tab-dot"
+              title="未保存の変更があります"
+              >●</span
+            >
+          </button>
+        </nav>
+
+        <!--
+          v-show, not v-if: switching tabs must not unmount a panel, or an
+          operator's unsaved edits would vanish (and every switch would re-hit
+          the GitHub API). All four still mount once on connect, as before.
+        -->
+        <ScheduleManager v-show="activeTab === 'schedule'" />
+        <HolidaysManager
+          v-show="activeTab === 'holidays'"
+          @update:dirty="dirtyTabs.holidays = $event"
+        />
+        <EventRulesManager
+          v-show="activeTab === 'rules'"
+          @update:dirty="dirtyTabs.rules = $event"
+        />
+        <MenuManager
+          v-show="activeTab === 'menu'"
+          @update:dirty="dirtyTabs.menu = $event"
+        />
+      </template>
     </div>
   </UnifiedPageLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import ScheduleManager from "@/components/ScheduleManager.vue";
 import HolidaysManager from "@/components/HolidaysManager.vue";
@@ -173,6 +210,20 @@ const guideUrl = `${import.meta.env.BASE_URL}admin.html`;
 // Show the importer once a token is stored and a repo is resolvable. Becomes
 // true after a successful connection test, or on mount if both already exist.
 const connected = ref(false);
+
+// The four panels are tabbed rather than stacked, so only one "保存して配信する"
+// button is ever on screen. ScheduleManager has no deferred-save model (every
+// action commits on the spot), so it never reports a dirty flag.
+const TABS = [
+  { id: "schedule", label: "交番表" },
+  { id: "holidays", label: "独自の休日" },
+  { id: "rules", label: "表示ルール" },
+  { id: "menu", label: "食堂メニュー" },
+];
+const activeTab = ref("schedule");
+// Marks tabs holding unsaved edits, so hiding a panel cannot hide the fact
+// that it still needs saving.
+const dirtyTabs = reactive({ holidays: false, rules: false, menu: false });
 
 const tokenInput = ref("");
 const repoInput = ref("");
@@ -261,6 +312,57 @@ function clearStored() {
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
   color: var(--text-muted, #6c757d);
+}
+
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 1.5rem 0 0;
+  border-bottom: 1px solid var(--border-color, #ccc);
+}
+
+.admin-tab {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: none;
+  font: inherit;
+  color: var(--text-muted, #6c757d);
+  cursor: pointer;
+}
+
+.admin-tab:hover {
+  color: inherit;
+}
+
+.admin-tab.is-active {
+  border-color: var(--border-color, #ccc);
+  background: var(--card-bg, #fff);
+  color: inherit;
+  font-weight: 600;
+  /* cover the container's border so the active tab merges with the panel */
+  margin-bottom: -1px;
+  padding-bottom: calc(0.5rem + 1px);
+}
+
+/*
+  The manager panels are the tab bar's siblings (a scoped parent style reaches a
+  child component's root element). Square off their top so the visible one reads
+  as the active tab's body instead of a free-floating card.
+*/
+.admin-tabs ~ * {
+  margin-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.admin-tab-dot {
+  margin-left: 0.3rem;
+  font-size: 0.7em;
+  vertical-align: 0.15em;
+  color: var(--warn-color, #d9822b);
 }
 
 .admin-card {

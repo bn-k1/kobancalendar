@@ -87,7 +87,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useGitHubApi } from "@/composables/useGitHubApi";
 import { useConfigEditor } from "@/composables/useConfigEditor";
 
@@ -107,6 +107,10 @@ const opStatus = ref({ type: "", message: "", sha: "" });
 const dirty = computed(
   () => JSON.stringify(working.value) !== JSON.stringify(original.value),
 );
+
+// AdminView tabs this panel away, so it flags unsaved edits on the tab itself.
+const emit = defineEmits(["update:dirty"]);
+watch(dirty, (value) => emit("update:dirty", value));
 
 const pickedMd = computed(() =>
   pickDate.value && pickDate.value.length >= 10 ? pickDate.value.slice(5) : "",
