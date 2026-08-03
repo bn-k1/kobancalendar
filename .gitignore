@@ -8,4 +8,3 @@ coverage/
 # Generated build artifacts — produced by build-prep / CI, never committed.
 docs/
 data/scheduleData.json
-data/menu/menu.json

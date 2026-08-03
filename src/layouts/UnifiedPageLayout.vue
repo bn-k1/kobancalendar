@@ -28,29 +28,6 @@
         </div>
       </div>
     </header>
-    <div
-      v-if="showCafeteriaMenu"
-      class="cafeteria-menu-retro"
-      :class="{ 'is-unavailable': !hasTodayMenu }"
-    >
-      <p class="retro-title">本日の食堂メニュー</p>
-      <template v-if="hasTodayMenu">
-        <div class="retro-row">
-          <span class="retro-item"
-            >A定食: {{ todayMenu.a }} ｜ B定食: {{ todayMenu.b }}</span
-          >
-        </div>
-      </template>
-      <p v-else class="retro-empty">本日のメニューは未登録です</p>
-      <template v-if="hasTomorrowMenu">
-        <div class="retro-row retro-row--tomorrow">
-          <span class="retro-label">明日</span>
-          <span class="retro-item"
-            >{{ tomorrowMenu.a }} ｜ {{ tomorrowMenu.b }}</span
-          >
-        </div>
-      </template>
-    </div>
     <main>
       <!-- Calendar layout -->
       <div v-if="layout === 'calendar'" class="calendar-page-layout">
@@ -101,12 +78,10 @@
 <script setup>
 import { useRoute } from "vue-router";
 import { computed } from "vue";
-import { formatAsISODate, today, addDays } from "@/utils/date";
 import ShareButton from "@/components/ShareButton.vue";
 import QrButton from "@/components/QrButton.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
 import HelpButton from "@/components/HelpButton.vue";
-import menuData from "@data/menu/menu.json";
 
 // Footer "GitHub" link is intentionally STATIC to the upstream project, not the
 // running fork: forks/template instances are independent repos and the footer is
@@ -152,39 +127,6 @@ const pageTitle = computed(() => {
   return "KobanCalendar🚨";
 });
 
-const todayMenu = computed(() => {
-  const todayKey = formatAsISODate(today());
-  const todaysMenu = menuData[todayKey];
-
-  if (!todaysMenu) {
-    return null;
-  }
-
-  return {
-    a: todaysMenu.a || "未定",
-    b: todaysMenu.b || "未定",
-  };
-});
-const hasTodayMenu = computed(() => todayMenu.value !== null);
-
-const tomorrowMenu = computed(() => {
-  const tomorrowKey = formatAsISODate(addDays(today(), 1));
-  const m = menuData[tomorrowKey];
-  if (!m) return null;
-  return { a: m.a || "未定", b: m.b || "未定" };
-});
-const hasTomorrowMenu = computed(() => tomorrowMenu.value !== null);
-const hasAnyMenuData = computed(() => {
-  return (
-    menuData && typeof menuData === "object" && Object.keys(menuData).length > 0
-  );
-});
-const showCafeteriaMenu = computed(() => {
-  return (
-    props.layout !== "meetup" && !isMeetupPage.value && hasAnyMenuData.value
-  );
-});
-
 function handleTitleClick() {
   emit("title-click");
 }
@@ -209,61 +151,6 @@ header {
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
-}
-
-/* Cafeteria menu bar (below header) */
-.cafeteria-menu-retro {
-  width: 100%;
-  background: var(--background-light);
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-color);
-  padding: 6px var(--spacing-md);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 var(--spacing-md);
-}
-
-.cafeteria-menu-retro.is-unavailable {
-  background: var(--gray-50);
-}
-
-.retro-title {
-  margin: 0;
-  font-weight: var(--font-weight-bold);
-  font-size: 0.8rem;
-  color: var(--primary-color);
-  white-space: nowrap;
-}
-
-.retro-row {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  font-size: 0.85rem;
-}
-
-.retro-item {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-color);
-  overflow-wrap: anywhere;
-}
-
-.retro-empty {
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
-.retro-row--tomorrow {
-  opacity: 0.5;
-  font-size: 0.8rem;
-}
-
-.retro-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  white-space: nowrap;
 }
 
 /* Mode navigation link (🍻 / 🚨) */

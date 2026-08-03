@@ -390,9 +390,8 @@ function warnStaleArtifacts(epochs, referencedFolders) {
   } catch {
     entries = [];
   }
-  // menu は CSV スケジュールではないので除外
   const orphanFolders = entries.filter(
-    (name) => name !== "menu" && !referencedFolders.includes(name),
+    (name) => !referencedFolders.includes(name),
   );
   if (orphanFolders.length > 0) {
     console.warn(

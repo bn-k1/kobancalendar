@@ -157,20 +157,6 @@ npm install
 
 ルールに名前はありません。「この橙は何のルールか」はキーワード（`黄`）そのもので識別します。ルールの追加・並べ替え・色の変更は管理画面（`#/admin`）から行う運用です。
 
-### `data/menu/` — 食堂メニュー（任意）
-
-ファイル名: `YYYY-MM-a.txt`（A定食）、`YYYY-MM-b.txt`（B定食）
-
-内容は1行1日のテキストです。月の1日から順に書いてください。
-
-```
-定休日
-鶏肉の唐揚げ
-キムチチャーハン
-```
-
-ファイルがない月は表示されません。
-
 ---
 
 ## ビルドパイプライン
@@ -178,27 +164,26 @@ npm install
 CSVやJSONをアプリが直接読むのではなく、ビルド前処理で中間JSONに変換してからViteでバンドルします。
 
 ```
-data/<folder>/*.csv ──┐  npm run build-prep   ├─→  data/scheduleData.json
-data/menu/*.txt ──────┘  (scripts/)           └─→  data/menu/menu.json
+data/<folder>/*.csv ───  npm run build-prep   ──→  data/scheduleData.json
+                         (scripts/)
 ```
 
 `convert-csv` は `config.json` の `schedules[].data` で参照されるフォルダだけを変換し、`data/scheduleData.json`（フォルダ名をキーにした統合バンドル）を出力します。
 
-これらの生成物（`data/scheduleData.json` / `data/menu/menu.json` / `docs/`）は `.gitignore` 済みで、**git にコミットしません**。GitHub Actions が push のたびにビルドして配信するため、手元で `build-prep` を走らせるのはローカル確認用です。QRコードはビルド不要で、アプリが実行時に自分のURLから生成します。
+これらの生成物（`data/scheduleData.json` / `docs/`）は `.gitignore` 済みで、**git にコミットしません**。GitHub Actions が push のたびにビルドして配信するため、手元で `build-prep` を走らせるのはローカル確認用です。QRコードはビルド不要で、アプリが実行時に自分のURLから生成します。
 
 ### コマンド一覧
 
 ```bash
 npm run dev            # 開発サーバー起動 (http://localhost:5173)。predev で build-prep を自動実行
 npm test               # テスト実行。pretest で build-prep を自動実行
-npm run build-prep     # CSV/TXT → JSON 変換のみ
+npm run build-prep     # CSV → JSON 変換のみ
 npm run build          # build-prep + 本番ビルド → dist/
 npm run build-gh-pages # build-prep + GitHub Pages用ビルド → docs/（CIが使用）
 npm run preview        # 直前のビルド結果をローカルでプレビュー
 
 # 個別実行
 npm run convert-csv    # config.schedules が参照する CSV → data/scheduleData.json
-npm run convert-menu   # data/menu/*.txt → JSON
 ```
 
 ### 自動ビルド・配信（GitHub Actions）

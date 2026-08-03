@@ -299,14 +299,14 @@ describe("listDir()", () => {
       "fetch",
       mockFetchOnce(200, [
         { name: "default", path: "data/default", type: "dir" },
-        { name: "menu", path: "data/menu", type: "dir" },
+        { name: "rev2", path: "data/rev2", type: "dir" },
       ]),
     );
     const { listDir } = useGitHubApi();
     const entries = await listDir("data");
     expect(entries).toEqual([
       { name: "default", path: "data/default", type: "dir" },
-      { name: "menu", path: "data/menu", type: "dir" },
+      { name: "rev2", path: "data/rev2", type: "dir" },
     ]);
   });
 

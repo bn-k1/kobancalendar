@@ -387,7 +387,7 @@ const existingFolders = computed(() => [
 
 const orphanFolders = computed(() => {
   const ref = referencedFolders(epochs.value);
-  return dataDirs.value.filter((n) => n !== "menu" && !ref.has(n));
+  return dataDirs.value.filter((n) => !ref.has(n));
 });
 
 const commitUrl = computed(() => {

@@ -220,8 +220,6 @@ export function validateEpochMeta({
       errors.push(
         "フォルダ名は半角英数・ハイフン・アンダースコアのみで入力してください",
       );
-    } else if (folder === "menu") {
-      errors.push("フォルダ名 'menu' は使えません");
     } else if (referencedFolders.includes(folder)) {
       errors.push(
         `フォルダ '${folder}' は他の世代で使用中です。別のフォルダ名にしてください`,
@@ -300,8 +298,6 @@ export function validateSegmentMeta({
     errors.push(
       "フォルダ名は半角英数・ハイフン・アンダースコアのみで入力してください",
     );
-  } else if (folder === "menu") {
-    errors.push("フォルダ名 'menu' は使えません");
   } else if (referencedFolders.includes(folder)) {
     errors.push(
       `フォルダ '${folder}' は他の世代で使用中です。別のフォルダ名にしてください`,

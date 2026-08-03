@@ -1,9 +1,9 @@
 <!-- src/views/AdminView.vue -->
 <!--
-  Admin console: connect a classic GitHub PAT (public_repo scope), then edit the schedule,
-  holidays, display rules and cafeteria menu — each panel commits to the repo
-  and CI redeploys. Reachable only by typing #/admin — there is intentionally
-  no link from the user-facing UI.
+  Admin console: connect a classic GitHub PAT (public_repo scope), then edit the
+  schedule, holidays and display rules — each panel commits to the repo and CI
+  redeploys. Reachable only by typing #/admin — there is intentionally no link
+  from the user-facing UI.
 
   The operator's walkthrough lives in public/admin.html (linked from the top of
   this page); DEVELOPMENT.md is the developer's doc.
@@ -163,7 +163,7 @@
         <!--
           v-show, not v-if: switching tabs must not unmount a panel, or an
           operator's unsaved edits would vanish (and every switch would re-hit
-          the GitHub API). All four still mount once on connect, as before.
+          the GitHub API). All three still mount once on connect, as before.
         -->
         <ScheduleManager v-show="activeTab === 'schedule'" />
         <HolidaysManager
@@ -173,10 +173,6 @@
         <EventRulesManager
           v-show="activeTab === 'rules'"
           @update:dirty="dirtyTabs.rules = $event"
-        />
-        <MenuManager
-          v-show="activeTab === 'menu'"
-          @update:dirty="dirtyTabs.menu = $event"
         />
       </template>
     </div>
@@ -189,7 +185,6 @@ import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import ScheduleManager from "@/components/ScheduleManager.vue";
 import HolidaysManager from "@/components/HolidaysManager.vue";
 import EventRulesManager from "@/components/EventRulesManager.vue";
-import MenuManager from "@/components/MenuManager.vue";
 import { useAdminToken } from "@/composables/useAdminToken";
 import { useGitHubApi } from "@/composables/useGitHubApi";
 
@@ -211,19 +206,18 @@ const guideUrl = `${import.meta.env.BASE_URL}admin.html`;
 // true after a successful connection test, or on mount if both already exist.
 const connected = ref(false);
 
-// The four panels are tabbed rather than stacked, so only one "保存して配信する"
+// The three panels are tabbed rather than stacked, so only one "保存して配信する"
 // button is ever on screen. ScheduleManager has no deferred-save model (every
 // action commits on the spot), so it never reports a dirty flag.
 const TABS = [
   { id: "schedule", label: "交番表" },
   { id: "holidays", label: "独自の休日" },
   { id: "rules", label: "表示ルール" },
-  { id: "menu", label: "食堂メニュー" },
 ];
 const activeTab = ref("schedule");
 // Marks tabs holding unsaved edits, so hiding a panel cannot hide the fact
 // that it still needs saving.
-const dirtyTabs = reactive({ holidays: false, rules: false, menu: false });
+const dirtyTabs = reactive({ holidays: false, rules: false });
 
 const tokenInput = ref("");
 const repoInput = ref("");

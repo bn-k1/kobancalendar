@@ -8,9 +8,9 @@ name: Deploy to GitHub Pages
 # `deploy` builds the gh-pages bundle and publishes it to Pages — but only
 # for a push to main or manual dispatch, never for a pull request (a PR run
 # only needs read access; it must not carry the pages/id-token permissions
-# the actual deploy needs). Generated bundles (data/scheduleData.json,
-# data/menu/menu.json, docs/) are produced here, not committed — git only
-# holds the source CSV/config the admin edits.
+# the actual deploy needs). Generated bundles (data/scheduleData.json, docs/)
+# are produced here, not committed — git only holds the source CSV/config the
+# admin edits.
 
 on:
   push:
