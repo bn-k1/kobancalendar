@@ -276,9 +276,8 @@ const calendarOptions = computed(() => ({
 
     // Show the pre-edit shift in the cell's whitespace below the (purple)
     // edited event, outside the colored block.
-    const { isEdited, editedSubject, originalSubject } =
-      info.event.extendedProps;
-    if (isEdited && originalSubject && originalSubject !== editedSubject) {
+    const { isEdited, originalSubject } = info.event.extendedProps;
+    if (isEdited && originalSubject) {
       const caption = document.createElement("div");
       caption.className = "edited-original";
       caption.textContent = `（${originalSubject}）`;
