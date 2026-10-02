@@ -124,6 +124,13 @@
 
         <!-- Action buttons -->
         <div class="modal-actions">
+          <button
+            v-if="isEdited"
+            class="remove-btn"
+            @click="$emit('remove', date)"
+          >
+            削除
+          </button>
           <button class="cancel-btn" @click="$emit('close')">キャンセル</button>
           <button class="save-btn" :disabled="!canSave" @click="handleSave">
             保存
@@ -156,9 +163,13 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  isEdited: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["close", "save"]);
+const emit = defineEmits(["close", "save", "remove"]);
 
 const { scheduleDataForDate } = useSchedule();
 
@@ -504,6 +515,7 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
   margin-top: var(--spacing-md);
 }
 
+.remove-btn,
 .cancel-btn,
 .save-btn {
   flex: 1;
@@ -522,6 +534,16 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
 
 .cancel-btn:hover {
   background-color: var(--gray-300);
+}
+
+.remove-btn {
+  background-color: var(--error-color);
+  color: var(--text-light);
+  border: none;
+}
+
+.remove-btn:hover {
+  opacity: 0.85;
 }
 
 .save-btn {

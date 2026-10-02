@@ -8,6 +8,7 @@
       :date="editingDate"
       :day-type="editingDayType"
       :current-schedule="editingCurrentSchedule"
+      :is-edited="editingIsEdited"
       @close="closeEditModal"
       @save="handleSaveEdit"
       @remove="handleRemoveEdit"
@@ -65,6 +66,7 @@ const showEditModal = ref(false);
 const editingDate = ref(null);
 const editingDayType = ref("weekday");
 const editingCurrentSchedule = ref({});
+const editingIsEdited = ref(false);
 
 let longPressTimer = null;
 let pressedEventInfo = null;
@@ -176,6 +178,7 @@ function openEditModal(event) {
   editingDate.value = dateStr;
   editingDayType.value = dayType;
   editingCurrentSchedule.value = currentSchedule;
+  editingIsEdited.value = !!extendedProps.isEdited;
   showEditModal.value = true;
 }
 
