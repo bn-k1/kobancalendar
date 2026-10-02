@@ -69,6 +69,7 @@ const editingCurrentSchedule = ref({});
 let longPressTimer = null;
 let pressedEventInfo = null;
 const pointerDownHandlerMap = new WeakMap();
+const originalCaptionMap = new WeakMap();
 
 const editedEventConfig = computed(() => {
   return { color: eventConfig.value?.edited?.color };
@@ -272,6 +273,18 @@ const calendarOptions = computed(() => ({
     el.addEventListener("pointercancel", handlePressEnd);
 
     el.classList.add("long-press-enabled");
+
+    // Show the pre-edit shift in the cell's whitespace below the (purple)
+    // edited event, outside the colored block.
+    const { isEdited, editedSubject, originalSubject } =
+      info.event.extendedProps;
+    if (isEdited && originalSubject && originalSubject !== editedSubject) {
+      const caption = document.createElement("div");
+      caption.className = "edited-original";
+      caption.textContent = `（${originalSubject}）`;
+      el.after(caption);
+      originalCaptionMap.set(el, caption);
+    }
   },
 
   eventWillUnmount: (info) => {
@@ -286,6 +299,9 @@ const calendarOptions = computed(() => ({
     el.removeEventListener("pointerup", handlePressEnd);
     el.removeEventListener("pointerleave", handlePressEnd);
     el.removeEventListener("pointercancel", handlePressEnd);
+
+    originalCaptionMap.get(el)?.remove();
+    originalCaptionMap.delete(el);
   },
 
   datesSet: (info) => {
@@ -419,6 +435,16 @@ onMounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+}
+
+:deep(.edited-original) {
+  color: var(--text-color);
+  font-size: 0.7rem;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 :deep(.fc-day-sat) {

@@ -120,6 +120,7 @@ export function useCalendar() {
             holidayName: getHolidayName(currentDate),
             isEdited: true,
             editedSubject: editedSchedule.subject,
+            originalSubject: scheduleInfo?.subject || "",
             note: editedSchedule.note || "",
           },
         });
@@ -154,6 +155,7 @@ export function useCalendar() {
             shiftIndex,
             holidayName: getHolidayName(currentDate),
             isEdited: false,
+            originalSubject: subject,
           },
         });
       }
