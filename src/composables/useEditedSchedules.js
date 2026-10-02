@@ -222,9 +222,27 @@ export function useEditedSchedules() {
       .sort((a, b) => a.dateStr.localeCompare(b.dateStr));
   });
 
+  /**
+   * Distinct subjects the user has saved, for reuse as edit-modal choices.
+   * When one subject was saved with different times, the latest date wins.
+   * @returns {Array<{subject: string, startTime: string, endTime: string}>}
+   */
+  const savedSubjectOptions = computed(() => {
+    const bySubject = new Map();
+    Object.entries(store.editedSchedules)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([, { subject, startTime, endTime }]) => {
+        if (subject) bySubject.set(subject, { subject, startTime, endTime });
+      });
+    return Array.from(bySubject.values()).sort((a, b) =>
+      a.subject.localeCompare(b.subject, "ja"),
+    );
+  });
+
   return {
     editedSchedules: computed(() => store.editedSchedules),
     editedSchedulesList,
+    savedSubjectOptions,
     hasAnyEdits: computed(() => store.hasAnyEdits),
     isInitialized: computed(() => store.isInitialized),
     isEditsHidden: computed(() => store.isEditsHidden),

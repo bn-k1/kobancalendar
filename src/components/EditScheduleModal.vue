@@ -21,12 +21,24 @@
           >
             <option value="" disabled>予定を選択</option>
             <option
-              v-for="option in subjectOptions"
+              v-for="option in scheduleSubjectOptions"
               :key="option.subject"
               :value="option.subject"
             >
               {{ option.subject }}
             </option>
+            <optgroup
+              v-if="userSubjectOptions.length"
+              label="自分で入力した予定"
+            >
+              <option
+                v-for="option in userSubjectOptions"
+                :key="option.subject"
+                :value="option.subject"
+              >
+                {{ option.subject }}
+              </option>
+            </optgroup>
           </select>
           <button
             v-if="!isCustomSelected"
@@ -145,6 +157,7 @@
 import { ref, computed, watch } from "vue";
 import { formatAsDisplayDate, getWeekdayName, createDate } from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
+import { useEditedSchedules } from "@/composables/useEditedSchedules";
 
 const props = defineProps({
   show: {
@@ -172,6 +185,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "save", "remove"]);
 
 const { scheduleDataForDate } = useSchedule();
+const { savedSubjectOptions } = useEditedSchedules();
 
 const selectedSubject = ref("");
 const selectedStartTime = ref("");
@@ -214,7 +228,7 @@ const modalTitle = computed(() => {
   return `${formatAsDisplayDate(dateObj)}（${getWeekdayName(dateObj)}）`;
 });
 
-const subjectOptions = computed(() => {
+const scheduleSubjectOptions = computed(() => {
   if (!props.date) return [];
 
   // Resolve to the data table in effect on the edited date itself — not
@@ -250,6 +264,25 @@ const subjectOptions = computed(() => {
     a.subject.localeCompare(b.subject, "ja"),
   );
 });
+
+// User-saved subjects (e.g. "飲み会") not found in any day type's table on
+// this date — subjects picked from the table itself stay out of this group.
+const userSubjectOptions = computed(() => {
+  const scheduleData = props.date ? scheduleDataForDate(props.date) : null;
+  const tableSubjects = new Set(
+    ["weekday", "saturday", "holiday"].flatMap((type) =>
+      (scheduleData?.[type] || []).map((item) => item.s),
+    ),
+  );
+  return savedSubjectOptions.value.filter(
+    (opt) => !tableSubjects.has(opt.subject),
+  );
+});
+
+const subjectOptions = computed(() => [
+  ...scheduleSubjectOptions.value,
+  ...userSubjectOptions.value,
+]);
 
 function handleSubjectChange() {
   isCustomSelected.value = false;

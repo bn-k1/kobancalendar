@@ -312,3 +312,37 @@ describe("localStorage 障害時のフォールバック（Safari プライベ�
     expect(edited.isEditsHidden.value).toBe(true);
   });
 });
+
+describe("savedSubjectOptions (computed)", () => {
+  it("重複のない予定名を返し、同名は最新日付の時間を採用する", () => {
+    const { saveEditedSchedule, savedSubjectOptions } = useEditedSchedules();
+    saveEditedSchedule("2026-10-01", {
+      subject: "飲み会",
+      startTime: "18:00",
+      endTime: "20:00",
+    });
+    saveEditedSchedule("2026-10-09", {
+      subject: "飲み会",
+      startTime: "19:00",
+      endTime: "21:00",
+    });
+    saveEditedSchedule("2026-10-05", { subject: "年休" });
+    expect(savedSubjectOptions.value).toHaveLength(2);
+    expect(savedSubjectOptions.value).toContainEqual({
+      subject: "飲み会",
+      startTime: "19:00",
+      endTime: "21:00",
+    });
+    expect(savedSubjectOptions.value).toContainEqual({
+      subject: "年休",
+      startTime: "",
+      endTime: "",
+    });
+  });
+
+  it("予定名が空のものは含まない", () => {
+    const { saveEditedSchedule, savedSubjectOptions } = useEditedSchedules();
+    saveEditedSchedule("2026-10-01", { subject: "", note: "メモだけ" });
+    expect(savedSubjectOptions.value).toEqual([]);
+  });
+});
