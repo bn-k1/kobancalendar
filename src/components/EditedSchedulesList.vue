@@ -6,29 +6,8 @@
     :style="editedColorStyle"
   >
     <legend class="clickable-legend" @click="toggleExpanded">
-      編集済み ({{ editedSchedulesList.length }})
+      入力した予定の管理 ({{ editedSchedulesList.length }})
       <span class="toggle-icon">{{ isExpanded ? "▼" : "▶" }}</span>
-      <button
-        type="button"
-        class="visibility-icon"
-        :class="{ 'is-hidden': isEditsHidden }"
-        :aria-label="
-          isEditsHidden
-            ? '編集済み予定を表示する'
-            : '編集済み予定を非表示にする'
-        "
-        :title="
-          isEditsHidden
-            ? '編集済み予定を表示する'
-            : '編集済み予定を非表示にする'
-        "
-        @click.stop="toggleHidden"
-      >
-        <EyeToggleIcon :hidden="isEditsHidden" />
-        <span class="visibility-label">{{
-          isEditsHidden ? "非表示中" : "表示中"
-        }}</span>
-      </button>
     </legend>
     <div v-if="showEmptyNotice" class="edited-empty-notice">
       {{ EDITED_SCHEDULE_EMPTY_NOTICE }}
@@ -58,19 +37,13 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
-import EyeToggleIcon from "@/components/Icons/EyeToggleIcon.vue";
 import { useCalendarStore } from "@/stores/calendar";
 import { EDITED_SCHEDULE_EMPTY_NOTICE } from "@/utils/constants";
 
-const {
-  editedSchedulesList,
-  isEditsHidden,
-  removeEditedSchedule,
-  setEditsHidden,
-} = useEditedSchedules();
+const { editedSchedulesList, removeEditedSchedule } = useEditedSchedules();
 const emit = defineEmits(["editedChanged"]);
 const isExpanded = ref(false);
-const showList = computed(() => isExpanded.value && !isEditsHidden.value);
+const showList = computed(() => isExpanded.value);
 const showEmptyNotice = computed(() => {
   return isExpanded.value && editedSchedulesList.value.length === 0;
 });
@@ -85,11 +58,6 @@ const editedColorStyle = computed(() => {
 
 function toggleExpanded() {
   isExpanded.value = !isExpanded.value;
-}
-
-function toggleHidden() {
-  setEditsHidden(!isEditsHidden.value);
-  emit("editedChanged");
 }
 
 function handleRemove(dateStr) {
@@ -114,36 +82,6 @@ function handleRemove(dateStr) {
 .toggle-icon {
   font-size: 0.8em;
   transition: transform 0.2s ease;
-}
-
-.visibility-icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 6px;
-  padding: 2px 6px;
-  min-height: unset;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-color);
-  font: inherit;
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: none;
-}
-
-.visibility-icon:hover {
-  border-color: var(--primary-color);
-  background: var(--gray-100);
-}
-
-.visibility-icon.is-hidden {
-  color: var(--error-color);
-}
-
-.visibility-label {
-  font: inherit;
 }
 
 .edited-list {

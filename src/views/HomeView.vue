@@ -46,6 +46,10 @@
 
     <!-- Calendar section -->
     <template #calendar>
+      <EditsVisibilityToggle
+        v-if="isLoaded"
+        @edited-changed="handleEditedChanged"
+      />
       <Suspense>
         <CalendarView
           ref="calendarRef"
@@ -92,6 +96,7 @@ import {
 
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
+import EditsVisibilityToggle from "@/components/EditsVisibilityToggle.vue";
 
 const CalendarView = defineAsyncComponent(
   () => import("@/components/CalendarView.vue"),
