@@ -8,7 +8,10 @@ import {
 } from "@/utils/date";
 
 const STORAGE_KEY = "kobancalendar_edited_schedules";
-const HIDDEN_KEY = "kobancalendar_edited_schedules_hidden";
+// The hidden toggle is session-only (hiding is occasional; a reload must show
+// edits again). This key is no longer written — it is only removed on init so
+// a stale "on" from older versions doesn't linger in users' storage.
+const LEGACY_HIDDEN_KEY = "kobancalendar_edited_schedules_hidden";
 
 function normalizeSchedule(schedule) {
   return {
@@ -92,16 +95,13 @@ export function useEditedSchedules() {
   }
 
   /**
-   * Load hidden flag from localStorage
+   * Remove the hidden flag persisted by older versions
    */
-  function loadHiddenFromStorage() {
-    if (typeof window === "undefined") return;
-
+  function removeLegacyHiddenFlag() {
     try {
-      store.setIsEditsHidden(localStorage.getItem(HIDDEN_KEY) === "on");
+      localStorage.removeItem(LEGACY_HIDDEN_KEY);
     } catch (error) {
-      console.error("Failed to load edited schedules hidden flag:", error);
-      store.setIsEditsHidden(false);
+      console.error("Failed to remove legacy hidden flag:", error);
     }
   }
 
@@ -116,7 +116,7 @@ export function useEditedSchedules() {
     }
 
     loadFromStorage();
-    loadHiddenFromStorage();
+    removeLegacyHiddenFlag();
     store.setIsInitialized(true);
   }
 
@@ -139,18 +139,11 @@ export function useEditedSchedules() {
   }
 
   /**
-   * Save hidden flag to localStorage
+   * Toggle edited-schedule visibility for this session only (not persisted)
    * @param {boolean} hidden
    */
   function setEditsHidden(hidden) {
     store.setIsEditsHidden(!!hidden);
-    if (typeof window === "undefined") return;
-
-    try {
-      localStorage.setItem(HIDDEN_KEY, store.isEditsHidden ? "on" : "off");
-    } catch (error) {
-      console.error("Failed to save edited schedules hidden flag:", error);
-    }
   }
 
   /**

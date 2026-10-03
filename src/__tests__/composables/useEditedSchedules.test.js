@@ -192,23 +192,18 @@ describe("setEditsHidden()", () => {
     expect(edited.isEditsHidden.value).toBe(false);
   });
 
-  it("true のとき localStorage に 'on' を保存する", () => {
+  it("localStorage には保存しない（リロードで表示に戻る）", () => {
     const edited = useEditedSchedules();
     edited.setEditsHidden(true);
-    expect(localStorage.getItem(HIDDEN_KEY)).toBe("on");
+    expect(localStorage.getItem(HIDDEN_KEY)).toBeNull();
   });
 
-  it("false のとき localStorage に 'off' を保存する", () => {
-    const edited = useEditedSchedules();
-    edited.setEditsHidden(false);
-    expect(localStorage.getItem(HIDDEN_KEY)).toBe("off");
-  });
-
-  it("loadHiddenFromStorage で 'on' を読み込むと isEditsHidden が true になる", () => {
+  it("旧版が保存した 'on' は無視され、init 時に削除される", () => {
     localStorage.setItem(HIDDEN_KEY, "on");
     const edited = useEditedSchedules();
     edited.initEditedSchedules();
-    expect(edited.isEditsHidden.value).toBe(true);
+    expect(edited.isEditsHidden.value).toBe(false);
+    expect(localStorage.getItem(HIDDEN_KEY)).toBeNull();
   });
 });
 
@@ -255,7 +250,7 @@ describe("hasAnyEdits (computed)", () => {
   });
 });
 
-// loadFromStorage/loadHiddenFromStorage/setEditsHidden/saveToStorage each
+// loadFromStorage/removeLegacyHiddenFlag/saveToStorage each
 // wrap their localStorage call in try/catch and log via console.error (Safari
 // private-mode / QuotaExceededError survival). These tests exercise those
 // catch branches directly and assert exactly what they promise: no throw,
@@ -305,11 +300,11 @@ describe("localStorage 障害時のフォールバック（Safari プライベ�
     expect(edited.hasEditedSchedule("2025-11-20")).toBe(false);
   });
 
-  it("setEditsHidden: setItem が失敗しても例外を投げず isEditsHidden は更新される", () => {
+  it("initEditedSchedules: removeItem が失敗しても例外を投げない", () => {
     const edited = useEditedSchedules();
-    makeStorageFail("setItem");
-    expect(() => edited.setEditsHidden(true)).not.toThrow();
-    expect(edited.isEditsHidden.value).toBe(true);
+    makeStorageFail("removeItem");
+    expect(() => edited.initEditedSchedules()).not.toThrow();
+    expect(edited.isInitialized.value).toBe(true);
   });
 });
 
