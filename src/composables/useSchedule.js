@@ -100,6 +100,37 @@ export function useSchedule() {
   );
 
   /**
+   * The epoch a shared/bookmarked URL's positions belong to, from its `b=`
+   * (the epoch's `from`). Only the current and next epochs can be opened;
+   * anything else means the URL's コマ numbers are for a generation that is no
+   * longer selectable, so they must be ignored rather than reinterpreted.
+   * URLs from before `b=` existed were all made under the first (and then
+   * only) generation, so they are honoured only while that is still true.
+   * @param {string|null} baseDateStr
+   * @returns {dayjs|null}
+   */
+  function resolveLinkedBaseDate(baseDateStr) {
+    if (baseDateStr == null) {
+      return storeEpochs.value.length === 1 ? defaultBaseDate.value : null;
+    }
+    const target = createDate(baseDateStr);
+    if (!target.isValid()) return null;
+    return (
+      [defaultBaseDate.value, nextBaseDate.value].find(
+        (d) => d && isSameDay(d, target),
+      ) ?? null
+    );
+  }
+
+  /** `from` of the epoch after the given one (its window's exclusive end). */
+  function epochEndFor(baseDate) {
+    const index = storeEpochs.value.findIndex((e) =>
+      isSameDay(e.from, baseDate),
+    );
+    return index === -1 ? undefined : storeEpochs.value[index + 1]?.from;
+  }
+
+  /**
    * Calculate the rotation shift index for a given date.
    * @param {dayjs} targetDate
    * @param {number} startPosition - 1-based position in the rotation
@@ -236,6 +267,8 @@ export function useSchedule() {
     // Business logic
     calculateShiftIndex,
     getScheduleForDate,
+    resolveLinkedBaseDate,
+    epochEndFor,
     loadSchedule,
     updateActiveBaseDate,
   };

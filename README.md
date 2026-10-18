@@ -42,6 +42,8 @@ and writes `data/scheduleData.json` (generated, not committed).
   `subject,start,end`, where subject is the cell text as printed, e.g.
   `110,12:55,20:41`. Days off have empty times (`公休,,`). Times past midnight
   go past 24 (`24:42`). Two items in one cell are written `a/b`.
+  The file must be UTF-8 (in Excel: "CSV UTF-8"), the subject can't be empty,
+  and times are `H:MM` / `HH:MM`, both or neither.
   `holiday.csv` is used for Sundays, national holidays and `custom_holidays`,
   and wins over Saturday.
 - `config/config.json`
@@ -119,9 +121,9 @@ Vue 3 + Pinia + vue-router (hash mode) + FullCalendar + dayjs, Vite, Vitest.
   there.
 - `src/stores/` hold raw state only, `src/composables/` hold all logic, and
   views never touch stores. `useSchedule.js` does the day → コマ → cell math.
-- The URL hash is canonical and localStorage is a cache. Home is `#/?p=N`
-  (`#/?v=old&p=N` = the current generation while a newer one exists). Meetup is
-  `#/meetup?ps=1,7,12&t=19:00&d=120`. Storage keys are
+- Home's URL hash is canonical and localStorage is a cache: `#/?b=<from>&p=N`,
+  where `b` names the generation the コマ number belongs to. Meetup keeps its
+  state in localStorage only (`#/meetup`, no query). Storage keys are
   `kobancalendar.savedSelection.v1`, `kobancalendar.savedMeetup.v1` (one slot
   per 基準日) and `kobancalendar_edited_schedules`. Keep their formats, or
   users lose their saved state.

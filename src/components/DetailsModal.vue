@@ -12,15 +12,15 @@
       <table id="detailsTable" class="details-table">
         <thead>
           <tr>
-            <th>コマ位置</th>
+            <th>参加者</th>
             <th>当日</th>
             <th>翌日</th>
             <th>参加可否</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="detail in details.details" :key="detail.position">
-            <td>{{ detail.position }}</td>
+          <tr v-for="(detail, i) in details.details" :key="i">
+            <td>{{ detail.name || `${detail.position}番` }}</td>
             <td>{{ getCurrentDayShift(detail) }}</td>
             <td>{{ getNextDayShift(detail) }}</td>
             <td

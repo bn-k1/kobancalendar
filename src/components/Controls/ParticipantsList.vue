@@ -1,7 +1,7 @@
 <!-- src/components/Controls/ParticipantsList.vue -->
 <template>
   <fieldset id="participantsSection" class="control-group">
-    <legend>参加者(コマ位置)</legend>
+    <legend>参加者(コマ位置・名前)</legend>
     <div id="participantsList">
       <div
         v-for="(participant, index) in localParticipants"
@@ -19,6 +19,15 @@
             {{ i }}
           </option>
         </select>
+        <input
+          v-model="participant.name"
+          type="text"
+          class="participant-name"
+          placeholder="名前"
+          maxlength="12"
+          aria-label="参加者の名前"
+          @input="handleParticipantChange"
+        />
         <button
           class="remove-participant"
           aria-label="この参加者を削除"
@@ -40,7 +49,7 @@ import { ref, watch } from "vue";
 const props = defineProps({
   modelValue: {
     type: Array,
-    default: () => [{ position: "" }],
+    default: () => [{ position: "", name: "" }],
   },
   rotationCycleLength: {
     type: Number,
@@ -55,7 +64,7 @@ const localParticipants = ref([...props.modelValue]);
 
 // Add a new participant
 function addParticipant() {
-  localParticipants.value.push({ position: "" });
+  localParticipants.value.push({ position: "", name: "" });
   emitParticipantsUpdate();
 }
 
@@ -101,8 +110,29 @@ watch(
 }
 
 .participant-position {
-  flex-grow: 1;
+  flex: 0 0 6.5rem;
   min-width: 0;
+}
+
+/* Matches the global select look; 1rem keeps iOS from zooming on focus. */
+.participant-name {
+  flex: 1 1 6rem;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-family);
+  font-size: 1rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  background-color: var(--background-light);
+  color: var(--text-color);
+  transition: all var(--transition-normal);
+}
+
+.participant-name:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .remove-participant {

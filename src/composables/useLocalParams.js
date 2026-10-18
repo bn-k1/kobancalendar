@@ -34,16 +34,21 @@ function toValidIntegerArray(values) {
     .filter((value) => !isNaN(value));
 }
 
+// `names` (optional, parallel to `participants`) was added later; sets saved
+// before it simply have no names.
 function normalizeMeetupSet(raw) {
   if (!raw || typeof raw !== "object") return null;
 
   const startTime = raw.startTime;
   const period = parseInt(raw.period, 10);
   const participants = toValidIntegerArray(raw.participants);
+  const names = participants.map((_, i) =>
+    typeof raw.names?.[i] === "string" ? raw.names[i] : "",
+  );
 
   if (!startTime || isNaN(period) || participants.length === 0) return null;
 
-  return { participants, startTime, period };
+  return { participants, names, startTime, period };
 }
 
 function readMeetupStorage() {
@@ -113,9 +118,11 @@ export function useLocalParams() {
   }
 
   function saveMeetupParams(baseDate, participants, startTime, period) {
-    const validParticipants = toValidIntegerArray(
-      participants?.map?.((p) => (typeof p === "object" ? p.position : p)),
-    );
+    const entries = (participants ?? [])
+      .map((p) => (typeof p === "object" ? p : { position: p }))
+      .filter((p) => !isNaN(parseInt(p.position, 10)));
+    const validParticipants = entries.map((p) => parseInt(p.position, 10));
+    const names = entries.map((p) => (p.name ?? "").trim());
     const parsedPeriod = parseInt(period, 10);
 
     if (
@@ -131,6 +138,7 @@ export function useLocalParams() {
     const sets = { ...current.sets };
     sets[baseDate] = {
       participants: validParticipants,
+      names,
       startTime,
       period: parsedPeriod,
     };
@@ -145,15 +153,24 @@ export function useLocalParams() {
     if (!set) return null;
     return {
       baseDate,
-      participants: set.participants.map((position) => ({ position })),
+      participants: set.participants.map((position, i) => ({
+        position,
+        name: set.names[i],
+      })),
       startTime: set.startTime,
       period: set.period,
     };
   }
 
-  function loadMeetupParams() {
-    const { active } = readMeetupStorage();
-    return active ? loadMeetupParamsFor(active) : null;
+  function loadMeetupActive() {
+    return readMeetupStorage().active;
+  }
+
+  // Remember which generation Meetup is showing even before a set is saved
+  // there, so a reload stays on 新版 / 旧版.
+  function setMeetupActive(baseDate) {
+    const { sets } = readMeetupStorage();
+    writeStoredObject(MEETUP_STORAGE_KEY, { active: baseDate, sets });
   }
 
   // Same reasoning as clearCalendarSelection: only the pointer is stale, the
@@ -169,7 +186,8 @@ export function useLocalParams() {
     loadCalendarPositionFor,
     clearCalendarSelection,
     saveMeetupParams,
-    loadMeetupParams,
+    loadMeetupActive,
+    setMeetupActive,
     loadMeetupParamsFor,
     clearMeetupParams,
   };

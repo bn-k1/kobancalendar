@@ -3,6 +3,16 @@
   <UnifiedPageLayout layout="calendar" @title-click="switchToDefaultBaseDate">
     <!-- Controls section -->
     <template #controls>
+      <p v-if="staleLinkPosition != null" class="stale-link-note" role="alert">
+        ⚠ コマ位置表が新しくなったため、このショートカットの番号（{{
+          staleLinkPosition
+        }}番）は使えません。<template v-if="Number.isInteger(startPosition)"
+          >いまは前回選んだ {{ startPosition }}番
+          の勤務を表示しています。ショートカットを作り直してください。</template
+        ><template v-else
+          >新しいコマ位置を選んで、ショートカットを作り直してください。</template
+        >
+      </p>
       <div v-if="isLoaded && selectedBaseDate" class="horizontal-fields">
         <BaseSelector
           id="baseDate"
@@ -165,6 +175,7 @@ const {
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
+  resolveLinkedBaseDate,
 } = useSchedule();
 
 // rotationCycleLength for a specific epoch (identified by its anchor date),
@@ -207,6 +218,11 @@ const initialDate = computed(() => {
 });
 
 const startPosition = ref(undefined);
+// p= from a URL whose generation can no longer be opened (e.g. a home-screen
+// shortcut made before a new コマ位置表). The page then falls back to the saved
+// position, which may be someone else's for users who keep one shortcut per
+// colleague, so say so instead of showing it silently.
+const staleLinkPosition = ref(null);
 
 function navigateCalendarTo(dateObj) {
   if (isSameOrAfter(dateObj, today())) {
@@ -219,12 +235,6 @@ function navigateCalendarTo(dateObj) {
   }
 }
 
-function isOldVersion() {
-  if (!nextBaseDateStr.value) return false;
-  if (!defaultBaseDate.value) return false;
-  return selectedBaseDate.value === formatAsISODate(defaultBaseDate.value);
-}
-
 function syncCalendarUrl({ push = false } = {}) {
   if (!selectedBaseDate.value) {
     clearCalendarUrl();
@@ -234,13 +244,14 @@ function syncCalendarUrl({ push = false } = {}) {
   writeCalendarUrl(
     {
       position: hasPosition ? startPosition.value : null,
-      version: hasPosition && isOldVersion() ? "old" : null,
+      baseDate: selectedBaseDate.value,
     },
     { push },
   );
 }
 
 function switchBaseDate(dateObj, dateStr) {
+  staleLinkPosition.value = null;
   updateActiveBaseDate(dateObj);
   selectedBaseDate.value = dateStr;
   const restored = loadCalendarPositionFor(dateStr);
@@ -264,6 +275,7 @@ function switchToDefaultBaseDate() {
 
 function handlePositionChange(newPosition) {
   const positionValue = parseInt(newPosition, 10);
+  staleLinkPosition.value = null;
   startPosition.value = positionValue;
   setStartPosition(positionValue);
 
@@ -328,7 +340,11 @@ async function initialize() {
       Boolean,
     );
 
-    let applied = applyFromCanonical(validBaseDates);
+    const link = readCanonicalCalendar();
+    if (link.position != null && !resolveLinkedBaseDate(link.baseDate)) {
+      staleLinkPosition.value = link.position;
+    }
+    let applied = applyFromCanonical();
     if (!applied) applied = applyFromStorage(validBaseDates);
     if (!applied) applied = applyDefaultBaseDate();
 
@@ -341,18 +357,13 @@ async function initialize() {
   }
 }
 
-function applyFromCanonical(validBaseDates, { navigate = false } = {}) {
-  const { position, version } = readCanonicalCalendar();
-  if (position == null && version == null) return false;
+function applyFromCanonical({ navigate = false } = {}) {
+  const { position, baseDate } = readCanonicalCalendar();
+  if (position == null && baseDate == null) return false;
 
-  let targetBaseDate = null;
-  if (version === "old" && defaultBaseDate.value) {
-    targetBaseDate = defaultBaseDate.value;
-  } else if (nextBaseDate.value) {
-    targetBaseDate = nextBaseDate.value;
-  } else if (defaultBaseDate.value) {
-    targetBaseDate = defaultBaseDate.value;
-  }
+  // p= は b= の世代のコマ番号。別の世代へ流用すると、もっともらしい別人の
+  // 勤務を黙って表示・保存してしまうので、解決できなければ URL ごと捨てる。
+  const targetBaseDate = resolveLinkedBaseDate(baseDate);
   if (!targetBaseDate) return false;
 
   const isoBaseDate = formatAsISODate(targetBaseDate);
@@ -416,9 +427,9 @@ watch(computedStartPosition, (newValue) => {
 // URL writer は能動的な操作のみ pushState で履歴を積むので、ここで対の reader を用意する。
 function handlePopState() {
   if (!isCalendarRoute()) return;
-  const applied = applyFromCanonical([], { navigate: true });
+  const applied = applyFromCanonical({ navigate: true });
   if (!applied) {
-    // p も v も無いエントリ（コマ位置未選択の既定状態）へ戻った場合。
+    // b も p も無い（または解決できない世代の）エントリへ戻った場合。
     if (applyDefaultBaseDate() && defaultBaseDate.value) {
       navigateCalendarTo(defaultBaseDate.value);
     }
@@ -436,6 +447,17 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.stale-link-note {
+  margin: 0 0 var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--error-color);
+  border-radius: var(--border-radius-md);
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--text-color);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
 .loading-placeholder {
   min-height: 400px;
 }

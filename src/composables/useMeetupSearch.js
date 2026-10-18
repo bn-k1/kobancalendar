@@ -22,7 +22,13 @@ export function useMeetupSearch() {
   /**
    * Find dates where participants can attend a meetup
    */
-  function findMeetupDates(positions, meetupStartTime, startDate, endDate) {
+  function findMeetupDates(
+    positions,
+    meetupStartTime,
+    startDate,
+    endDate,
+    names = [],
+  ) {
     const result = {
       allMatches: [],
       partialMatches: [],
@@ -37,6 +43,7 @@ export function useMeetupSearch() {
         currentDate,
         positions,
         meetupStartTime,
+        names,
       );
 
       // All participants can attend
@@ -79,13 +86,14 @@ export function useMeetupSearch() {
   /**
    * Check a specific date for participant availability
    */
-  function checkDateForPositions(date, positions, meetupStartTime) {
+  // names[i] is the label the user gave positions[i] (may be empty).
+  function checkDateForPositions(date, positions, meetupStartTime, names = []) {
     const result = {
       availablePositions: [],
       details: [],
     };
 
-    for (const position of positions) {
+    for (const [i, position] of positions.entries()) {
       // Get schedule for this position on this date
       const schedule = getScheduleForDate(date, position);
 
@@ -95,6 +103,7 @@ export function useMeetupSearch() {
       // Record details
       result.details.push({
         position,
+        name: names[i] || "",
         schedule,
         isAvailable,
       });

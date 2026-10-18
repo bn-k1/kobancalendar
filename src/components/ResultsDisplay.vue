@@ -2,6 +2,10 @@
 <template>
   <div id="results" class="results">
     <h2>検索結果</h2>
+    <p v-if="cutoffDate" class="cutoff-note">
+      {{ formatAsDisplayDate(cutoffDate) }}
+      からは新しい交番表のため、その前日までを検索しました。
+    </p>
     <div class="results-tabs">
       <button
         id="allMatchesTab"
@@ -136,6 +140,11 @@ defineProps({
   results: {
     type: Object,
     default: () => ({ allMatches: [], partialMatches: [] }),
+  },
+  // Exclusive end the search was cut to (the next generation's from), if any.
+  cutoffDate: {
+    type: Object,
+    default: null,
   },
 });
 
@@ -274,6 +283,12 @@ function showDetails(match) {
 .results-table .view-details:hover {
   background-color: var(--primary-light);
   transform: translateY(-1px);
+}
+
+.cutoff-note {
+  text-align: center;
+  color: var(--gray-600);
+  font-size: 0.9em;
 }
 
 .no-results-message {

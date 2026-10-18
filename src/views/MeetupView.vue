@@ -105,7 +105,10 @@
     <!-- Results section -->
     <template #results>
       <Suspense v-if="showResults">
-        <ResultsDisplay :results="searchResults" />
+        <ResultsDisplay
+          :results="searchResults"
+          :cutoff-date="searchCutoff"
+        />
         <template #fallback>
           <div class="loading-placeholder">Loading...</div>
         </template>
@@ -162,44 +165,36 @@ import config from "@config/config.json";
 
 // Local state
 const showResults = ref(false);
+// Exclusive end the last search was cut to (next generation's from), if any.
+const searchCutoff = ref(null);
 const selectedBaseDate = ref("");
 const meetupStartTime = ref(APP_CONFIG.DEFAULT_MEETUP_START_TIME);
 const searchPeriod = ref(APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString());
-const participants = ref([{ position: "" }]);
+const participants = ref([{ position: "", name: "" }]);
 
 // Composables initialization
 const { isLoaded, initializeApp } = useAppInitializer();
 const {
   saveMeetupParams,
-  loadMeetupParams,
+  loadMeetupActive,
+  setMeetupActive,
   loadMeetupParamsFor,
   clearMeetupParams,
   loadCalendarSelection,
   loadCalendarPositionFor,
 } = useLocalParams();
-const { readCanonicalMeetup, writeMeetupUrl, clearMeetupUrl } = useUrlParams();
+const { clearMeetupUrl } = useUrlParams();
 const { searchResults, findMeetupDates } = useMeetupSearch();
 
 // Schedule composable
 const {
-  epochs,
   defaultBaseDate,
   activeBaseDate,
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,
+  epochEndFor,
 } = useSchedule();
-
-// rotationCycleLength for a specific epoch (identified by its anchor date),
-// as opposed to `rotationCycleLength` above which always reflects the
-// *active* epoch. Needed to bounds-check a canonical URL's `ps=` positions
-// against the epoch the URL is actually about to resolve to — not whichever
-// epoch happens to be active before that resolution runs.
-function rotationCycleLengthForBaseDate(baseDateObj) {
-  if (!baseDateObj) return 0;
-  const epoch = epochs.value.find((e) => isSameDay(e.from, baseDateObj));
-  return (epoch && scheduleData.data[epoch.dataKey]?.rotationCycleLength) || 0;
-}
 
 const nextBaseDateStr = computed(() => {
   if (!nextBaseDate.value?.isValid?.()) return null;
@@ -212,26 +207,13 @@ const nextBaseDateStr = computed(() => {
   return formatAsISODate(nextBaseDate.value);
 });
 
-function toValidPositionNumbers(items) {
-  return items.map((p) => parseInt(p.position, 10)).filter((p) => !isNaN(p));
+function validParticipants(items) {
+  return items.filter((p) => !isNaN(parseInt(p.position, 10)));
 }
 
 function applySelectedBaseDate(dateObj) {
   updateActiveBaseDate(dateObj);
   selectedBaseDate.value = formatAsISODate(dateObj);
-}
-
-function syncMeetupUrl() {
-  const positions = toValidPositionNumbers(participants.value);
-  if (positions.length === 0 || !meetupStartTime.value || !searchPeriod.value) {
-    clearMeetupUrl();
-    return;
-  }
-  writeMeetupUrl({
-    participants: positions,
-    startTime: meetupStartTime.value,
-    period: searchPeriod.value,
-  });
 }
 
 function applyHomeFallbackFor(baseDateStr) {
@@ -251,7 +233,7 @@ function applyHomeFallbackFor(baseDateStr) {
 }
 
 function resetMeetupToDefaults() {
-  participants.value = [{ position: "" }];
+  participants.value = [{ position: "", name: "" }];
   meetupStartTime.value = APP_CONFIG.DEFAULT_MEETUP_START_TIME;
   searchPeriod.value = APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString();
 }
@@ -262,21 +244,17 @@ function applyMeetupSet(baseDateStr) {
     participants.value = loaded.participants;
     meetupStartTime.value = loaded.startTime;
     searchPeriod.value = String(loaded.period);
-    syncMeetupUrl();
     return;
   }
-  if (applyHomeFallbackFor(baseDateStr)) {
-    syncMeetupUrl();
-    return;
-  }
+  if (applyHomeFallbackFor(baseDateStr)) return;
   resetMeetupToDefaults();
-  syncMeetupUrl();
 }
 
 function switchToNextBaseDate() {
   const nextDateObj = createDate(nextBaseDateStr.value);
   applySelectedBaseDate(nextDateObj);
   showResults.value = false;
+  setMeetupActive(nextBaseDateStr.value);
   applyMeetupSet(nextBaseDateStr.value);
 }
 
@@ -285,6 +263,7 @@ function switchToDefaultBaseDate() {
   const dateStr = formatAsISODate(defaultBaseDate.value);
   applySelectedBaseDate(defaultBaseDate.value);
   showResults.value = false;
+  setMeetupActive(dateStr);
   applyMeetupSet(dateStr);
 }
 
@@ -301,7 +280,9 @@ function classifyBaseDate(baseDateStr, validBaseDates) {
 // Find available dates
 function findDates() {
   // Get valid participant positions
-  const positions = toValidPositionNumbers(participants.value);
+  const valid = validParticipants(participants.value);
+  const positions = valid.map((p) => parseInt(p.position, 10));
+  const names = valid.map((p) => (p.name ?? "").trim());
 
   // Validate
   if (positions.length === 0) {
@@ -319,10 +300,18 @@ function findDates() {
   const baseDate = createDate(selectedBaseDate.value);
   const currentDay = today();
   const startDate = isAfter(baseDate, currentDay) ? baseDate : currentDay;
-  const endDate = addDays(startDate, parseInt(searchPeriod.value, 10));
+  let endDate = addDays(startDate, parseInt(searchPeriod.value, 10));
+  // この世代の交番表は次の世代の from までしか使えない。その先は日程が
+  // 出せず黙って結果から消えるので、期間を切り詰めて画面で知らせる。
+  const epochEnd = epochEndFor(baseDate);
+  searchCutoff.value = null;
+  if (epochEnd && isAfter(endDate, epochEnd)) {
+    endDate = epochEnd;
+    searchCutoff.value = epochEnd;
+  }
 
   // Search for available dates
-  findMeetupDates(positions, meetupStartTime.value, startDate, endDate);
+  findMeetupDates(positions, meetupStartTime.value, startDate, endDate, names);
 
   // Show results
   showResults.value = true;
@@ -334,7 +323,6 @@ function findDates() {
     meetupStartTime.value,
     searchPeriod.value,
   );
-  syncMeetupUrl();
 }
 
 async function initialize() {
@@ -354,20 +342,11 @@ async function initialize() {
       Boolean,
     );
 
-    if (applyFromCanonical(validBaseDates)) {
-      // URL already reflects the desired state, no resync needed
-      return true;
-    }
-    if (applyFromStorage(validBaseDates)) {
-      syncMeetupUrl();
-      return true;
-    }
-    if (applyFromHomeStorage(validBaseDates)) {
-      syncMeetupUrl();
-      return true;
-    }
+    // Meetup state is storage-only; drop b/ps/t/d left by old shared URLs.
+    clearMeetupUrl();
+    if (applyFromStorage(validBaseDates)) return true;
+    if (applyFromHomeStorage(validBaseDates)) return true;
     applySelectedBaseDate(defaultBaseDate.value);
-    syncMeetupUrl();
     return true;
   } catch {
     alert(ERROR_MESSAGES.INIT_FAILED);
@@ -375,49 +354,15 @@ async function initialize() {
   }
 }
 
-function applyFromCanonical(validBaseDates) {
-  // baseDate は config の現行 active（= 今日以前で最後の世代）を採用する。
-  // Meetup の版切替は URL に載らない設計なので、共有 URL の受け手は常に
-  // 「いまの世代」で開く（次世代を先取りしない）。
-  const targetBaseDate = defaultBaseDate.value;
-  if (!targetBaseDate) return false;
-  const cls = classifyBaseDate(formatAsISODate(targetBaseDate), validBaseDates);
-  if (cls.kind !== "active") return false;
-
-  // ps= の範囲チェックは対象 epoch（= targetBaseDate）のサイクル長に対して行う。
-  const cycleLength = rotationCycleLengthForBaseDate(targetBaseDate);
-  const url = readCanonicalMeetup(cycleLength);
-  if (!url) return false;
-
-  applySelectedBaseDate(cls.baseDate);
-  participants.value = url.participants.map((position) => ({ position }));
-  meetupStartTime.value = url.startTime;
-  searchPeriod.value = String(url.period);
-
-  // URL 由来の値は即 Storage にも書き戻す（次回起動の Storage 解決を有効化）
-  saveMeetupParams(
-    selectedBaseDate.value,
-    participants.value,
-    meetupStartTime.value,
-    searchPeriod.value,
-  );
-  return true;
-}
-
 function applyFromStorage(validBaseDates) {
-  const stored = loadMeetupParams();
-  if (!stored) return false;
-
-  const cls = classifyBaseDate(stored.baseDate, validBaseDates);
+  const active = loadMeetupActive();
+  const cls = classifyBaseDate(active, validBaseDates);
   if (cls.kind !== "active") {
-    clearMeetupParams();
+    if (active) clearMeetupParams();
     return false;
   }
-
   applySelectedBaseDate(cls.baseDate);
-  participants.value = stored.participants;
-  meetupStartTime.value = stored.startTime;
-  searchPeriod.value = String(stored.period);
+  applyMeetupSet(active);
   return true;
 }
 

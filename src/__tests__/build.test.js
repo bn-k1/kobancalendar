@@ -4,6 +4,8 @@ import config from "@config/config.json";
 import eventConfig from "@config/event.json";
 import {
   findBlankLines,
+  parseCsv,
+  decodeUtf8,
   resolveEpochs,
   checkSegmentCycles,
 } from "../../scripts/convertCsv.js";
@@ -17,6 +19,37 @@ describe("findBlankLines", () => {
     ["a\r\n\r\nb", [2]],
   ])("%j -> %j", (csv, lines) => {
     expect(findBlankLines(csv)).toEqual(lines);
+  });
+});
+
+describe("parseCsv", () => {
+  it("勤務名と時刻を読む（日跨ぎは 24 超え、休みは時刻なし）", () => {
+    expect(parseCsv("110,12:55,24:41\n公休,,\n")).toEqual([
+      { s: "110", sT: "12:55", eT: "24:41" },
+      { s: "公休" },
+    ]);
+  });
+
+  it.each([
+    ["カンマだけの行", "110,8:30,17:00\n,,\n"],
+    ["空白だけの行", "110,8:30,17:00\n  \n"],
+    ["ヘッダ行", "勤務,開始,終了\n110,8:30,17:00\n"],
+    ["時刻の打ち間違い", "110,8:3O,17:00\n"],
+    ["時刻の片方だけ", "110,8:30,\n"],
+  ])("%s は throw", (_, csv) => {
+    expect(() => parseCsv(csv)).toThrow();
+  });
+});
+
+describe("decodeUtf8", () => {
+  it("UTF-8 は通し、BOM は落とす", () => {
+    const bytes = new TextEncoder().encode("\uFEFF公休,,");
+    expect(decodeUtf8(bytes)).toBe("公休,,");
+  });
+
+  it("CP932 は throw", () => {
+    // 「公休」 in Shift_JIS/CP932
+    expect(() => decodeUtf8(new Uint8Array([0x8c, 0xf6, 0x8b, 0x78]))).toThrow();
   });
 });
 
@@ -36,6 +69,7 @@ describe("resolveEpochs", () => {
     ["空", []],
     ["先頭世代の data 省略", [{ from: "2026-01-01" }]],
     ["from の形式", [{ from: "2026/01/01", data: "a" }]],
+    ["from が存在しない日付", [{ from: "2026-02-30", data: "a" }]],
     [
       "from が降順",
       [

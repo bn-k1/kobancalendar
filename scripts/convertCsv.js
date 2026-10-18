@@ -16,6 +16,27 @@ const CONFIG_PATH = join(ROOT, "config", "config.json");
 const OUTPUT_FILE = join(ROOT, "data", "scheduleData.json");
 const FILES = ["holiday", "saturday", "weekday"];
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+// Past-midnight times go past 24 (e.g. 24:42).
+const TIME = /^\d{1,2}:[0-5]\d$/;
+
+/** `YYYY-MM-DD` that names a real calendar day (rejects 2026-02-30). */
+export function isRealDate(str) {
+  if (typeof str !== "string" || !ISO_DATE.test(str)) return false;
+  const d = new Date(`${str}T00:00:00Z`);
+  return !isNaN(d) && d.toISOString().slice(0, 10) === str;
+}
+
+// Japanese Excel saves CSV as CP932 by default; reading that as UTF-8 would
+// pass mojibake through, so refuse anything that isn't valid UTF-8.
+export function decodeUtf8(buffer) {
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+  } catch {
+    throw new Error(
+      "UTF-8 ではありません（Excel なら「CSV UTF-8」で保存し直してください）",
+    );
+  }
+}
 
 // Papa's skipEmptyLines would silently drop a blank line, which can hide a
 // row-count mismatch if it sits at the same position in all three files.
@@ -25,14 +46,25 @@ export function findBlankLines(csv) {
   return lines.flatMap((line, i) => (line === "" ? [i + 1] : []));
 }
 
+// Each line is one コマ, so a stray `,,` / header / whitespace-only line would
+// silently lengthen the cycle; reject anything that isn't `subject,time,time`
+// or `subject,,`.
 export function parseCsv(csv) {
   const { data, errors } = Papa.parse(csv, { skipEmptyLines: true });
   if (errors.length)
     throw new Error(`CSV parse error: ${JSON.stringify(errors)}`);
-  return data.map(([s = "", sT = "", eT = ""]) => {
+  return data.map(([s = "", sT = "", eT = ""], i) => {
     const row = { s: s.trim() };
     if (sT.trim()) row.sT = sT.trim();
     if (eT.trim()) row.eT = eT.trim();
+    const where = `${i + 1} 行目`;
+    if (!row.s) throw new Error(`${where}: 勤務名が空です`);
+    if (!row.sT !== !row.eT)
+      throw new Error(`${where}: 開始と終了は両方書くか両方空にしてください`);
+    for (const t of [row.sT, row.eT]) {
+      if (t && !TIME.test(t))
+        throw new Error(`${where}: 時刻の書式が不正です: ${t}`);
+    }
     return row;
   });
 }
@@ -49,7 +81,7 @@ export function resolveEpochs(schedules) {
   }
   const epochs = schedules.map((entry, i) => {
     const { from, data } = entry ?? {};
-    if (!ISO_DATE.test(from))
+    if (!isRealDate(from))
       throw new Error(`schedules[${i}].from が不正です: ${from}`);
     if (Array.isArray(data)) {
       if (!data.length) throw new Error(`schedules[${i}].data 配列が空です`);
@@ -79,7 +111,7 @@ export function resolveEpochs(schedules) {
       }
       if (
         si > 0 &&
-        !(ISO_DATE.test(seg.from) && seg.from > epoch.segments[si - 1].from)
+        !(isRealDate(seg.from) && seg.from > epoch.segments[si - 1].from)
       ) {
         throw new Error(
           `schedules[${i}].data[${si}].from は昇順の日付である必要があります`,
@@ -113,11 +145,15 @@ function convertFolder(folder) {
   const tables = {};
   for (const name of FILES) {
     const path = join(ROOT, "data", folder, `${name}.csv`);
-    const csv = readFileSync(path, "utf8");
-    const blanks = findBlankLines(csv);
-    if (blanks.length)
-      throw new Error(`${path}: 空行があります（${blanks.join(", ")} 行目）`);
-    tables[name] = parseCsv(csv);
+    try {
+      const csv = decodeUtf8(readFileSync(path));
+      const blanks = findBlankLines(csv);
+      if (blanks.length)
+        throw new Error(`空行があります（${blanks.join(", ")} 行目）`);
+      tables[name] = parseCsv(csv);
+    } catch (error) {
+      throw new Error(`${path}: ${error.message}`);
+    }
   }
   const counts = FILES.map((name) => tables[name].length);
   if (!counts[0] || new Set(counts).size > 1) {

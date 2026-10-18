@@ -6,6 +6,7 @@ import { useSchedule } from "@/composables/useSchedule";
 import { useHolidays } from "@/composables/useHolidays";
 import { useMeetupSearch } from "@/composables/useMeetupSearch";
 import { useCalendar } from "@/composables/useCalendar";
+import { useLocalParams } from "@/composables/useLocalParams";
 import { buildEpochs } from "@/composables/useAppInitializer";
 import { useHolidayStore } from "@/stores/holiday";
 import { CUSTOM_HOLIDAY } from "@/utils/constants";
@@ -128,6 +129,31 @@ describe("世代", () => {
     expect(defaultBaseDate.value.format("YYYY-MM-DD")).toBe(current);
     expect(nextBaseDate.value?.format("YYYY-MM-DD")).toBe(next);
   });
+
+  it.each([
+    ["b= が現行世代", [["2025-11-17", "a"]], "2025-11-17", "2025-11-17"],
+    ["b= が次世代", null, "2026-01-05", "2026-01-05"],
+    ["b= が現行世代（次世代あり）", null, "2025-11-17", "2025-11-17"],
+    ["b= が知らない世代", null, "2025-06-01", null],
+    ["b= が日付でない", null, "x", null],
+    ["b= なし・世代が1つ", [["2025-11-17", "a"]], null, "2025-11-17"],
+    ["b= なし・次世代あり（旧URLは読み替えない）", null, null, null],
+  ])("URL の世代解決: %s", (_, epochs, b, expected) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-12-01T00:00:00+09:00"));
+    const { resolveLinkedBaseDate } = load(epochs ?? two);
+    expect(resolveLinkedBaseDate(b)?.format("YYYY-MM-DD") ?? null).toBe(
+      expected,
+    );
+  });
+
+  it("世代の終わりは次世代の from", () => {
+    const { epochEndFor } = load(two);
+    expect(epochEndFor(dayjs("2025-11-17")).format("YYYY-MM-DD")).toBe(
+      "2026-01-05",
+    );
+    expect(epochEndFor(dayjs("2026-01-05"))).toBeUndefined();
+  });
 });
 
 describe("独自休日", () => {
@@ -164,5 +190,56 @@ describe("飲みに行くンダー", () => {
     const partial = findMeetupDates([1, 3], "17:00", ...day).partialMatches;
     expect(partial).toHaveLength(1);
     expect(partial[0]).toMatchObject({ availableCount: 1, totalCount: 2 });
+  });
+
+  it("名前はコマ位置と同じ並びで詳細に載る（同じコマでも取り違えない）", () => {
+    load();
+    const { details } = useMeetupSearch().checkDateForPositions(
+      dayjs("2025-11-17"),
+      [2, 2, 3],
+      "17:00",
+      ["山田", "中野"],
+    );
+    expect(details.map((d) => d.name)).toEqual(["山田", "中野", ""]);
+  });
+});
+
+describe("飲みに行くンダーの保存", () => {
+  beforeEach(() => localStorage.clear());
+
+  it("名前はコマ位置と一緒に世代ごとに保存され、未選択の行は落とす", () => {
+    const { saveMeetupParams, loadMeetupParamsFor } = useLocalParams();
+    saveMeetupParams(
+      "2026-05-16",
+      [
+        { position: 5, name: " 山田 " },
+        { position: "", name: "未選択" },
+        { position: 9, name: "" },
+      ],
+      "19:00",
+      90,
+    );
+    expect(loadMeetupParamsFor("2026-05-16").participants).toEqual([
+      { position: 5, name: "山田" },
+      { position: 9, name: "" },
+    ]);
+  });
+
+  it("名前が無い旧形式のセットも読める", () => {
+    localStorage.setItem(
+      "kobancalendar.savedMeetup.v1",
+      JSON.stringify({
+        active: "2026-05-16",
+        sets: {
+          "2026-05-16": { participants: [5, 9], startTime: "19:00", period: 30 },
+        },
+      }),
+    );
+    expect(
+      useLocalParams().loadMeetupParamsFor("2026-05-16").participants,
+    ).toEqual([
+      { position: 5, name: "" },
+      { position: 9, name: "" },
+    ]);
   });
 });
