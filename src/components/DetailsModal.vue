@@ -123,6 +123,12 @@ function getNextDayShift(detail) {
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--gray-200);
   font-size: 1.02rem;
+  vertical-align: middle;
+}
+
+/* Long participant names wrap instead of widening the modal. */
+.details-table td:first-child {
+  overflow-wrap: anywhere;
 }
 
 .details-table th {
@@ -137,12 +143,11 @@ function getNextDayShift(detail) {
   border-bottom: none;
 }
 
+/* Stay a table-cell (no flex) so the cell keeps the row's height and border. */
 .availability-yes {
   color: var(--success-color);
   font-weight: var(--font-weight-bold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
 }
 
 .availability-yes::before {
@@ -153,9 +158,7 @@ function getNextDayShift(detail) {
 
 .availability-no {
   color: var(--error-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
 }
 
 .availability-no::before {
