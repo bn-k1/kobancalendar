@@ -1,0 +1,151 @@
+// URL params: canonical (hash query) のみ扱う。
+//   Home   #/?p=N  /  #/?v=old&p=N
+//   Meetup #/meetup?ps=1,7,12&t=19:00&d=120
+
+const HOME_PATH = "/";
+const MEETUP_PATH = "/meetup";
+
+function getHashRoute() {
+  const raw = window.location.hash || "";
+  if (!raw || raw === "#" || raw === "#/") {
+    return { path: HOME_PATH, query: new URLSearchParams() };
+  }
+  const stripped = raw.startsWith("#") ? raw.slice(1) : raw;
+  const qIdx = stripped.indexOf("?");
+  if (qIdx === -1) {
+    return { path: stripped || HOME_PATH, query: new URLSearchParams() };
+  }
+  return {
+    path: stripped.slice(0, qIdx) || HOME_PATH,
+    query: new URLSearchParams(stripped.slice(qIdx + 1)),
+  };
+}
+
+function writeHashQuery(updater, { push = false } = {}) {
+  const { path, query } = getHashRoute();
+  updater(query);
+  const qs = query.toString();
+  const newHash = qs ? `#${path}?${qs}` : `#${path}`;
+  const url = `${window.location.pathname}${window.location.search}${newHash}`;
+  // push のときだけ、かつ実際に URL が変わるときだけ履歴エントリを積む。
+  // 同値を push すると「戻る」が一度空振りするため差分があるときに限定する。
+  if (push && newHash !== window.location.hash) {
+    window.history.pushState({}, "", url);
+  } else {
+    window.history.replaceState({}, "", url);
+  }
+}
+
+function parseIntOrNull(value) {
+  const n = parseInt(value, 10);
+  return isNaN(n) ? null : n;
+}
+
+export function useUrlParams() {
+  // ----- canonical: Home -----
+
+  function readCanonicalCalendar() {
+    const { path, query } = getHashRoute();
+    if (path !== HOME_PATH) return { position: null, version: null };
+    return {
+      position: parseIntOrNull(query.get("p")),
+      version: query.get("v") === "old" ? "old" : null,
+    };
+  }
+
+  function writeCalendarUrl({ position, version } = {}, { push = false } = {}) {
+    writeHashQuery(
+      (q) => {
+        if (typeof position === "number" && !isNaN(position)) {
+          q.set("p", String(position));
+        } else {
+          q.delete("p");
+        }
+        if (version === "old") {
+          q.set("v", "old");
+        } else {
+          q.delete("v");
+        }
+      },
+      { push },
+    );
+  }
+
+  // 現在の hash route が Home（カレンダー）かどうか。popstate ハンドラが
+  // 自分の担当ルートのときだけ反応するためのガード。
+  function isCalendarRoute() {
+    return getHashRoute().path === HOME_PATH;
+  }
+
+  function clearCalendarUrl() {
+    writeHashQuery((q) => {
+      q.delete("p");
+      q.delete("v");
+    });
+  }
+
+  // ----- canonical: Meetup -----
+
+  // maxPosition: 呼び出し側が解決した対象 epoch の rotationCycleLength。
+  // 手打ち URL の ps=0 / ps=-1 / ps=9999 のような値が calculateShiftIndex の
+  // 二重 modulo で無関係な人のコマへ化けるのを防ぐため、範囲外の値は個別に
+  // 落とす（Home の p= と同じ「無効値は無視、他は活かす」方針）。maxPosition
+  // 省略時も 1 未満は無条件で弾く（下限はどの epoch でも共通のため）。
+  function readCanonicalMeetup(maxPosition) {
+    const { path, query } = getHashRoute();
+    if (path !== MEETUP_PATH) return null;
+    const rawPs = query.get("ps");
+    const rawT = query.get("t");
+    const rawD = query.get("d");
+    if (!rawPs || !rawT || rawD == null) return null;
+    const hasUpperBound = typeof maxPosition === "number" && maxPosition > 0;
+    const participants = rawPs
+      .split(",")
+      .map((s) => parseIntOrNull(s))
+      .filter((n) => n != null && n >= 1)
+      .filter((n) => !hasUpperBound || n <= maxPosition);
+    const period = parseIntOrNull(rawD);
+    // 期間は正の整数のみ（d=-30 のような値は endDate が startDate より前になり
+    // findMeetupDates が無言で空を返すだけなので、ここで弾いて URL 全体を無効化する）
+    if (participants.length === 0 || period == null || period <= 0) {
+      return null;
+    }
+    return { participants, startTime: rawT, period };
+  }
+
+  function writeMeetupUrl({ participants, startTime, period } = {}) {
+    writeHashQuery((q) => {
+      const ps = (participants || [])
+        .map((p) => (typeof p === "object" ? p?.position : p))
+        .map((v) => parseIntOrNull(v))
+        .filter((n) => n != null);
+      if (ps.length > 0) q.set("ps", ps.join(","));
+      else q.delete("ps");
+
+      if (startTime) q.set("t", startTime);
+      else q.delete("t");
+
+      const d = parseIntOrNull(period);
+      if (d != null) q.set("d", String(d));
+      else q.delete("d");
+    });
+  }
+
+  function clearMeetupUrl() {
+    writeHashQuery((q) => {
+      q.delete("ps");
+      q.delete("t");
+      q.delete("d");
+    });
+  }
+
+  return {
+    readCanonicalCalendar,
+    writeCalendarUrl,
+    clearCalendarUrl,
+    isCalendarRoute,
+    readCanonicalMeetup,
+    writeMeetupUrl,
+    clearMeetupUrl,
+  };
+}

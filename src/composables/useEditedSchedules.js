@@ -1,0 +1,209 @@
+// src/composables/useEditedSchedules.js
+import { computed } from "vue";
+import { useEditedSchedulesStore } from "@/stores/editedSchedules";
+import {
+  formatAsISODate,
+  formatAsDisplayDate,
+  getWeekdayName,
+} from "@/utils/date";
+
+const STORAGE_KEY = "kobancalendar_edited_schedules";
+
+function normalizeSchedule(schedule) {
+  return {
+    subject: schedule?.subject || "",
+    startTime: schedule?.startTime || "",
+    endTime: schedule?.endTime || "",
+    note: schedule?.note || "",
+  };
+}
+
+// Edits saved before 2026-07 are "date,subject,start,end" lines; they are
+// only rewritten as JSON on the user's next edit, so keep reading them.
+function parseLegacyCsv(stored) {
+  const lines = stored.split("\n").filter((line) => line.trim());
+  const schedules = {};
+
+  lines.forEach((line) => {
+    const [dateStr, subject, startTime, endTime] = line.split(",");
+    if (dateStr) {
+      schedules[dateStr] = normalizeSchedule({
+        subject,
+        startTime,
+        endTime,
+      });
+    }
+  });
+
+  return schedules;
+}
+
+/**
+ * Edited-schedules management composable.
+ *
+ * Contains all the business logic for user-edited schedules: localStorage
+ * persistence, normalization, and CRUD. The store
+ * (`stores/editedSchedules.js`) holds only the raw state.
+ */
+export function useEditedSchedules() {
+  const store = useEditedSchedulesStore();
+
+  function toDateStr(date) {
+    return typeof date === "string" ? date : formatAsISODate(date);
+  }
+
+  /**
+   * Load edited schedules from localStorage
+   */
+  function loadFromStorage() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) {
+        store.setEditedSchedules({});
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const normalized = {};
+          Object.entries(parsed).forEach(([dateStr, schedule]) => {
+            if (dateStr) {
+              normalized[dateStr] = normalizeSchedule(schedule);
+            }
+          });
+          store.setEditedSchedules(normalized);
+          return;
+        }
+      } catch {
+        store.setEditedSchedules(parseLegacyCsv(stored));
+        return;
+      }
+
+      store.setEditedSchedules({});
+    } catch (error) {
+      console.error(
+        "Failed to load edited schedules from localStorage:",
+        error,
+      );
+      store.setEditedSchedules({});
+    }
+  }
+
+  /**
+   * Initialize store state from localStorage
+   */
+  function initEditedSchedules() {
+    if (store.isInitialized) return;
+    loadFromStorage();
+    store.setIsInitialized(true);
+  }
+
+  /**
+   * Save edited schedules to localStorage
+   */
+  function saveToStorage(schedules) {
+    try {
+      const hasEdits = Object.keys(schedules).length > 0;
+      if (hasEdits) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(schedules));
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch (error) {
+      console.error("Failed to save edited schedules to localStorage:", error);
+    }
+  }
+
+  /**
+   * Toggle edited-schedule visibility for this session only (not persisted)
+   * @param {boolean} hidden
+   */
+  function setEditsHidden(hidden) {
+    store.setIsEditsHidden(!!hidden);
+  }
+
+  /**
+   * Get edited schedule for a date
+   * @param {string|dayjs} date - Date to get
+   * @returns {Object|undefined}
+   */
+  function getEditedSchedule(date) {
+    return store.editedSchedules[toDateStr(date)];
+  }
+
+  /**
+   * Save an edited schedule
+   * @param {string|dayjs} date - Date to save
+   * @param {Object} schedule - Schedule data { subject, startTime, endTime }
+   */
+  function saveEditedSchedule(date, schedule) {
+    const dateStr = toDateStr(date);
+    const updated = {
+      ...store.editedSchedules,
+      [dateStr]: normalizeSchedule(schedule),
+    };
+    store.setEditedSchedules(updated);
+    saveToStorage(updated);
+  }
+
+  /**
+   * Remove an edited schedule
+   * @param {string|dayjs} date - Date to remove
+   */
+  function removeEditedSchedule(date) {
+    const dateStr = toDateStr(date);
+    if (!(dateStr in store.editedSchedules)) return;
+    const updated = { ...store.editedSchedules };
+    delete updated[dateStr];
+    store.setEditedSchedules(updated);
+    saveToStorage(updated);
+  }
+
+  /**
+   * Get all edited schedules as a sorted array
+   * @returns {Array}
+   */
+  const editedSchedulesList = computed(() => {
+    return Object.entries(store.editedSchedules)
+      .map(([dateStr, schedule]) => ({
+        dateStr,
+        displayDate: formatAsDisplayDate(dateStr),
+        weekday: getWeekdayName(dateStr),
+        ...schedule,
+      }))
+      .sort((a, b) => a.dateStr.localeCompare(b.dateStr));
+  });
+
+  /**
+   * Distinct subjects the user has saved, for reuse as edit-modal choices.
+   * When one subject was saved with different times, the latest date wins.
+   * @returns {Array<{subject: string, startTime: string, endTime: string}>}
+   */
+  const savedSubjectOptions = computed(() => {
+    const bySubject = new Map();
+    Object.entries(store.editedSchedules)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([, { subject, startTime, endTime }]) => {
+        if (subject) bySubject.set(subject, { subject, startTime, endTime });
+      });
+    return Array.from(bySubject.values()).sort((a, b) =>
+      a.subject.localeCompare(b.subject, "ja"),
+    );
+  });
+
+  return {
+    editedSchedules: computed(() => store.editedSchedules),
+    editedSchedulesList,
+    savedSubjectOptions,
+    hasAnyEdits: computed(() => store.hasAnyEdits),
+    isInitialized: computed(() => store.isInitialized),
+    isEditsHidden: computed(() => store.isEditsHidden),
+
+    initEditedSchedules,
+    getEditedSchedule,
+    saveEditedSchedule,
+    removeEditedSchedule,
+    setEditsHidden,
+  };
+}

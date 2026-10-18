@@ -1,0 +1,8 @@
+node_modules/
+.playwright-mcp/
+CLAUDE.md
+.env
+
+# Generated build artifacts — produced by build-prep / CI, never committed.
+docs/
+data/scheduleData.json

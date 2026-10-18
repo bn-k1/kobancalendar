@@ -1,0 +1,117 @@
+// src/utils/date.js
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import isSameOrAfterPlugin from "dayjs/plugin/isSameOrAfter";
+import { TIMEZONE, DATE_FORMATS, WEEKDAYS } from "@/utils/constants";
+
+// Setup plugins - order matters
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(isSameOrAfterPlugin);
+dayjs.tz.setDefault(TIMEZONE);
+
+/**
+ * Create a dayjs object for a date
+ */
+export function createDate(date) {
+  return dayjs.isDayjs(date) ? date : dayjs(date);
+}
+
+/**
+ * Format date with specified format
+ */
+function formatDate(date, format) {
+  return createDate(date).format(format);
+}
+
+/**
+ * Format date as ISO string (YYYY-MM-DD)
+ */
+export function formatAsISODate(date) {
+  return formatDate(date, DATE_FORMATS.ISO_DATE);
+}
+
+/**
+ * Format date for display (YYYY/MM/DD)
+ */
+export function formatAsDisplayDate(date) {
+  return formatDate(date, DATE_FORMATS.DISPLAY_DATE);
+}
+
+/**
+ * Get Japanese weekday name
+ */
+export function getWeekdayName(date) {
+  return WEEKDAYS[createDate(date).day()];
+}
+
+/**
+ * Comparison functions
+ */
+export function isSameDay(date1, date2) {
+  return createDate(date1).isSame(createDate(date2), "day");
+}
+
+export function isBefore(date1, date2) {
+  return createDate(date1).isBefore(createDate(date2), "day");
+}
+
+export function isAfter(date1, date2) {
+  return createDate(date1).isAfter(createDate(date2), "day");
+}
+
+export function isSameOrAfter(date1, date2) {
+  return createDate(date1).isSameOrAfter(createDate(date2), "day");
+}
+
+/**
+ * Date generation functions
+ */
+export function today() {
+  return dayjs().startOf("day");
+}
+
+/**
+ * Date modification functions
+ */
+export function addDays(date, days) {
+  return createDate(date).add(days, "day");
+}
+
+/**
+ * Day of week functions
+ */
+function getDayOfWeek(date) {
+  return createDate(date).day();
+}
+
+export function isSunday(date) {
+  return getDayOfWeek(date) === 0;
+}
+
+/**
+ * Conversion functions
+ */
+export function toDate(date) {
+  return createDate(date).toDate();
+}
+
+export function toUnix(date) {
+  return createDate(date).unix();
+}
+
+/**
+ * Time parsing — TIMEZONE 固定で生成し、環境依存の比較ズレを防ぐ
+ */
+export function parseTime(timeStr) {
+  if (!timeStr) return undefined;
+
+  const [hours, minutes = "00"] = timeStr.split(":");
+  return dayjs
+    .tz(undefined, TIMEZONE)
+    .hour(parseInt(hours, 10))
+    .minute(parseInt(minutes, 10))
+    .second(0)
+    .millisecond(0);
+}
