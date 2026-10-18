@@ -24,7 +24,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useHolidays } from "@/composables/useHolidays";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
-import { CALENDAR_CONFIG, LONG_PRESS_DURATION } from "@/utils/constants";
 import { createDate, isSameDay, today, formatAsISODate } from "@/utils/date";
 import { escapeHtml } from "@/utils/escapeHtml";
 import EditScheduleModal from "@/components/EditScheduleModal.vue";
@@ -133,7 +132,7 @@ function handlePressStart(info, event) {
     if (pressedEventInfo) {
       openEditModal(pressedEventInfo.event);
     }
-  }, LONG_PRESS_DURATION);
+  }, 500);
 }
 
 function handlePressEnd() {
@@ -208,12 +207,12 @@ function handleRemoveEdit(dateStr) {
 
 const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, interactionPlugin],
-  initialView: CALENDAR_CONFIG.INITIAL_VIEW,
+  initialView: "dayGridMonth",
   initialDate: props.initialDate ? props.initialDate : undefined,
-  locale: CALENDAR_CONFIG.LOCALE,
+  locale: "ja",
   events: mergedEvents.value,
-  aspectRatio: CALENDAR_CONFIG.DEFAULT_ASPECT_RATIO,
-  height: CALENDAR_CONFIG.HEIGHT,
+  aspectRatio: 1.35,
+  height: "auto",
   selectable: false,
   editable: false,
 

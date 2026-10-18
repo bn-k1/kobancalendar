@@ -2,7 +2,6 @@
 import { computed } from "vue";
 import { useScheduleStore } from "@/stores/schedule";
 import { useHolidays } from "@/composables/useHolidays";
-import { ERROR_MESSAGES } from "@/utils/constants";
 import {
   createDate,
   formatAsISODate,
@@ -227,7 +226,7 @@ export function useSchedule() {
       scheduleStore.setActiveEpochIndex(currentEpochIndex());
       return activeScheduleData.value;
     } catch (error) {
-      console.error(ERROR_MESSAGES.SCHEDULE_DATA_ERROR, error);
+      console.error("スケジュールデータの読み込みに失敗しました", error);
       throw error;
     }
   }

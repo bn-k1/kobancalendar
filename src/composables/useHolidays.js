@@ -2,8 +2,9 @@
 import { computed } from "vue";
 import JapaneseHolidays from "japanese-holidays";
 import { useHolidayStore } from "@/stores/holiday";
-import { ERROR_MESSAGES, CUSTOM_HOLIDAY } from "@/utils/constants";
 import { createDate, formatAsISODate, isSunday } from "@/utils/date";
+
+export const CUSTOM_HOLIDAY = "設定祝日";
 
 /**
  * Holiday management composable
@@ -130,7 +131,7 @@ export function useHolidays() {
       holidayStore.setHolidays(holidays);
       return holidays;
     } catch (error) {
-      console.error(ERROR_MESSAGES.HOLIDAYS_LOAD_ERROR, error);
+      console.error("祝日データの取得に失敗しました", error);
       throw error;
     }
   }

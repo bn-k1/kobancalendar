@@ -135,11 +135,11 @@ import {
   toDate,
 } from "@/utils/date";
 
-import { ERROR_MESSAGES } from "@/utils/constants";
-
 import scheduleData from "@data/scheduleData.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
+
+const INIT_FAILED = "アプリケーションの初期化に失敗しました";
 
 const {
   readCanonicalCalendar,
@@ -313,7 +313,7 @@ function isValidBaseDate(baseDateStr, validBaseDates) {
 
 function applyDefaultBaseDate() {
   if (!defaultBaseDate.value) {
-    console.error(ERROR_MESSAGES.NO_BASE_DATE);
+    console.error("URLパラメータに基準日が含まれていません");
     return false;
   }
   updateActiveBaseDate(defaultBaseDate.value);
@@ -332,7 +332,7 @@ async function initialize() {
     });
 
     if (!result) {
-      alert(ERROR_MESSAGES.INIT_FAILED);
+      alert(INIT_FAILED);
       return false;
     }
 
@@ -351,8 +351,8 @@ async function initialize() {
     syncCalendarUrl();
     return applied;
   } catch (error) {
-    console.error(ERROR_MESSAGES.INIT_FAILED, error);
-    alert(ERROR_MESSAGES.INIT_FAILED);
+    console.error(INIT_FAILED, error);
+    alert(INIT_FAILED);
     return false;
   }
 }

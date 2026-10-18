@@ -3,7 +3,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import isSameOrAfterPlugin from "dayjs/plugin/isSameOrAfter";
-import { TIMEZONE, DATE_FORMATS, WEEKDAYS } from "@/utils/constants";
+const TIMEZONE = "Asia/Tokyo";
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
 // Setup plugins - order matters
 dayjs.extend(utc);
@@ -29,14 +30,14 @@ function formatDate(date, format) {
  * Format date as ISO string (YYYY-MM-DD)
  */
 export function formatAsISODate(date) {
-  return formatDate(date, DATE_FORMATS.ISO_DATE);
+  return formatDate(date, "YYYY-MM-DD");
 }
 
 /**
  * Format date for display (YYYY/MM/DD)
  */
 export function formatAsDisplayDate(date) {
-  return formatDate(date, DATE_FORMATS.DISPLAY_DATE);
+  return formatDate(date, "YYYY/MM/DD");
 }
 
 /**

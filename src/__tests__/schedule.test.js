@@ -3,13 +3,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import dayjs from "dayjs";
 import { useSchedule } from "@/composables/useSchedule";
-import { useHolidays } from "@/composables/useHolidays";
+import { useHolidays, CUSTOM_HOLIDAY } from "@/composables/useHolidays";
 import { useMeetupSearch } from "@/composables/useMeetupSearch";
 import { useCalendar } from "@/composables/useCalendar";
 import { useLocalParams } from "@/composables/useLocalParams";
 import { buildEpochs } from "@/composables/useAppInitializer";
 import { useHolidayStore } from "@/stores/holiday";
-import { CUSTOM_HOLIDAY } from "@/utils/constants";
 
 // 3-slot rotation. Subjects carry the day type; "公休" matches the freeAllDay
 // rule by substring. `prefix` tells folders apart.

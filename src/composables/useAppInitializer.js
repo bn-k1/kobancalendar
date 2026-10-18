@@ -4,7 +4,6 @@ import { useCalendar } from "./useCalendar";
 import { useSchedule } from "./useSchedule";
 import { useHolidays } from "./useHolidays";
 import { createDate } from "@/utils/date";
-import { APP_CONFIG } from "@/utils/constants";
 
 /**
  * Turn the build-resolved epochs from data/scheduleData.json into dayjs form.
@@ -45,7 +44,7 @@ export function useAppInitializer() {
     const { scheduleData, config, eventConfig } = data;
 
     // Holiday configuration
-    setHolidayYearsRange(APP_CONFIG.DEFAULT_HOLIDAY_YEARS);
+    setHolidayYearsRange(5);
     setUserDefinedHolidays(config.custom_holidays || []);
     loadHolidays();
 

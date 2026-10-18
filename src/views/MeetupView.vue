@@ -52,7 +52,7 @@
               v-model="meetupStartTime"
               aria-label="飲み会開始時間"
             >
-              <option v-for="time in TIMEOPTIONS" :key="time" :value="time">
+              <option v-for="time in TIME_OPTIONS" :key="time" :value="time">
                 {{ time }}
               </option>
             </select>
@@ -65,7 +65,7 @@
               aria-label="検索期間"
             >
               <option
-                v-for="period in PERIODOPTIONS"
+                v-for="period in PERIOD_OPTIONS"
                 :key="period.value"
                 :value="period.value"
               >
@@ -150,26 +150,40 @@ import {
   addDays,
 } from "@/utils/date";
 
-// Config
-import {
-  APP_CONFIG,
-  TIMEOPTIONS,
-  PERIODOPTIONS,
-  ERROR_MESSAGES,
-} from "@/utils/constants";
-
 // Import consolidated JSON data
 import scheduleData from "@data/scheduleData.json";
 import eventConfig from "@config/event.json";
 import config from "@config/config.json";
+
+const DEFAULT_START_TIME = "17:00";
+const DEFAULT_SEARCH_PERIOD = "30";
+const TIME_OPTIONS = [
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00",
+  "21:00",
+  "22:00",
+];
+const PERIOD_OPTIONS = [
+  { value: "30", text: "1ヶ月" },
+  { value: "60", text: "2ヶ月" },
+  { value: "90", text: "3ヶ月" },
+];
+const INIT_FAILED = "アプリケーションの初期化に失敗しました";
 
 // Local state
 const showResults = ref(false);
 // Exclusive end the last search was cut to (next generation's from), if any.
 const searchCutoff = ref(null);
 const selectedBaseDate = ref("");
-const meetupStartTime = ref(APP_CONFIG.DEFAULT_MEETUP_START_TIME);
-const searchPeriod = ref(APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString());
+const meetupStartTime = ref(DEFAULT_START_TIME);
+const searchPeriod = ref(DEFAULT_SEARCH_PERIOD);
 const participants = ref([{ position: "", name: "" }]);
 
 // Composables initialization
@@ -221,8 +235,8 @@ function applyHomeFallbackFor(baseDateStr) {
   if (!Number.isInteger(homePosition)) return false;
 
   participants.value = [{ position: homePosition }];
-  meetupStartTime.value = APP_CONFIG.DEFAULT_MEETUP_START_TIME;
-  searchPeriod.value = APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString();
+  meetupStartTime.value = DEFAULT_START_TIME;
+  searchPeriod.value = DEFAULT_SEARCH_PERIOD;
   saveMeetupParams(
     baseDateStr,
     participants.value,
@@ -234,8 +248,8 @@ function applyHomeFallbackFor(baseDateStr) {
 
 function resetMeetupToDefaults() {
   participants.value = [{ position: "", name: "" }];
-  meetupStartTime.value = APP_CONFIG.DEFAULT_MEETUP_START_TIME;
-  searchPeriod.value = APP_CONFIG.DEFAULT_SEARCH_PERIOD.toString();
+  meetupStartTime.value = DEFAULT_START_TIME;
+  searchPeriod.value = DEFAULT_SEARCH_PERIOD;
 }
 
 function applyMeetupSet(baseDateStr) {
@@ -286,13 +300,13 @@ function findDates() {
 
   // Validate
   if (positions.length === 0) {
-    alert(ERROR_MESSAGES.NO_PARTICIPANTS);
+    alert("参加者を1人以上選択してください");
     return;
   }
 
   // Confirm if only one participant
   if (positions.length === 1) {
-    alert(ERROR_MESSAGES.GOAHEAD);
+    alert("行ってらっしゃいませ");
     return;
   }
 
@@ -334,7 +348,7 @@ async function initialize() {
     });
 
     if (!result) {
-      alert(ERROR_MESSAGES.INIT_FAILED);
+      alert(INIT_FAILED);
       return false;
     }
 
@@ -349,7 +363,7 @@ async function initialize() {
     applySelectedBaseDate(defaultBaseDate.value);
     return true;
   } catch {
-    alert(ERROR_MESSAGES.INIT_FAILED);
+    alert(INIT_FAILED);
     return false;
   }
 }

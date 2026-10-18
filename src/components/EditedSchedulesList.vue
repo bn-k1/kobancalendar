@@ -10,7 +10,7 @@
       <span class="toggle-icon">{{ isExpanded ? "▼" : "▶" }}</span>
     </legend>
     <div v-if="showEmptyNotice" class="edited-empty-notice">
-      {{ EDITED_SCHEDULE_EMPTY_NOTICE }}
+      既存の予定を長押しして編集できます。
     </div>
     <div v-show="showList" class="edited-list">
       <div
@@ -38,7 +38,6 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { useCalendarStore } from "@/stores/calendar";
-import { EDITED_SCHEDULE_EMPTY_NOTICE } from "@/utils/constants";
 
 const { editedSchedulesList, removeEditedSchedule } = useEditedSchedules();
 const emit = defineEmits(["editedChanged"]);
