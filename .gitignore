@@ -2,8 +2,6 @@ node_modules/
 .playwright-mcp/
 CLAUDE.md
 .env
-dist/
-coverage/
 
 # Generated build artifacts — produced by build-prep / CI, never committed.
 docs/

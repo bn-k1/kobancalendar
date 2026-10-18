@@ -1,4 +1,4 @@
-// happy-dom's localStorage doesn't implement Storage; swap in a plain one.
+// Tests run in node; give composables that touch localStorage a plain one.
 import { beforeEach, vi } from "vitest";
 
 const store = new Map();

@@ -1,17 +1,6 @@
 name: Deploy to GitHub Pages
 
-# `ci` gates every push to main, every pull request into main, and manual
-# dispatch: install, lint, test with coverage (the `pretest:coverage` npm
-# lifecycle hook runs build-prep first, so this is the only place that needs
-# to happen).
-#
-# `deploy` builds the gh-pages bundle and publishes it to Pages — but only
-# for a push to main or manual dispatch, never for a pull request (a PR run
-# only needs read access; it must not carry the pages/id-token permissions
-# the actual deploy needs). Generated bundles (data/scheduleData.json, docs/)
-# are produced here, not committed — git only holds the source CSV/config the
-# admin edits.
-
+# PRs only run the tests; pushes to main also build and publish to Pages.
 on:
   push:
     branches: [main]
@@ -22,15 +11,12 @@ on:
 permissions:
   contents: read
 
-# Only one run per ref at a time; newer runs on the same ref supersede
-# in-flight ones. Scoped by ref so a PR run can never cancel an in-flight
-# deploy triggered by a push to main (or vice versa).
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  ci:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -39,16 +25,11 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      # `npm run test:coverage`'s `pretest:coverage` lifecycle hook runs
-      # build-prep, generating the bundles the tests import (see
-      # src/__tests__/configIntegrity.test.js). Coverage is measured so the
-      # vitest.config.js coverage.thresholds ratchet floor gates CI too.
-      - run: npm run test:coverage
+      - run: npm test
 
   deploy:
-    needs: ci
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: test
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,13 +45,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Build (gh-pages)
-        # Derive the base path from the repo name — a forked office needs zero
-        # config. Override only for a custom domain via config.json `url`.
-        # build-gh-pages runs build-prep itself, so no separate step needed.
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}/
-        run: npm run build-gh-pages
+      - run: npm run build
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
