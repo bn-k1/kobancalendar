@@ -172,15 +172,11 @@ const {
 // *active* epoch. `?p=` must be validated against the epoch it is about to
 // be applied to (which may be the next epoch, not whichever epoch happens
 // to be active right now) — nothing constrains rotationCycleLength to be
-// equal across epochs, only across segments within a single epoch. Mirrors
-// the `scheduleData[epoch.dataKey]?.rotationCycleLength` lookup buildEpochs
-// uses (useAppInitializer.js); no such per-epoch accessor is exposed by
-// useSchedule itself, so this reads the same raw bundle the view already
-// imports.
+// equal across epochs, only across segments within a single epoch.
 function rotationCycleLengthForBaseDate(baseDateObj) {
   if (!baseDateObj) return 0;
   const epoch = epochs.value.find((e) => isSameDay(e.from, baseDateObj));
-  return (epoch && scheduleData[epoch.dataKey]?.rotationCycleLength) || 0;
+  return (epoch && scheduleData.data[epoch.dataKey]?.rotationCycleLength) || 0;
 }
 
 const nextBaseDateStr = computed(() => {

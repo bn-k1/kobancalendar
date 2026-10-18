@@ -194,15 +194,11 @@ const {
 // as opposed to `rotationCycleLength` above which always reflects the
 // *active* epoch. Needed to bounds-check a canonical URL's `ps=` positions
 // against the epoch the URL is actually about to resolve to — not whichever
-// epoch happens to be active before that resolution runs. Mirrors the
-// `scheduleData[epoch.dataKey]?.rotationCycleLength` lookup buildEpochs uses
-// (useAppInitializer.js); no such per-epoch accessor is exposed by
-// useSchedule itself, so this reads the same raw bundle the view already
-// imports.
+// epoch happens to be active before that resolution runs.
 function rotationCycleLengthForBaseDate(baseDateObj) {
   if (!baseDateObj) return 0;
   const epoch = epochs.value.find((e) => isSameDay(e.from, baseDateObj));
-  return (epoch && scheduleData[epoch.dataKey]?.rotationCycleLength) || 0;
+  return (epoch && scheduleData.data[epoch.dataKey]?.rotationCycleLength) || 0;
 }
 
 const nextBaseDateStr = computed(() => {
