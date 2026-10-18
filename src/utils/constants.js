@@ -8,7 +8,6 @@ export const APP_CONFIG = {
 export const DATE_FORMATS = {
   ISO_DATE: "YYYY-MM-DD",
   DISPLAY_DATE: "YYYY/MM/DD",
-  FILE_NAME_DATE: "YYYYMMDD",
 };
 
 export const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
@@ -46,18 +45,8 @@ export const PERIODOPTIONS = [
 
 export const ERROR_MESSAGES = {
   INIT_FAILED: "アプリケーションの初期化に失敗しました",
-  CALENDAR_IS_NOT_INITIALIZED_YET: "カレンダーがまだ初期化されていません",
-  JSON_ROWS_MISMATCH: "CSVファイルの行数が一致しません",
-  UNKNOWN_CSV_FORMAT: "不明な形式のCSVです",
   NO_BASE_DATE: "URLパラメータに基準日が含まれていません",
-  BASEDATE_CONFIGURATION_ERROR: "基準日設定失敗",
-  INVALID_STARTNUMBER: "無効なコマ位置です",
-  PARAM_OUT_OF_RANGE: "パラメータが有効範囲外です",
-  CONFIG_NOT_LOADED: "設定が完全に読み込まれていません",
-  CONFIG_LOAD_ERROR: "設定の取得に失敗しました",
-  EVENT_CONFIG_ERROR: "イベント設定が読み込まれていないか無効です",
   SCHEDULE_DATA_ERROR: "スケジュールデータの読み込みに失敗しました",
-  NO_NEXT_SCHEDULE_DATA: "次回基準日用のスケジュールデータがありません",
   HOLIDAYS_LOAD_ERROR: "祝日データの取得に失敗しました",
   NO_PARTICIPANTS: "参加者を1人以上選択してください",
   GOAHEAD: "行ってらっしゃいませ",

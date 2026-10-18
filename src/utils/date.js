@@ -1,16 +1,13 @@
 // src/utils/date.js
-// Centralized date utility with optimized methods
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import isSameOrBeforePlugin from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfterPlugin from "dayjs/plugin/isSameOrAfter";
 import { TIMEZONE, DATE_FORMATS, WEEKDAYS } from "@/utils/constants";
 
 // Setup plugins - order matters
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.extend(isSameOrBeforePlugin);
 dayjs.extend(isSameOrAfterPlugin);
 dayjs.tz.setDefault(TIMEZONE);
 
@@ -24,7 +21,7 @@ export function createDate(date) {
 /**
  * Format date with specified format
  */
-export function formatDate(date, format) {
+function formatDate(date, format) {
   return createDate(date).format(format);
 }
 
@@ -40,13 +37,6 @@ export function formatAsISODate(date) {
  */
 export function formatAsDisplayDate(date) {
   return formatDate(date, DATE_FORMATS.DISPLAY_DATE);
-}
-
-/**
- * Format date for filenames (YYYYMMDD)
- */
-export function formatAsFileName(date) {
-  return formatDate(date, DATE_FORMATS.FILE_NAME_DATE);
 }
 
 /**
@@ -71,16 +61,8 @@ export function isAfter(date1, date2) {
   return createDate(date1).isAfter(createDate(date2), "day");
 }
 
-export function isSameOrBefore(date1, date2) {
-  return createDate(date1).isSameOrBefore(createDate(date2), "day");
-}
-
 export function isSameOrAfter(date1, date2) {
   return createDate(date1).isSameOrAfter(createDate(date2), "day");
-}
-
-export function isSame(date1, date2, unit = "day") {
-  return createDate(date1).isSame(createDate(date2), unit);
 }
 
 /**
@@ -97,28 +79,11 @@ export function addDays(date, days) {
   return createDate(date).add(days, "day");
 }
 
-export function addMonths(date, months) {
-  return createDate(date).add(months, "month");
-}
-
-export function startOfDay(date) {
-  return createDate(date).startOf("day");
-}
-
 /**
  * Day of week functions
  */
-export function getDayOfWeek(date) {
+function getDayOfWeek(date) {
   return createDate(date).day();
-}
-
-export function isWeekend(date) {
-  const day = getDayOfWeek(date);
-  return day === 0 || day === 6;
-}
-
-export function isSaturday(date) {
-  return getDayOfWeek(date) === 6;
 }
 
 export function isSunday(date) {

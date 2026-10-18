@@ -83,12 +83,6 @@ import QrButton from "@/components/QrButton.vue";
 import DarkModeToggle from "@/components/DarkModeToggle.vue";
 import HelpButton from "@/components/HelpButton.vue";
 
-// Footer "GitHub" link is intentionally STATIC to the upstream project, not the
-// running fork: forks/template instances are independent repos and the footer is
-// project attribution ("this is KobanCalendar"), not a view-source link for the
-// deployed instance. Staying upstream is the zero-config default — nothing to
-// edit after forking, and it's consistent across github.io / custom domain / dev.
-
 const props = defineProps({
   title: {
     type: String,
@@ -108,7 +102,6 @@ const emit = defineEmits(["title-click"]);
 
 const route = useRoute();
 
-// Deploy base path ("/" or a gh-pages repo subpath); set by Vite from config.json.
 const baseUrl = import.meta.env.BASE_URL;
 
 // Detect current page

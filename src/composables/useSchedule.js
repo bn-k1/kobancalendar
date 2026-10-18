@@ -6,8 +6,6 @@ import { ERROR_MESSAGES } from "@/utils/constants";
 import {
   createDate,
   formatAsISODate,
-  isBefore,
-  addDays,
   today,
   isSameDay,
   isSameOrAfter,
@@ -21,17 +19,9 @@ const EMPTY_SCHEDULE_DATA = {
 };
 
 /**
- * Schedule management composable.
- *
- * The schedule is an append-only list of *epochs* (`{ from, dataKey, segments }`).
- * The epoch the user is viewing is the "active" epoch; it determines the
- * calculation anchor, the visible date window `[from, nextEpoch.from)` and which
- * folder of shift-table data is used. An epoch may carry multiple `segments`
- * (`schedule_update` equivalent): the rotation anchor (`from`) stays fixed while
- * the looked-up data table swaps on a date inside the window. The "current" epoch is the latest epoch whose `from`
- * is on or before today — it is the default selection, and `defaultBaseDate` /
- * `nextBaseDate` below expose it (and its successor) under the names the views
- * historically used.
+ * Epoch-based schedule lookup. See CLAUDE.md for the active/current epoch
+ * distinction; `defaultBaseDate` / `nextBaseDate` are the current epoch and
+ * its successor under the names the views historically used.
  */
 export function useSchedule() {
   const scheduleStore = useScheduleStore();
@@ -47,13 +37,7 @@ export function useSchedule() {
     return storeScheduleData.value[epoch.dataKey] || EMPTY_SCHEDULE_DATA;
   }
 
-  /**
-   * Schedule data for an epoch *at a specific date*. When an epoch declares
-   * multiple in-epoch data segments (the `schedule_update` case — one rotation
-   * anchor, the table swaps on a date), the segment in effect on `target` wins.
-   * Single-segment epochs — and hand-built `{ from, dataKey }` epochs without a
-   * `segments` array — fall back to the representative data.
-   */
+  /** Schedule data for an epoch on `target`: the in-epoch segment in effect then. */
   function dataForEpochAtDate(epoch, target) {
     if (!epoch) return EMPTY_SCHEDULE_DATA;
     const segments = epoch.segments;
@@ -75,31 +59,12 @@ export function useSchedule() {
 
   const activeScheduleData = computed(() => dataForEpoch(activeEpoch.value));
 
-  /**
-   * Schedule data for the active epoch, resolved to the segment in effect
-   * *today* (via `dataForEpochAtDate`). Unlike `activeScheduleData` (which
-   * always reports the epoch's representative — i.e. first — segment),
-   * this reflects an in-epoch data swap once its `from` date has passed.
-   *
-   * Use this for consumers that read the subject/time TABLES (search,
-   * autocomplete) rather than epoch-level metadata that segments are
-   * validated to share (e.g. `rotationCycleLength`), where the
-   * representative segment is equally correct and cheaper.
-   */
+  // `activeScheduleData` is the first segment (fine for rotationCycleLength,
+  // which segments share); read subject/time tables through these instead.
   const activeScheduleDataForToday = computed(() =>
     dataForEpochAtDate(activeEpoch.value, today()),
   );
 
-  /**
-   * Schedule data for the active epoch, resolved to the segment in effect on
-   * an arbitrary `date` (via `dataForEpochAtDate`). Use this when a consumer
-   * is reading/editing a *specific* date rather than "today"
-   * (`activeScheduleDataForToday`) or the epoch's representative — first —
-   * segment (`activeScheduleData`). `date` may be a dayjs object, ISO
-   * string, or anything `createDate` accepts.
-   * @param {dayjs|string|Date} date
-   * @returns {Object}
-   */
   function scheduleDataForDate(date) {
     return dataForEpochAtDate(activeEpoch.value, createDate(date));
   }
@@ -218,34 +183,6 @@ export function useSchedule() {
   }
 
   /**
-   * Calculate the schedule for a date range (endDate exclusive).
-   * @param {dayjs} startDate
-   * @param {dayjs} endDate
-   * @param {number} startPosition
-   * @returns {Array}
-   */
-  function calculateScheduleRange(startDate, endDate, startPosition) {
-    const scheduleRange = [];
-    let currentDate = createDate(startDate);
-    const finalEndDate = createDate(endDate);
-
-    while (isBefore(currentDate, finalEndDate)) {
-      const scheduleInfo = getScheduleForDate(currentDate, startPosition);
-
-      if (scheduleInfo) {
-        scheduleRange.push({
-          date: currentDate,
-          ...scheduleInfo,
-        });
-      }
-
-      currentDate = addDays(currentDate, 1);
-    }
-
-    return scheduleRange;
-  }
-
-  /**
    * Load the epoch timeline and schedule data into the store. The active epoch
    * defaults to the current epoch (latest `from` on or before today).
    * @param {Array<{from: dayjs, dataKey: string}>} epochs
@@ -299,7 +236,6 @@ export function useSchedule() {
     // Business logic
     calculateShiftIndex,
     getScheduleForDate,
-    calculateScheduleRange,
     loadSchedule,
     updateActiveBaseDate,
   };

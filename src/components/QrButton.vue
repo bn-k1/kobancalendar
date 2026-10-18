@@ -30,9 +30,6 @@ import QRCode from "qrcode";
 import QrIcon from "@/components/Icons/QrIcon.vue";
 
 const showModal = ref(false);
-// The app already knows its own deployed URL, so derive the shareable link and
-// QR image from window.location instead of a hard-coded config value. This keeps
-// the QR correct for any fork/deployment with zero configuration.
 const url = ref(window.location.href);
 const qrDataUrl = ref("");
 

@@ -140,17 +140,12 @@ export function useHolidays() {
     allHolidays: storeHolidays,
     holidayYearsRange: storeHolidayYearsRange,
     userDefinedHolidays: storeUserDefinedHolidays,
-    isHolidaysLoaded: computed(
-      () => Object.keys(storeHolidays.value).length > 0,
-    ),
 
     // All logic functions
     isHoliday,
     getHolidayName,
     setHolidayYearsRange,
     setUserDefinedHolidays,
-    addUserDefinedHolidays,
-    fetchHolidays,
     loadHolidays,
   };
 }

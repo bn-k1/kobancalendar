@@ -5,7 +5,7 @@
  * Find the first rule whose keywords appear in the subject. Rules are ordered;
  * first match wins. Returns null when nothing matches.
  */
-export function matchRule(subject, eventConfig) {
+function matchRule(subject, eventConfig) {
   const rules = eventConfig?.rules;
   if (!Array.isArray(rules) || !subject) return null;
   return (

@@ -131,14 +131,16 @@ describe("世代", () => {
 });
 
 describe("独自休日", () => {
-  it("MM-DD を年範囲に展開し、既存の祝日は上書きしない", () => {
-    const holidays = { "2025-08-13": "既存" };
-    useHolidays().addUserDefinedHolidays(holidays, ["08-13"], 2025, 1);
-    expect(holidays).toEqual({
-      "2024-08-13": CUSTOM_HOLIDAY,
-      "2025-08-13": "既存",
-      "2026-08-13": CUSTOM_HOLIDAY,
-    });
+  it("MM-DD を毎年の休日にし、既存の祝日は上書きしない", () => {
+    const store = useHolidayStore();
+    store.setHolidayYearsRange(1);
+    store.setUserDefinedHolidays(["08-13", "01-01"]);
+    const { loadHolidays, isHoliday, getHolidayName } = useHolidays();
+    loadHolidays();
+    const year = new Date().getFullYear();
+    expect(getHolidayName(`${year + 1}-08-13`)).toBe(CUSTOM_HOLIDAY);
+    expect(getHolidayName(`${year}-01-01`)).toBe("元日");
+    expect(isHoliday(`${year}-08-13`)).toBe(true);
   });
 });
 

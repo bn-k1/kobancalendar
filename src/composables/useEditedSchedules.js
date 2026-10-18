@@ -8,10 +8,6 @@ import {
 } from "@/utils/date";
 
 const STORAGE_KEY = "kobancalendar_edited_schedules";
-// The hidden toggle is session-only (hiding is occasional; a reload must show
-// edits again). This key is no longer written — it is only removed on init so
-// a stale "on" from older versions doesn't linger in users' storage.
-const LEGACY_HIDDEN_KEY = "kobancalendar_edited_schedules_hidden";
 
 function normalizeSchedule(schedule) {
   return {
@@ -22,6 +18,8 @@ function normalizeSchedule(schedule) {
   };
 }
 
+// Edits saved before 2026-07 are "date,subject,start,end" lines; they are
+// only rewritten as JSON on the user's next edit, so keep reading them.
 function parseLegacyCsv(stored) {
   const lines = stored.split("\n").filter((line) => line.trim());
   const schedules = {};
@@ -44,7 +42,7 @@ function parseLegacyCsv(stored) {
  * Edited-schedules management composable.
  *
  * Contains all the business logic for user-edited schedules: localStorage
- * persistence, legacy-format migration, normalization, and CRUD. The store
+ * persistence, normalization, and CRUD. The store
  * (`stores/editedSchedules.js`) holds only the raw state.
  */
 export function useEditedSchedules() {
@@ -58,8 +56,6 @@ export function useEditedSchedules() {
    * Load edited schedules from localStorage
    */
   function loadFromStorage() {
-    if (typeof window === "undefined") return;
-
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) {
@@ -95,28 +91,11 @@ export function useEditedSchedules() {
   }
 
   /**
-   * Remove the hidden flag persisted by older versions
-   */
-  function removeLegacyHiddenFlag() {
-    try {
-      localStorage.removeItem(LEGACY_HIDDEN_KEY);
-    } catch (error) {
-      console.error("Failed to remove legacy hidden flag:", error);
-    }
-  }
-
-  /**
    * Initialize store state from localStorage
    */
   function initEditedSchedules() {
     if (store.isInitialized) return;
-    if (typeof window === "undefined") {
-      store.setIsInitialized(true);
-      return;
-    }
-
     loadFromStorage();
-    removeLegacyHiddenFlag();
     store.setIsInitialized(true);
   }
 
@@ -124,8 +103,6 @@ export function useEditedSchedules() {
    * Save edited schedules to localStorage
    */
   function saveToStorage(schedules) {
-    if (typeof window === "undefined") return;
-
     try {
       const hasEdits = Object.keys(schedules).length > 0;
       if (hasEdits) {
@@ -144,15 +121,6 @@ export function useEditedSchedules() {
    */
   function setEditsHidden(hidden) {
     store.setIsEditsHidden(!!hidden);
-  }
-
-  /**
-   * Check if a date has an edited schedule
-   * @param {string|dayjs} date - Date to check
-   * @returns {boolean}
-   */
-  function hasEditedSchedule(date) {
-    return toDateStr(date) in store.editedSchedules;
   }
 
   /**
@@ -190,14 +158,6 @@ export function useEditedSchedules() {
     delete updated[dateStr];
     store.setEditedSchedules(updated);
     saveToStorage(updated);
-  }
-
-  /**
-   * Clear all edited schedules
-   */
-  function clearAllEditedSchedules() {
-    store.setEditedSchedules({});
-    saveToStorage({});
   }
 
   /**
@@ -241,12 +201,9 @@ export function useEditedSchedules() {
     isEditsHidden: computed(() => store.isEditsHidden),
 
     initEditedSchedules,
-    hasEditedSchedule,
     getEditedSchedule,
     saveEditedSchedule,
     removeEditedSchedule,
-    clearAllEditedSchedules,
-    loadFromStorage,
     setEditsHidden,
   };
 }
