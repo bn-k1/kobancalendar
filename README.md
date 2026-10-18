@@ -1,29 +1,39 @@
 # KobanCalendar
 
-周期的な交番表（シフト表）をWebカレンダーとして公開する、 Vue 3 製の SPA です。GitHub Pages で静的配信され、配信後の日々の更新は Web の管理画面だけで完結します。
+Shift calendar for one workplace's cyclic 交番表, plus 飲みに行くンダー (find days
+everyone is free). Vue 3 SPA served from GitHub Pages:
+https://bn-k1.github.io/kobancalendar/ (staff manual: `manual.html`).
 
-- **デモ:** https://bn-k1.github.io/kobancalendar/
-- **導入ガイド:** https://bn-k1.github.io/kobancalendar/setup.html
-- **管理ガイド:** https://bn-k1.github.io/kobancalendar/admin.html
-- **利用者マニュアル:** https://bn-k1.github.io/kobancalendar/manual.html
+## Run
 
-各ガイドは本家配信版へのリンクですが、内容は fork 先でも同一です。
+```bash
+npm install
+npm run dev     # local dev server (regenerates data/scheduleData.json first)
+npm test        # also regenerates the bundle, so a broken config fails here
+```
 
----
+Push to `main` → GitHub Actions runs `npm test`, builds and publishes to Pages.
 
-## 自分の職場に導入する
+## Updating the schedule
 
-コードの書き換えは不要です。テンプレートからのコピー → 配信 → トークン発行までの手順は、非エンジニア向けに噛み砕いた**[導入ガイド](https://bn-k1.github.io/kobancalendar/setup.html)**にまとめてあります。配信後の日々の更新（交番表・独自休日・表示ルール）は**[管理ガイド](https://bn-k1.github.io/kobancalendar/admin.html)**へ。
+Everything lives in `config/` and `data/`; `scripts/convertCsv.js` validates it
+and writes `data/scheduleData.json` (generated, not committed).
 
-運用担当者が覚える URL は自分の `#/admin` だけです。利用者に見せないためカレンダーからはリンクされていないので、ブックマークしてください。利用者には配信 URL を伝えるだけでよく、利用者マニュアルはアプリ内のヘルプボタンから開けます。各コピーは独立しており、本家（`bn-k1`）の管理画面から自分のリポジトリには書き込めません。
+- `data/<folder>/{weekday,saturday,holiday}.csv` — `subject,start,end`, no
+  header, one row per slot (row 1 = slot 1). All three files have the same row
+  count, which is the cycle length. No blank lines.
+- `config/config.json`
+  - `schedules`: generations, ascending by `from` (`YYYY-MM-DD`). A generation's
+    window is `[from, next from)`; the rotation is anchored at its own `from`.
+    - New table: `{ "from": "...", "data": "<folder>" }`
+    - Slot positions shift, same table: `{ "from": "..." }` (inherits `data`)
+    - Same anchor, table swapped mid-generation (cycle lengths must match):
+      `{ "from": "...", "data": [{ "data": "a" }, { "from": "...", "data": "b" }] }`
+  - `custom_holidays`: extra yearly holidays as `MM-DD`.
+- `config/event.json` — color rules, first match wins (substring).
+  `freeAllDay: true` counts the day as free in 飲みに行くンダー; `fallback` and
+  `edited` colors are required.
 
----
+Old generations can be pruned once they are two or more behind today's.
 
-## 開発者向け
-
-技術スタック、ローカル開発のセットアップ、`config/`・`data/` のファイル仕様、ビルドパイプライン、状態管理の設計は [DEVELOPMENT.md](DEVELOPMENT.md) にまとめています。導入と運用にターミナル作業は不要なので、利用者・運用担当者が読む必要はありません。
-
-## 備考
-
-- 本リポジトリのサンプルデータはAI生成で、特定の組織とは無関係です。
-- ライセンス: MIT
+MIT license.

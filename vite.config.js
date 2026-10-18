@@ -4,7 +4,7 @@ import vue from "@vitejs/plugin-vue";
 
 const path = (p) => fileURLToPath(new URL(p, import.meta.url));
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, isPreview }) => ({
   plugins: [vue()],
   resolve: {
     alias: {
@@ -14,7 +14,7 @@ export default defineConfig(({ command }) => ({
     },
   },
   // Served from https://bn-k1.github.io/kobancalendar/
-  base: command === "build" ? "/kobancalendar/" : "/",
+  base: command === "build" || isPreview ? "/kobancalendar/" : "/",
   server: {
     host: true,
     allowedHosts: [".ts.net"],
