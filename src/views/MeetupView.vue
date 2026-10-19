@@ -19,13 +19,16 @@
             activeBaseDate ? formatAsDisplayDate(activeBaseDate) : ''
           "
           :options="[]"
+          :schedule-update-notice="
+            activeTableSwapDate ? formatAsDisplayDate(activeTableSwapDate) : ''
+          "
         >
           <div
             v-if="nextBaseDateStr && selectedBaseDate !== nextBaseDateStr"
             class="version-link-row"
           >
             <button class="version-btn" @click="switchToNextBaseDate">
-              新版: {{ formatAsDisplayDate(nextBaseDate) }}~
+              新版を見る: {{ formatAsDisplayDate(nextBaseDate) }}~
             </button>
           </div>
           <div
@@ -33,7 +36,7 @@
             class="version-link-row"
           >
             <button class="version-btn" @click="switchToDefaultBaseDate">
-              旧版: {{ formatAsDisplayDate(defaultBaseDate) }}~
+              旧版を見る: {{ formatAsDisplayDate(defaultBaseDate) }}~
             </button>
           </div>
         </BaseSelector>
@@ -204,6 +207,7 @@ const { searchResults, findMeetupDates } = useMeetupSearch();
 const {
   defaultBaseDate,
   activeBaseDate,
+  activeTableSwapDate,
   nextBaseDate,
   rotationCycleLength,
   updateActiveBaseDate,

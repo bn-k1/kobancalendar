@@ -184,6 +184,25 @@ describe("世代", () => {
   });
 });
 
+describe("世代内の表差し替え", () => {
+  it("差し替えがあれば最後の差し替え日を返す", () => {
+    const s = load([
+      [
+        "2025-11-17",
+        [
+          ["2025-11-17", "a"],
+          ["2025-12-01", "b"],
+        ],
+      ],
+    ]);
+    expect(s.activeTableSwapDate.value.format("YYYY-MM-DD")).toBe("2025-12-01");
+  });
+
+  it("差し替えがなければ null", () => {
+    expect(load().activeTableSwapDate.value).toBeNull();
+  });
+});
+
 describe("独自休日", () => {
   it("MM-DD を毎年の休日にし、既存の祝日は上書きしない", () => {
     const store = useHolidayStore();

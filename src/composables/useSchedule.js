@@ -71,6 +71,12 @@ export function useSchedule() {
     return dataForEpochAtDate(activeEpoch.value, createDate(date));
   }
 
+  /** Start of the active epoch's latest in-epoch table swap, or null. */
+  const activeTableSwapDate = computed(() => {
+    const segments = activeEpoch.value?.segments;
+    return segments?.length > 1 ? segments[segments.length - 1].from : null;
+  });
+
   /** The active epoch's anchor date. */
   const activeBaseDate = computed(() => activeEpoch.value?.from);
 
@@ -254,6 +260,7 @@ export function useSchedule() {
     activeScheduleDataForToday,
     scheduleDataForDate,
     activeBaseDate,
+    activeTableSwapDate,
     defaultBaseDate,
     nextBaseDate,
     isDataLoaded: computed(
