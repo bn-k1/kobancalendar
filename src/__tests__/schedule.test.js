@@ -135,13 +135,42 @@ describe("世代", () => {
     ["b= が現行世代（次世代あり）", null, "2025-11-17", "2025-11-17"],
     ["b= が知らない世代", null, "2025-06-01", null],
     ["b= が日付でない", null, "x", null],
-    ["b= なし・世代が1つ", [["2025-11-17", "a"]], null, "2025-11-17"],
-    ["b= なし・次世代あり（旧URLは読み替えない）", null, null, null],
+    ["b= なし・2026-05-16 が無い（旧URLは読み替えない）", null, null, null],
   ])("URL の世代解決: %s", (_, epochs, b, expected) => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2025-12-01T00:00:00+09:00"));
     const { resolveLinkedBaseDate } = load(epochs ?? two);
     expect(resolveLinkedBaseDate(b)?.format("YYYY-MM-DD") ?? null).toBe(
+      expected,
+    );
+  });
+
+  // b= の無い旧URLはすべて 2026-05-16 世代で作られた。
+  it.each([
+    ["世代が1つ", "2026-10-19", [["2026-05-16", "a"]], "2026-05-16"],
+    [
+      "実施前の次世代あり",
+      "2026-10-19",
+      [
+        ["2026-05-16", "a"],
+        ["2026-11-16", "a"],
+      ],
+      "2026-05-16",
+    ],
+    [
+      "次世代の実施後",
+      "2026-11-16",
+      [
+        ["2026-05-16", "a"],
+        ["2026-11-16", "a"],
+      ],
+      null,
+    ],
+  ])("b= なしのURL: %s", (_, now, epochs, expected) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(`${now}T00:00:00+09:00`));
+    const { resolveLinkedBaseDate } = load(epochs);
+    expect(resolveLinkedBaseDate(null)?.format("YYYY-MM-DD") ?? null).toBe(
       expected,
     );
   });
@@ -230,7 +259,11 @@ describe("飲みに行くンダーの保存", () => {
       JSON.stringify({
         active: "2026-05-16",
         sets: {
-          "2026-05-16": { participants: [5, 9], startTime: "19:00", period: 30 },
+          "2026-05-16": {
+            participants: [5, 9],
+            startTime: "19:00",
+            period: 30,
+          },
         },
       }),
     );

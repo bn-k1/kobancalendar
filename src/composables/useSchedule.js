@@ -17,6 +17,9 @@ const EMPTY_SCHEDULE_DATA = {
   rotationCycleLength: 0,
 };
 
+// Every URL without `b=` was made while 2026-05-16 was the only generation.
+const PRE_B_LINK_BASE_DATE = "2026-05-16";
+
 /**
  * Epoch-based schedule lookup. See CLAUDE.md for the active/current epoch
  * distinction; `defaultBaseDate` / `nextBaseDate` are the current epoch and
@@ -103,16 +106,13 @@ export function useSchedule() {
    * (the epoch's `from`). Only the current and next epochs can be opened;
    * anything else means the URL's コマ numbers are for a generation that is no
    * longer selectable, so they must be ignored rather than reinterpreted.
-   * URLs from before `b=` existed were all made under the first (and then
-   * only) generation, so they are honoured only while that is still true.
+   * URLs from before `b=` existed belong to PRE_B_LINK_BASE_DATE and are
+   * honoured while that generation is still current or next.
    * @param {string|null} baseDateStr
    * @returns {dayjs|null}
    */
   function resolveLinkedBaseDate(baseDateStr) {
-    if (baseDateStr == null) {
-      return storeEpochs.value.length === 1 ? defaultBaseDate.value : null;
-    }
-    const target = createDate(baseDateStr);
+    const target = createDate(baseDateStr ?? PRE_B_LINK_BASE_DATE);
     if (!target.isValid()) return null;
     return (
       [defaultBaseDate.value, nextBaseDate.value].find(
