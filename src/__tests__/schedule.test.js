@@ -168,7 +168,7 @@ describe("世代", () => {
     ],
   ])("b= なしのURL: %s", (_, now, epochs, expected) => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date(`${now}T00:00:00+09:00`));
+    vi.setSystemTime(new Date(`${now}T12:00:00+09:00`));
     const { resolveLinkedBaseDate } = load(epochs);
     expect(resolveLinkedBaseDate(null)?.format("YYYY-MM-DD") ?? null).toBe(
       expected,
