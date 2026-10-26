@@ -10,6 +10,7 @@
     <span v-if="summary.noTableDays" class="pay-period-note"
       >（表の期間外 {{ summary.noTableDays }}日）</span
     >
+    <span class="pay-period-note">（実験中）</span>
   </p>
 </template>
 
