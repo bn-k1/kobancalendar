@@ -8,7 +8,6 @@ import { useMeetupSearch } from "@/composables/useMeetupSearch";
 import { useCalendar } from "@/composables/useCalendar";
 import { useLocalParams } from "@/composables/useLocalParams";
 import { buildEpochs } from "@/composables/useAppInitializer";
-import { useHolidayStore } from "@/stores/holiday";
 
 // 3-slot rotation. Subjects carry the day type; "公休" matches the freeAllDay
 // rule by substring. `prefix` tells folders apart.
@@ -28,14 +27,13 @@ const table = (p = "") => ({
 });
 
 // epochs in the scheduleData.json shape: [from, data] or [from, [[from, data], ...]]
-function load(epochs = [["2025-11-17", "a"]], { active, holidays = {} } = {}) {
+function load(epochs = [["2025-11-17", "a"]], { active } = {}) {
   const raw = epochs.map(([from, data]) => ({
     from,
     segments: Array.isArray(data)
       ? data.map(([f, d]) => ({ from: f, data: d }))
       : [{ from, data }],
   }));
-  useHolidayStore().setHolidays(holidays);
   useCalendar().setEventConfig({
     rules: [{ keywords: ["公休"], color: "#ff0000", freeAllDay: true }],
   });
@@ -73,9 +71,8 @@ describe("コマ計算", () => {
   });
 
   it("祝日は holiday の表を引く", () => {
-    const result = load(undefined, {
-      holidays: { "2025-11-18": "祝" },
-    }).getScheduleForDate(dayjs("2025-11-18"), 1);
+    // 2025-11-24 (Mon) = 勤労感謝の日の振替休日
+    const result = load().getScheduleForDate(dayjs("2025-11-24"), 1);
     expect(result).toMatchObject({ isHoliday: true, subject: "日公休" });
   });
 });
@@ -203,17 +200,25 @@ describe("世代内の表差し替え", () => {
   });
 });
 
-describe("独自休日", () => {
-  it("MM-DD を毎年の休日にし、既存の祝日は上書きしない", () => {
-    const store = useHolidayStore();
-    store.setHolidayYearsRange(1);
-    store.setUserDefinedHolidays(["08-13", "01-01"]);
-    const { loadHolidays, isHoliday, getHolidayName } = useHolidays();
-    loadHolidays();
-    const year = new Date().getFullYear();
-    expect(getHolidayName(`${year + 1}-08-13`)).toBe(CUSTOM_HOLIDAY);
-    expect(getHolidayName(`${year}-01-01`)).toBe("元日");
-    expect(isHoliday(`${year}-08-13`)).toBe(true);
+describe("祝日", () => {
+  it.each([
+    ["2026-01-01", "元日"],
+    ["2025-11-24", "振替休日"],
+    ["2026-08-13", CUSTOM_HOLIDAY],
+    // Far from today: no precomputed year window any more.
+    ["2040-08-14", CUSTOM_HOLIDAY],
+    ["2040-01-01", "元日"],
+  ])("%s は %s", (date, name) => {
+    const { isHoliday, getHolidayName } = useHolidays();
+    expect(getHolidayName(date)).toBe(name);
+    expect(isHoliday(date)).toBe(true);
+  });
+
+  it("平日は祝日でなく、日曜は名前なしで休日", () => {
+    const { isHoliday, getHolidayName } = useHolidays();
+    expect(isHoliday("2026-10-27")).toBe(false);
+    expect(getHolidayName("2026-10-25")).toBeUndefined();
+    expect(isHoliday("2026-10-25")).toBe(true);
   });
 });
 

@@ -81,14 +81,8 @@
         >
           <div class="result-subject">{{ result.subject }}</div>
           <div class="result-details">
-            <span v-if="result.startTime && result.endTime" class="result-time">
-              {{ result.startTime }} - {{ result.endTime }}
-            </span>
-            <span v-else-if="result.startTime" class="result-time">{{
-              result.startTime
-            }}</span>
-            <span v-else-if="result.endTime" class="result-time">{{
-              result.endTime
+            <span v-if="timeLine(result)" class="result-time">{{
+              timeLine(result)
             }}</span>
             <span class="result-position">コマ{{ result.position }}</span>
           </div>
@@ -106,6 +100,18 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useSearch } from "@/composables/useSearch";
+import { formatMinutes } from "@/composables/usePayPeriod";
+
+// Times, 超勤 and 中休 on one chip, e.g. "07:39 ~ 22:04 / 超勤 5:42 / 中休 1:58".
+function timeLine({ startTime, endTime, overtime, midBreak }) {
+  return [
+    [startTime, endTime].filter(Boolean).join(" ~ "),
+    overtime !== undefined && `超勤 ${formatMinutes(overtime)}`,
+    midBreak && `中休 ${formatMinutes(midBreak)}`,
+  ]
+    .filter(Boolean)
+    .join(" / ");
+}
 
 // Composable for search functionality
 const {

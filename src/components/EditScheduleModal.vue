@@ -120,7 +120,31 @@
               </select>
             </div>
           </div>
+          <div
+            v-for="field in durationFields"
+            :key="field.key"
+            class="form-group time-inputs"
+          >
+            <label>{{ field.label }}（任意）:</label>
+            <div class="time-select-group">
+              <select v-model="durations[field.key].hour" class="edit-select">
+                <option value="">--</option>
+                <option v-for="h in durationHourOptions" :key="h" :value="h">
+                  {{ h }}
+                </option>
+              </select>
+              <span class="time-separator">:</span>
+              <select v-model="durations[field.key].minute" class="edit-select">
+                <option value="">--</option>
+                <option v-for="m in minuteOptions" :key="m" :value="m">
+                  {{ m }}
+                </option>
+              </select>
+            </div>
+          </div>
         </div>
+
+        <p v-if="metricsText" class="metrics-line">{{ metricsText }}</p>
 
         <!-- Note / 備考 (not shown on calendar) -->
         <div class="form-group">
@@ -154,10 +178,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import { formatAsDisplayDate, getWeekdayName, createDate } from "@/utils/date";
 import { useSchedule } from "@/composables/useSchedule";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
+import { formatMinutes, bindingMinutes } from "@/composables/usePayPeriod";
 
 const props = defineProps({
   show: {
@@ -184,7 +209,7 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "save", "remove"]);
 
-const { scheduleDataForDate } = useSchedule();
+const { scheduleDataForDate, lookupMetrics } = useSchedule();
 const { savedSubjectOptions } = useEditedSchedules();
 
 const selectedSubject = ref("");
@@ -197,6 +222,15 @@ const customEndHour = ref("");
 const customEndMinute = ref("");
 const isCustomSelected = ref(false);
 const note = ref("");
+// Hand-typed 超勤 / 中休 for 自分で入力; blank means "take the table's, if any".
+const durations = reactive({
+  overtime: { hour: "", minute: "" },
+  midBreak: { hour: "", minute: "" },
+});
+const durationFields = [
+  { key: "overtime", label: "超勤" },
+  { key: "midBreak", label: "中休" },
+];
 
 const hourOptions = Array.from({ length: 24 }, (_, i) =>
   String(i).padStart(2, "0"),
@@ -204,6 +238,7 @@ const hourOptions = Array.from({ length: 24 }, (_, i) =>
 const minuteOptions = Array.from({ length: 60 }, (_, i) =>
   String(i).padStart(2, "0"),
 );
+const durationHourOptions = Array.from({ length: 13 }, (_, i) => String(i));
 
 function combineTime(hour, minute) {
   if (!hour || !minute) return "";
@@ -214,6 +249,63 @@ function splitTime(value) {
   if (!value || !/^\d{2}:\d{2}$/.test(value)) return ["", ""];
   return value.split(":");
 }
+
+/** {hour, minute} selects → minutes; a blank half counts as 0, both blank → undefined. */
+function durationMinutes({ hour, minute }) {
+  if (hour === "" && minute === "") return undefined;
+  return Number(hour || 0) * 60 + Number(minute || 0);
+}
+
+function setDuration(key, minutes) {
+  durations[key].hour = Number.isInteger(minutes)
+    ? String(Math.floor(minutes / 60))
+    : "";
+  durations[key].minute = Number.isInteger(minutes)
+    ? String(minutes % 60).padStart(2, "0")
+    : "";
+}
+
+function clearDurations() {
+  setDuration("overtime", undefined);
+  setDuration("midBreak", undefined);
+}
+
+// Only 自分で入力 carries hand-typed values; a picked subject uses the table.
+const typedDurations = computed(() =>
+  isCustomSelected.value
+    ? {
+        overtime: durationMinutes(durations.overtime),
+        midBreak: durationMinutes(durations.midBreak),
+      }
+    : {},
+);
+
+// 拘束・超・中休・深夜P of what the form currently holds; 超 is only known
+// when typed in or when subject and times are exactly a cell of that day's table.
+const metricsText = computed(() => {
+  const [subject, startTime, endTime] = isCustomSelected.value
+    ? [
+        customSubject.value.trim(),
+        combineTime(customStartHour.value, customStartMinute.value),
+        combineTime(customEndHour.value, customEndMinute.value),
+      ]
+    : [selectedSubject.value, selectedStartTime.value, selectedEndTime.value];
+  if (!props.date || !startTime || !endTime) return "";
+  const metrics = {
+    ...lookupMetrics(props.date, subject, startTime, endTime),
+  };
+  const typed = typedDurations.value;
+  if (typed.overtime !== undefined) metrics.overtime = typed.overtime;
+  if (typed.midBreak !== undefined) metrics.midBreak = typed.midBreak;
+  return [
+    `拘束 ${formatMinutes(bindingMinutes(startTime, endTime))}`,
+    `超勤 ${metrics.overtime === undefined ? "—" : formatMinutes(metrics.overtime)}`,
+    metrics.midBreak && `中休 ${formatMinutes(metrics.midBreak)}`,
+    metrics.nightPoints && `深夜P ${metrics.nightPoints}`,
+  ]
+    .filter(Boolean)
+    .join(" / ");
+});
 
 const canSave = computed(() => {
   if (isCustomSelected.value) {
@@ -312,6 +404,7 @@ function exitCustomMode() {
   customStartMinute.value = "";
   customEndHour.value = "";
   customEndMinute.value = "";
+  clearDurations();
   selectedSubject.value = "";
   selectedStartTime.value = "";
   selectedEndTime.value = "";
@@ -337,6 +430,7 @@ function handleSave() {
     subject: schedule.subject,
     startTime: schedule.startTime,
     endTime: schedule.endTime,
+    ...typedDurations.value,
     note: note.value,
   });
 }
@@ -354,12 +448,15 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
       (opt) => opt.subject === currentSubject,
     );
     const isKnownSubject = Boolean(matchingOption);
+    // Typed 超勤 / 中休 only live in 自分で入力, so such an edit reopens there.
     const isCustomByTime =
       isKnownSubject &&
       ((props.currentSchedule.startTime || "") !==
         (matchingOption.startTime || "") ||
         (props.currentSchedule.endTime || "") !==
-          (matchingOption.endTime || ""));
+          (matchingOption.endTime || "") ||
+        props.currentSchedule.overtime !== undefined ||
+        props.currentSchedule.midBreak !== undefined);
 
     if (currentSubject && (!isKnownSubject || isCustomByTime)) {
       isCustomSelected.value = true;
@@ -371,6 +468,8 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
       [customEndHour.value, customEndMinute.value] = splitTime(
         props.currentSchedule.endTime || "",
       );
+      setDuration("overtime", props.currentSchedule.overtime);
+      setDuration("midBreak", props.currentSchedule.midBreak);
       selectedStartTime.value = "";
       selectedEndTime.value = "";
     } else {
@@ -385,6 +484,7 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
       customStartMinute.value = "";
       customEndHour.value = "";
       customEndMinute.value = "";
+      clearDurations();
     }
     note.value = props.currentSchedule.note || "";
   } else if (!newShow) {
@@ -397,12 +497,20 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
     customStartMinute.value = "";
     customEndHour.value = "";
     customEndMinute.value = "";
+    clearDurations();
     note.value = "";
   }
 });
 </script>
 
 <style scoped>
+.metrics-line {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  text-align: center;
+}
+
 .edit-modal-content {
   max-width: 400px;
 }

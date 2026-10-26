@@ -72,7 +72,7 @@ export function useCalendar() {
    */
   function buildEventTitle(subject, startTime, endTime) {
     if (shouldShowTime(startTime, endTime)) {
-      return `${subject}\n${startTime} - \n${endTime}`;
+      return `${subject}\n${startTime} ~\n${endTime}`;
     }
     return subject;
   }

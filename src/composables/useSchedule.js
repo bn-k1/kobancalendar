@@ -17,6 +17,11 @@ const EMPTY_SCHEDULE_DATA = {
   rotationCycleLength: 0,
 };
 
+/** Bundle row → 超 / 中休 in minutes (undefined when not printed), 深夜P. */
+function metricsOf(row) {
+  return { overtime: row.c, midBreak: row.k, nightPoints: row.n ?? 0 };
+}
+
 // Every URL without `b=` was made while 2026-05-16 was the only generation.
 const PRE_B_LINK_BASE_DATE = "2026-05-16";
 
@@ -212,10 +217,32 @@ export function useSchedule() {
       subject: shiftData.s,
       startTime: shiftData.sT || "",
       endTime: shiftData.eT || "",
+      ...metricsOf(shiftData),
       isHoliday: isHolidayFlag,
       isSaturday,
       shiftIndex,
     };
+  }
+
+  /**
+   * 超・中休・深夜P for a subject on `targetDate`, looked up in that day's
+   * table by 仕業番号 (used for hand-edited days). Only an exact match of
+   * subject and times counts: with other times the printed 超 would be wrong.
+   * @returns {{overtime?: number, midBreak?: number, nightPoints: number}|null}
+   */
+  function lookupMetrics(targetDate, subject, startTime, endTime) {
+    if (!subject || !startTime) return null;
+    const target = createDate(targetDate);
+    const scheduleData = scheduleDataForDate(target);
+    const table = isHoliday(target)
+      ? scheduleData.holiday
+      : target.day() === 6
+        ? scheduleData.saturday
+        : scheduleData.weekday;
+    const row = table.find(
+      (r) => r.s === subject && r.sT === startTime && r.eT === endTime,
+    );
+    return row ? metricsOf(row) : null;
   }
 
   /**
@@ -273,6 +300,7 @@ export function useSchedule() {
     // Business logic
     calculateShiftIndex,
     getScheduleForDate,
+    lookupMetrics,
     resolveLinkedBaseDate,
     epochEndFor,
     loadSchedule,

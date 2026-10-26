@@ -18,6 +18,15 @@ const FILES = ["holiday", "saturday", "weekday"];
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 // Past-midnight times go past 24 (e.g. 24:42).
 const TIME = /^\d{1,2}:[0-5]\d$/;
+// 超 is 実働 − 7:30 as printed, often negative.
+const SIGNED_TIME = /^-?\d{1,2}:[0-5]\d$/;
+const POINTS = /^\d+$/;
+
+function toMinutes(time) {
+  const sign = time.startsWith("-") ? -1 : 1;
+  const [h, m] = time.replace("-", "").split(":").map(Number);
+  return sign * (h * 60 + m);
+}
 
 /** `YYYY-MM-DD` that names a real calendar day (rejects 2026-02-30). */
 export function isRealDate(str) {
@@ -48,22 +57,42 @@ export function findBlankLines(csv) {
 
 // Each line is one コマ, so a stray `,,` / header / whitespace-only line would
 // silently lengthen the cycle; reject anything that isn't `subject,time,time`
-// or `subject,,`.
+// or `subject,,`. Work rows may add `,超[,中休[,深夜P]]` (any of them empty),
+// emitted as minutes `c` / `k` and points `n`.
 export function parseCsv(csv) {
   const { data, errors } = Papa.parse(csv, { skipEmptyLines: true });
   if (errors.length)
     throw new Error(`CSV parse error: ${JSON.stringify(errors)}`);
-  return data.map(([s = "", sT = "", eT = ""], i) => {
-    const row = { s: s.trim() };
-    if (sT.trim()) row.sT = sT.trim();
-    if (eT.trim()) row.eT = eT.trim();
+  return data.map((cols, i) => {
+    const [s, sT, eT, cho, chukyu, np] = cols.map((c) => c.trim());
     const where = `${i + 1} 行目`;
+    if (cols.length > 6) throw new Error(`${where}: 列が多すぎます`);
+    const row = { s: s ?? "" };
+    if (sT) row.sT = sT;
+    if (eT) row.eT = eT;
     if (!row.s) throw new Error(`${where}: 勤務名が空です`);
     if (!row.sT !== !row.eT)
       throw new Error(`${where}: 開始と終了は両方書くか両方空にしてください`);
     for (const t of [row.sT, row.eT]) {
       if (t && !TIME.test(t))
         throw new Error(`${where}: 時刻の書式が不正です: ${t}`);
+    }
+    if ((cho || chukyu || np) && !row.sT)
+      throw new Error(`${where}: 超・中休・深夜P は時刻のある行にだけ書けます`);
+    if (cho) {
+      if (!SIGNED_TIME.test(cho))
+        throw new Error(`${where}: 超の書式が不正です: ${cho}`);
+      row.c = toMinutes(cho);
+    }
+    if (chukyu) {
+      if (!TIME.test(chukyu))
+        throw new Error(`${where}: 中休の書式が不正です: ${chukyu}`);
+      row.k = toMinutes(chukyu);
+    }
+    if (np) {
+      if (!POINTS.test(np))
+        throw new Error(`${where}: 深夜P は整数で書いてください: ${np}`);
+      row.n = Number(np);
     }
     return row;
   });

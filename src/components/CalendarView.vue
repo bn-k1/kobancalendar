@@ -94,7 +94,7 @@ const mergedEvents = computed(() => {
     if (editedSchedule) {
       const title =
         editedSchedule.startTime || editedSchedule.endTime
-          ? `${editedSchedule.subject}\n${editedSchedule.startTime} - \n${editedSchedule.endTime}`
+          ? `${editedSchedule.subject}\n${editedSchedule.startTime} ~\n${editedSchedule.endTime}`
           : editedSchedule.subject;
       const editedColor = editedEventConfig.value?.color || event.color;
 
@@ -158,12 +158,7 @@ function openEditModal(event) {
   let currentSchedule;
 
   if (extendedProps.isEdited) {
-    currentSchedule = {
-      subject: extendedProps.editedSubject,
-      startTime: extendedProps.startTime,
-      endTime: extendedProps.endTime,
-      note: extendedProps.note || "",
-    };
+    currentSchedule = { ...getEditedSchedule(dateStr) };
   } else {
     const titleParts = event.title.split("\n");
     currentSchedule = {
@@ -192,6 +187,8 @@ function handleSaveEdit(editData) {
     subject: editData.subject,
     startTime: editData.startTime,
     endTime: editData.endTime,
+    overtime: editData.overtime,
+    midBreak: editData.midBreak,
     note: editData.note,
   });
 

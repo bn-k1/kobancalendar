@@ -44,6 +44,12 @@ and writes `data/scheduleData.json` (generated, not committed).
   go past 24 (`24:42`). Two items in one cell are written `a/b`.
   The file must be UTF-8 (in Excel: "CSV UTF-8"), the subject can't be empty,
   and times are `H:MM` / `HH:MM`, both or neither.
+  Optional, and not something every workplace has: work rows may add
+  `,超[,中休[,深夜P]]` (`134,15:59,24:42,-0:29,,36`; any of them may be empty).
+  With them, Home shows the day's numbers in the edit modal and one line of
+  totals for the 15日締め pay period (negative 超 counts as 0, 深夜P is a
+  point count). Leave them out and everything else works from subject,
+  start and end alone.
   `holiday.csv` is used for Sundays, national holidays and `custom_holidays`,
   and wins over Saturday.
 - `config/config.json`

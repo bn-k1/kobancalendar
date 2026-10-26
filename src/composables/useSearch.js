@@ -43,6 +43,8 @@ export function useSearch() {
                   subject: row.s,
                   startTime: row.sT || "",
                   endTime: row.eT || "",
+                  overtime: row.c,
+                  midBreak: row.k,
                   position: index + 1,
                   dayType: selectedDayType.value,
                 },

@@ -76,6 +76,11 @@
           <div class="loading-placeholder">Loading...</div>
         </template>
       </Suspense>
+      <PayPeriodSummary
+        v-if="isLoaded"
+        :month="visibleMonth"
+        :start-position="startPosition"
+      />
     </template>
 
     <!-- Search section -->
@@ -110,6 +115,7 @@ import {
 import UnifiedPageLayout from "@/layouts/UnifiedPageLayout.vue";
 import BaseSelector from "@/components/Controls/BaseSelector.vue";
 import EditsVisibilityToggle from "@/components/EditsVisibilityToggle.vue";
+import PayPeriodSummary from "@/components/PayPeriodSummary.vue";
 
 const CalendarView = defineAsyncComponent(
   () => import("@/components/CalendarView.vue"),
@@ -203,6 +209,15 @@ const nextBaseDateStr = computed(() => {
   )
     return null;
   return formatAsISODate(nextBaseDate.value);
+});
+
+// The month grid starts and ends in the neighbouring months; its middle day
+// is always in the month being shown.
+const visibleMonth = computed(() => {
+  const { start, end } = viewRange.value;
+  if (!start || !end) return null;
+  const from = createDate(start);
+  return from.add(Math.floor(createDate(end).diff(from, "day") / 2), "day");
 });
 
 const positionOptions = computed(() => {

@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import { useCalendar } from "./useCalendar";
 import { useSchedule } from "./useSchedule";
-import { useHolidays } from "./useHolidays";
 import { createDate } from "@/utils/date";
 
 /**
@@ -30,9 +29,6 @@ export function useAppInitializer() {
   const { setEventConfig } = useCalendar();
   const { loadSchedule } = useSchedule();
 
-  const { setHolidayYearsRange, setUserDefinedHolidays, loadHolidays } =
-    useHolidays();
-
   /**
    * Initialize the application with configuration data.
    * @param {Object} data
@@ -42,11 +38,6 @@ export function useAppInitializer() {
    */
   async function initializeApp(data) {
     const { scheduleData, config, eventConfig } = data;
-
-    // Holiday configuration
-    setHolidayYearsRange(5);
-    setUserDefinedHolidays(config.custom_holidays || []);
-    loadHolidays();
 
     // Calendar configuration
     setEventConfig(eventConfig);

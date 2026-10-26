@@ -9,13 +9,18 @@ import {
 
 const STORAGE_KEY = "kobancalendar_edited_schedules";
 
+// 超勤 / 中休 typed in by hand, in minutes; absent when left blank.
 function normalizeSchedule(schedule) {
-  return {
+  const normalized = {
     subject: schedule?.subject || "",
     startTime: schedule?.startTime || "",
     endTime: schedule?.endTime || "",
     note: schedule?.note || "",
   };
+  ["overtime", "midBreak"].forEach((key) => {
+    if (Number.isInteger(schedule?.[key])) normalized[key] = schedule[key];
+  });
+  return normalized;
 }
 
 // Edits saved before 2026-07 are "date,subject,start,end" lines; they are
@@ -135,7 +140,8 @@ export function useEditedSchedules() {
   /**
    * Save an edited schedule
    * @param {string|dayjs} date - Date to save
-   * @param {Object} schedule - Schedule data { subject, startTime, endTime }
+   * @param {Object} schedule - Schedule data { subject, startTime, endTime,
+   *   overtime?, midBreak?, note }
    */
   function saveEditedSchedule(date, schedule) {
     const dateStr = toDateStr(date);
