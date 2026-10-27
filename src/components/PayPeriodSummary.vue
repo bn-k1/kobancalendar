@@ -1,9 +1,10 @@
 <!-- src/components/PayPeriodSummary.vue -->
 <template>
   <p v-if="summary" class="pay-period-summary">
-    {{ summary.label }}　拘束 {{ formatMinutes(summary.binding) }}・超勤
+    {{ summary.label }}<br />
+    拘束 {{ formatMinutes(summary.binding) }}・超勤
     {{ formatMinutes(summary.overtime) }}・中休
-    {{ formatMinutes(summary.midBreak) }}・深夜P {{ summary.nightPoints }}
+    {{ formatMinutes(summary.midBreak) }}・深夜ポイント {{ summary.nightPoints }}P
     <span v-if="summary.unknownOvertimeDays" class="pay-period-note"
       >（超勤が分からない日 {{ summary.unknownOvertimeDays }}日）</span
     >
@@ -41,7 +42,7 @@ const summary = computed(() => {
   const period = payPeriodClosingIn(props.month);
   if (!periodHasMetrics(period)) return null;
   return {
-    label: `${period.start.format("M/D")} ~ ${period.end.format("M/D")}`,
+    label: `${period.end.format("M")}月度（${period.start.format("M/D")} ~ ${period.end.format("M/D")}）`,
     ...summarizePeriod(period),
   };
 });

@@ -301,7 +301,7 @@ const metricsText = computed(() => {
     `拘束 ${formatMinutes(bindingMinutes(startTime, endTime))}`,
     `超勤 ${metrics.overtime === undefined ? "—" : formatMinutes(metrics.overtime)}`,
     metrics.midBreak && `中休 ${formatMinutes(metrics.midBreak)}`,
-    metrics.nightPoints && `深夜P ${metrics.nightPoints}`,
+    metrics.nightPoints && `深夜ポイント ${metrics.nightPoints}P`,
   ]
     .filter(Boolean)
     .join(" / ");
