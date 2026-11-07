@@ -249,7 +249,7 @@ function showDetails(match) {
 
 .results-table th {
   background-color: var(--primary-light);
-  color: var(--text-light);
+  color: var(--on-primary);
   font-weight: var(--font-weight-medium);
   text-transform: uppercase;
   font-size: 0.9rem;
@@ -270,7 +270,7 @@ function showDetails(match) {
 
 .results-table .view-details {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--on-primary);
   border: none;
   border-radius: var(--border-radius-pill);
   padding: var(--spacing-xs) var(--spacing-md);

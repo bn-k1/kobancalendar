@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import dayjs from "dayjs";
 import { useSchedule } from "@/composables/useSchedule";
+import { eventTextColor } from "@/utils/eventTextColor";
 import { useHolidays, CUSTOM_HOLIDAY } from "@/composables/useHolidays";
 import { useMeetupSearch } from "@/composables/useMeetupSearch";
 import { useCalendar } from "@/composables/useCalendar";
@@ -297,5 +298,16 @@ describe("飲みに行くンダーの保存", () => {
       { position: 5, name: "" },
       { position: 9, name: "" },
     ]);
+  });
+});
+
+describe("eventTextColor", () => {
+  it("uses dark text on light fills and white on mid/dark fills", () => {
+    expect(eventTextColor("#00bfff")).toBe("#0f172a");
+    expect(eventTextColor("#fb8c00")).toBe("#0f172a");
+    expect(eventTextColor("#e53935")).toBe("#ffffff");
+    expect(eventTextColor("#e040fb")).toBe("#ffffff");
+    expect(eventTextColor("#fff")).toBe("#0f172a");
+    expect(eventTextColor(undefined)).toBe("#ffffff");
   });
 });

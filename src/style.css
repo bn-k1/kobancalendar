@@ -27,6 +27,8 @@
   --text-color:  #1e293b;
   --text-muted:  #64748b;
   --text-light:  #ffffff;
+  /* Text on a --primary-* fill. */
+  --on-primary:  #ffffff;
   --border-color: #e2e8f0;
 
   --saturday-color: rgba(99, 102, 241, 0.08);
@@ -65,7 +67,9 @@
   --text-color:  #e2e8f0;
   --text-muted:  #94a3b8;
   --text-light:  #ffffff;
-  --border-color: #1e293b;
+  /* The dark-mode primaries are light tints: white text on them is unreadable. */
+  --on-primary:  #1e1b4b;
+  --border-color: #334155;
   --primary-color: #a5b4fc;
   --primary-light: #c7d2fe;
   --primary-dark:  #818cf8;
@@ -237,7 +241,7 @@ select:focus {
 
 button {
   background-color: var(--primary-color);
-  color: var(--text-light);
+  color: var(--on-primary);
   border: none;
   font-weight: var(--font-weight-medium);
   cursor: pointer;
@@ -266,7 +270,7 @@ button:focus {
 /* --- Button Variants --- */
 .primary-btn {
   background-color: var(--primary-color);
-  color: var(--text-light);
+  color: var(--on-primary);
   font-weight: var(--font-weight-medium);
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--border-radius-md);
@@ -315,7 +319,7 @@ button:focus {
 
 .version-btn:hover {
   background: var(--primary-color);
-  color: var(--text-light);
+  color: var(--on-primary);
   transform: none;
   box-shadow: none;
 }

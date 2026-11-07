@@ -595,7 +595,7 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
 
 .custom-toggle-btn:hover {
   background: var(--primary-color);
-  color: var(--text-light);
+  color: var(--on-primary);
   border-color: var(--primary-color);
 }
 
@@ -689,7 +689,7 @@ watch([() => props.show, () => props.date, subjectOptions], ([newShow]) => {
 
 .save-btn {
   background-color: var(--primary-color);
-  color: var(--text-light);
+  color: var(--on-primary);
   border: none;
 }
 

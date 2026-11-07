@@ -26,6 +26,7 @@ import { useHolidays } from "@/composables/useHolidays";
 import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { createDate, isSameDay, today, formatAsISODate } from "@/utils/date";
 import { escapeHtml } from "@/utils/escapeHtml";
+import { eventTextColor } from "@/utils/eventTextColor";
 import EditScheduleModal from "@/components/EditScheduleModal.vue";
 import { useCalendarStore } from "@/stores/calendar";
 
@@ -272,6 +273,10 @@ const calendarOptions = computed(() => ({
     el.addEventListener("pointercancel", handlePressEnd);
 
     el.classList.add("long-press-enabled");
+    el.style.setProperty(
+      "--event-text",
+      eventTextColor(info.event.backgroundColor),
+    );
 
     // Show the pre-edit shift in the cell's whitespace below the (purple)
     // edited event, outside the colored block.
@@ -364,7 +369,7 @@ onMounted(() => {
 :deep(.fc .fc-toolbar) {
   padding: var(--spacing-md);
   background-color: var(--primary-color);
-  color: var(--text-light);
+  color: var(--on-primary);
   flex-wrap: wrap;
 }
 
@@ -379,6 +384,7 @@ onMounted(() => {
 :deep(.fc .fc-button) {
   background-color: var(--primary-dark);
   border-color: var(--primary-dark);
+  color: var(--on-primary);
   font-size: 0.95rem;
 }
 
@@ -389,7 +395,7 @@ onMounted(() => {
 
 :deep(.fc .fc-col-header-cell) {
   background-color: var(--primary-light);
-  color: var(--text-light);
+  color: var(--on-primary);
   font-size: 1rem;
 }
 
@@ -424,7 +430,8 @@ onMounted(() => {
 
 :deep(.event-meta) {
   font-size: 0.75rem;
-  color: var(--gray-700);
+  /* Fixed light chip, so fixed dark text: --gray-* flip in dark mode. */
+  color: #334155;
   margin-top: 2px;
   background-color: rgba(255, 255, 255, 0.8);
   padding: 2px 6px;
@@ -481,5 +488,23 @@ onMounted(() => {
 
 :deep(.long-press-enabled:active) {
   opacity: 0.8;
+}
+</style>
+
+<style>
+/* Dark mode only; light mode keeps its original look (user decision
+   2026-11-07). Unscoped so it can key off html.dark; the extra classes
+   outrank the scoped rules above. */
+:root.dark .fc-daygrid-event .event-title,
+:root.dark .fc-daygrid-event .event-time,
+:root.dark .fc-daygrid-event .fc-event-title {
+  /* Set per event in eventDidMount from the event color. */
+  color: var(--event-text, #fff);
+}
+
+/* The translucent weekend tint washed out the header fill. */
+:root.dark .fc .fc-col-header-cell.fc-day-sat,
+:root.dark .fc .fc-col-header-cell.fc-day-sun {
+  background-color: var(--primary-light) !important;
 }
 </style>

@@ -61,7 +61,7 @@ function toggleHidden() {
 
 .edits-visibility-btn:hover {
   background: var(--primary-color);
-  color: var(--text-light);
+  color: var(--on-primary);
   transform: none;
   box-shadow: none;
 }

@@ -133,7 +133,7 @@ function getNextDayShift(detail) {
 
 .details-table th {
   background-color: var(--primary-light);
-  color: var(--text-light);
+  color: var(--on-primary);
   font-weight: var(--font-weight-medium);
   text-align: left;
   white-space: nowrap;

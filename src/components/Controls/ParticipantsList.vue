@@ -160,6 +160,7 @@ watch(
 
 #addParticipantBtn {
   background-color: var(--success-color);
+  color: var(--text-light);
   margin-top: var(--spacing-sm);
   width: 100%;
   border-radius: var(--border-radius-md);
