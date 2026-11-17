@@ -86,7 +86,10 @@
     <!-- Search section -->
     <template #search>
       <Suspense v-if="isLoaded">
-        <EditedSchedulesList @edited-changed="handleEditedChanged" />
+        <EditedSchedulesList
+          @edited-changed="handleEditedChanged"
+          @edit="handleEditFromList"
+        />
         <template #fallback>
           <div class="loading-placeholder">Loading...</div>
         </template>
@@ -308,6 +311,11 @@ function handlePositionChange(newPosition) {
 function handleDatesSet({ start, end }) {
   viewRange.value = { start, end };
   generateCalendarEvents(start, end);
+}
+
+function handleEditFromList(dateStr) {
+  calendarRef.value?.gotoDate(dateStr);
+  calendarRef.value?.openEditForDate(dateStr);
 }
 
 function handleEditedChanged() {

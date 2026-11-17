@@ -145,9 +145,34 @@ function handlePressEnd() {
 }
 
 function openEditModal(event) {
-  const dateObj = createDate(event.start);
-  const dateStr = formatAsISODate(dateObj);
+  const extendedProps = event.extendedProps || {};
+  if (extendedProps.isEdited) {
+    openEditForDate(event.start);
+    return;
+  }
+  const titleParts = event.title.split("\n");
+  showEditor(
+    formatAsISODate(event.start),
+    {
+      subject: titleParts[0] || "",
+      startTime: extendedProps.startTime || "",
+      endTime: extendedProps.endTime || "",
+      note: "",
+    },
+    false,
+  );
+}
 
+/** Reopen a saved edit with its values filled in (also used by the list). */
+function openEditForDate(date) {
+  const dateStr = formatAsISODate(date);
+  const saved = getEditedSchedule(dateStr);
+  if (!saved) return;
+  showEditor(dateStr, { ...saved }, true);
+}
+
+function showEditor(dateStr, currentSchedule, isEdited) {
+  const dateObj = createDate(dateStr);
   let dayType = "weekday";
   if (isHoliday(dateObj) || dateObj.day() === 0) {
     dayType = "holiday";
@@ -155,25 +180,10 @@ function openEditModal(event) {
     dayType = "saturday";
   }
 
-  const extendedProps = event.extendedProps || {};
-  let currentSchedule;
-
-  if (extendedProps.isEdited) {
-    currentSchedule = { ...getEditedSchedule(dateStr) };
-  } else {
-    const titleParts = event.title.split("\n");
-    currentSchedule = {
-      subject: titleParts[0] || "",
-      startTime: extendedProps.startTime || "",
-      endTime: extendedProps.endTime || "",
-      note: "",
-    };
-  }
-
   editingDate.value = dateStr;
   editingDayType.value = dayType;
   editingCurrentSchedule.value = currentSchedule;
-  editingIsEdited.value = !!extendedProps.isEdited;
+  editingIsEdited.value = isEdited;
   showEditModal.value = true;
 }
 
@@ -336,7 +346,7 @@ function gotoDate(date) {
   }
 }
 
-defineExpose({ gotoDate });
+defineExpose({ gotoDate, openEditForDate });
 
 onUnmounted(() => {
   if (longPressTimer) {

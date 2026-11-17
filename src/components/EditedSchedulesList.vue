@@ -22,6 +22,13 @@
           >{{ item.displayDate }}({{ item.weekday }}) {{ item.subject }}</span
         >
         <button
+          class="edit-btn"
+          aria-label="編集"
+          @click="emit('edit', item.dateStr)"
+        >
+          編集
+        </button>
+        <button
           class="remove-btn"
           aria-label="削除"
           @click="handleRemove(item.dateStr)"
@@ -40,7 +47,7 @@ import { useEditedSchedules } from "@/composables/useEditedSchedules";
 import { useCalendarStore } from "@/stores/calendar";
 
 const { editedSchedulesList, removeEditedSchedule } = useEditedSchedules();
-const emit = defineEmits(["editedChanged"]);
+const emit = defineEmits(["editedChanged", "edit"]);
 const isExpanded = ref(false);
 const showList = computed(() => isExpanded.value);
 const showEmptyNotice = computed(() => {
@@ -111,6 +118,26 @@ function handleRemove(dateStr) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.edit-btn {
+  background-color: var(--primary-color);
+  color: var(--on-primary);
+  height: 28px;
+  min-height: unset;
+  padding: 0 0.7rem;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+.edit-btn:hover {
+  background-color: var(--primary-light);
+  transform: none;
+  box-shadow: none;
 }
 
 .remove-btn {

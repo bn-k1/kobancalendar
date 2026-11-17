@@ -390,8 +390,22 @@ function handleSubjectChange() {
   }
 }
 
+// Carry the picked subject and times over, plus the table's 超勤 / 中休, so
+// adding or adjusting 超勤 doesn't mean typing the whole shift again.
 function enterCustomMode() {
+  const subject = selectedSubject.value;
+  const startTime = selectedStartTime.value;
+  const endTime = selectedEndTime.value;
+  const metrics = props.date
+    ? lookupMetrics(props.date, subject, startTime, endTime)
+    : null;
+
   isCustomSelected.value = true;
+  customSubject.value = subject;
+  [customStartHour.value, customStartMinute.value] = splitTime(startTime);
+  [customEndHour.value, customEndMinute.value] = splitTime(endTime);
+  setDuration("overtime", metrics?.overtime);
+  setDuration("midBreak", metrics?.midBreak || undefined);
   selectedSubject.value = "";
   selectedStartTime.value = "";
   selectedEndTime.value = "";
